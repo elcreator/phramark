@@ -1,0 +1,16 @@
+name: Page
+form: $/phramark/benchmark/models/page/fields.yaml
+modelClass: Phramark\Benchmark\Models\Page
+defaultRedirect: phramark/benchmark/pages
+
+# Create redirects to the editor of the new record (its id becomes visible in
+# the URL); the update form's Save button stays on the form (redirect:0 in
+# the standard toolbar partial).
+create:
+    title: backend::lang.form.create_title
+    redirect: phramark/benchmark/pages/update/:id
+    redirectClose: phramark/benchmark/pages
+update:
+    title: backend::lang.form.update_title
+    redirect: phramark/benchmark/pages
+    redirectClose: phramark/benchmark/pages

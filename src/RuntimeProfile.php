@@ -53,6 +53,24 @@ final class RuntimeProfile
                 'components' => ['TYPO3 core', 'Doctrine DBAL', 'Fluid', 'Symfony (minor)'],
                 'port' => 8084,
             ],
+            'winter' => [
+                'label' => 'Winter CMS',
+                'framework' => 'Winter CMS 1.2 (Storm + CMS module) on Laravel 9 (Illuminate) + Twig (+ Symfony http-foundation/translation; PDO wrapped in the Doctrine DBAL PDOConnection)',
+                'components' => ['Winter core', 'Laravel/Illuminate', 'Symfony (minor)', 'Doctrine DBAL (minor)', 'Twig'],
+                'port' => 8086,
+            ],
+            'modx' => [
+                'label' => 'MODX Revolution',
+                'framework' => 'MODX Revolution 3.2 core (modRequest/modParser) on xPDO, its own ORM over PDO; no third-party framework on the request path',
+                'components' => ['MODX core', 'xPDO'],
+                'port' => 8087,
+            ],
+            'wordpress-gantry' => [
+                'label' => 'WordPress + Gantry 5',
+                'framework' => 'WordPress 7.1 core (wpdb, WP_Rewrite, WP_Query) with the Gantry 5.6 framework plugin rendering the Hydrogen theme through Timber and Twig 2 (+ Symfony yaml/event-dispatcher for the outline); no other framework on the request path',
+                'components' => ['WordPress core', 'Gantry 5', 'Timber', 'Symfony (minor)', 'Twig'],
+                'port' => 8088,
+            ],
         ];
     }
 
@@ -91,6 +109,33 @@ final class RuntimeProfile
         if ($classes('TYPO3') >= 50) {
             $components[] = 'TYPO3 core';
         }
+        // Winter's core is the Storm library (Winter\Storm) plus the Cms, System
+        // and Backend modules; the full front controller loads dozens of each.
+        if ($classes('Winter') + $classes('Cms') + $classes('System') >= 40) {
+            $components[] = 'Winter core';
+        }
+        // MODX 3 is MODX\Revolution\* on the xPDO\* ORM; both are its own code,
+        // there is no Laravel/Symfony layer in a frontend request.
+        if ($classes('MODX') >= 20) {
+            $components[] = 'MODX core';
+        }
+        if ($classes('xPDO') >= 5) {
+            $components[] = 'xPDO';
+        }
+        // WordPress core is procedural plus global classes (WP_Query, wpdb,
+        // WP_Rewrite ...), so it is recognised by its included core files.
+        if ($files('site:wp-includes') >= 50) {
+            $components[] = 'WordPress core';
+        }
+        // Gantry 5 is a theme framework: its own Gantry\* classes (outline,
+        // layout, particles, streams) render the page; Timber is the bridge
+        // between WordPress and Twig it ships with.
+        if ($classes('Gantry') >= 20) {
+            $components[] = 'Gantry 5';
+        }
+        if ($classes('Timber') >= 3) {
+            $components[] = 'Timber';
+        }
         if ($classes('Illuminate') >= 20 || $files('vendor:illuminate/') >= 50) {
             $components[] = 'Laravel/Illuminate';
         }
@@ -99,8 +144,12 @@ final class RuntimeProfile
         } elseif ($classes('Symfony') > 0) {
             $components[] = 'Symfony (minor)';
         }
-        if ($files('vendor:doctrine/dbal') > 0) {
+        // TYPO3 queries through the DBAL query builder (80+ files); Laravel 9
+        // merely wraps PDO in Doctrine's PDOConnection when DBAL is installed.
+        if ($files('vendor:doctrine/dbal') >= 20) {
             $components[] = 'Doctrine DBAL';
+        } elseif ($files('vendor:doctrine/dbal') > 0) {
+            $components[] = 'Doctrine DBAL (minor)';
         }
         if (in_array('phalcon', $extensions, true) && $files('vendor:elcreator/aphalcon') > 0) {
             $components[] = 'Phalcon (extension)';

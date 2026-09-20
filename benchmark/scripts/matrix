@@ -1,34 +1,81 @@
 #!/usr/bin/env sh
-# Runs the whole benchmark matrix: every reachable stack × guest/admin ×
-# JIT off/tracing, then prints the summary table.
+# Runs the benchmark matrix: every reachable stack × guest/admin × JIT
+# off/tracing by default, or the part of it the options select, then prints
+# the summary table.
 #
-#   benchmark/scripts/matrix [OFFERED_RPS] [PORT...]
+#   benchmark/scripts/matrix [OPTIONS] [OFFERED_RPS] [PORT...]
+#
+#   --solutions=evo-phalcon,winter   stacks by id (default: all; PORT... also works)
+#   --jit=off | --jit=tracing | --jit=off,tracing   JIT modes (default: both)
+#   --workload=guest | --workload=admin | --workload=guest,admin   (default: both)
+#   --rate=30        offered rps for the guest workload (default 30)
+#   --repeats=3      run every selected cell N times (default 1, or REPEATS)
 #
 # DURATION (wrk2, default 60s) and ROUNDS (admin sessions, default 1) apply
-# to every cell. Failed cells are reported and skipped, not fatal.
+# to every cell; repetitions let the summary report the spread across runs,
+# the measuring error of this host. Failed cells are reported and skipped,
+# not fatal. Ends by recording the container versions and refreshing
+# docs/results.json.
 set -u
 
-rate=${1:-30}
-shift 2>/dev/null || true
-ports=${*:-8080 8081 8082 8083 8084 8085}
+. "$(dirname "$0")/lib.sh"
+
+rate=
+ports=
+jits="off tracing"
+workloads="guest admin"
+repeats=${REPEATS:-1}
+for argument in "$@"; do
+  case "$argument" in
+    --solutions=*|--stacks=*)
+      for stack in $(echo "${argument#*=}" | tr ',' ' '); do
+        ports="$ports $(port_for_stack "$stack")" || exit 2
+      done ;;
+    --jit=*) jits=$(echo "${argument#*=}" | tr ',' ' ') ;;
+    --workload=*|--workloads=*) workloads=$(echo "${argument#*=}" | tr ',' ' ') ;;
+    --rate=*) rate=${argument#*=} ;;
+    --repeats=*) repeats=${argument#*=} ;;
+    --*) echo "unknown option $argument" >&2; exit 2 ;;
+    *) if [ -z "$rate" ]; then rate=$argument; else ports="$ports $argument"; fi ;;
+  esac
+done
+rate=${rate:-30}
+ports=${ports:-8080 8081 8082 8083 8084 8085 8086 8087 8088}
+for jit in $jits; do case "$jit" in off|tracing) ;; *) echo "--jit must be off, tracing or off,tracing" >&2; exit 2 ;; esac; done
+for workload in $workloads; do case "$workload" in guest|admin) ;; *) echo "--workload must be guest, admin or guest,admin" >&2; exit 2 ;; esac; done
 failed=
 
 for port in $ports; do
-  if ! curl -s --max-time 3 "http://${PHRAMARK_HOST:-127.0.0.1}:$port/" >/dev/null; then
+  # A stack whose containers were just (re)created may need a moment.
+  reachable=0
+  for attempt in 1 2 3 4 5; do
+    if curl -s --max-time 5 "http://${PHRAMARK_HOST:-127.0.0.1}:$port/" >/dev/null; then reachable=1; break; fi
+    sleep 3
+  done
+  if [ "$reachable" = 0 ]; then
     echo "port $port: not reachable, skipped"
     continue
   fi
-  for jit in off tracing; do
-    for workload in guest admin; do
+  for jit in $jits; do
+    for workload in $workloads; do
       echo
-      echo "===== $workload / JIT $jit / port $port ====="
-      if ! benchmark/scripts/bench "$workload" "$jit" "$port" "$rate"; then
-        failed="$failed $workload:$jit:$port"
-      fi
+      repeat=1
+      while [ "$repeat" -le "$repeats" ]; do
+        echo "===== $workload / JIT $jit / port $port (run $repeat of $repeats) ====="
+        if ! benchmark/scripts/bench "$workload" "$jit" "$port" "$rate"; then
+          failed="$failed $workload:$jit:$port:$repeat"
+        fi
+        repeat=$((repeat + 1))
+      done
     done
   done
 done
 
 echo
+# The exact versions the containers ran, then the tables: Markdown for the
+# README and JSON for the static results site (docs/, sortable in the browser).
+php benchmark/scripts/versions.php >/dev/null
 php benchmark/scripts/summary.php
+php benchmark/scripts/summary.php --json > docs/results.json
+echo "docs/results.json updated"
 [ -z "$failed" ] || { echo "FAILED cells:$failed" >&2; exit 1; }

@@ -1,0 +1,13 @@
+# Same two editable fields as the seeded pages of every other stack: a text
+# title and a plain textarea body (Drupal and Evolution edit a textarea too).
+fields:
+    title:
+        label: Title
+        span: full
+        type: text
+        required: true
+    content:
+        label: Content
+        span: full
+        type: textarea
+        size: large

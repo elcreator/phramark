@@ -21,8 +21,11 @@ The framework column is not the marketing name: it is what a warm category reque
 | `evo-phalcon` | 8082 | Same Illuminate bootstrap (≈86 classes) + **Phalcon** DB adapter (extension) + Latte | aPhalcon `frontend.takeover=true`. It is *not* a pure Phalcon stack: Evolution's Laravel-based core still boots, Phalcon replaces the data access |
 | `drupal-11` | 8083 | Drupal 11 core (511 core files) on **Symfony** HttpKernel/Routing/HttpFoundation + Twig | Route controller, Drupal DB API, Twig render array returned as a bare response |
 | `typo3` | 8084 | TYPO3 14 core on **Doctrine DBAL** + Fluid; Symfony only for DI/translation (12 classes) | PSR-15 middleware before site resolution, DBAL query builder, Fluid view |
+| `winter` | 8086 | Winter CMS 1.2 (Storm 194 classes + CMS module) on **Laravel 9/Illuminate** (177 classes, 308 files) + Twig; Symfony http-foundation/translation only (35 classes); PDO wrapped in Doctrine DBAL's `PDOConnection` (12 files) | Full CMS front controller: theme page `/articles/:slug` with a component that queries `phramark_article` through the Illuminate query builder, Twig page template without a layout |
+| `modx` | 8087 | [MODX Revolution](https://github.com/modxcms/revolution) 3.2 core (111 `MODX\Revolution` classes, 132 core files) on **xPDO** (20 classes, 23 files), its own ORM over PDO; no third-party framework on the request path (a few Symfony polyfill files, no Symfony classes) | Full CMS front controller: `modRequest` resolves `/articles/category-NNN` through the alias map (one resource per category), `modParser` renders the template with an uncached snippet that reads `phramark_article` through an xPDO model (`Phramark\Model\Article`) and renders one chunk per article |
+| `wordpress-gantry` | 8088 | [WordPress](https://wordpress.org) 7.1 core (481 `wp-includes` files; procedural plus global classes such as `WP_Query`, `wpdb`, `WP_Rewrite`) with the [Gantry 5](https://github.com/gantry/gantry5) 5.6 **theme framework** plugin (66 `Gantry` classes, 84 plugin files, 12 RocketTheme toolbox classes) rendering its Hydrogen theme through **Timber** (35 classes) and **Twig 2** (49 classes, 54 files); Symfony yaml/event-dispatcher only for the outline (2 classes) | Full CMS front controller: WordPress resolves `/articles/category-NNN` through its page hierarchy (one child page of "Articles" per category), a must-use plugin's `template_include` hands the page to a template that reads `phramark_article` through `$wpdb` and renders a Twig view (`custom/views` override of the theme) inside the Gantry outline: header, navigation, main, footer and off-canvas sections with their particles. One stack, not two: WordPress is measured only through Gantry, because the framework does nothing without a Gantry theme |
 
-October CMS is not part of the comparison: its Composer distribution requires a licence key, which the harness cannot depend on.
+October CMS is not part of the comparison: its Composer distribution requires a licence key, which the harness cannot depend on. Its licence-free fork [Winter CMS](https://github.com/wintercms/winter) stands in for that lineage (`winter`). WordPress is not measured on its own either: the `wordpress-gantry` stack answers the question "what does a Gantry 5 page cost", and the framework only renders through one of its themes, so plain WordPress would be a different request path (no Timber, no Twig, no outline) rather than a baseline of the same one.
 
 Every stack serves `/articles/category-042` (no trailing slash, HTTP 200, no redirect) with the same visible contract: 20 article cards with `hero_image`, `author` and `reading_time` values whose presence follows the fixture's deterministic TV distribution. `benchmark/scripts/verify` checks this contract on every reachable stack, from the host and (in `bench`) from inside the compose network, the way the load generator sees it.
 
@@ -47,7 +50,10 @@ The first result set in this repository compared stacks that were not doing the 
 Remaining, documented differences that are design choices rather than bugs:
 
 - The Evolution stacks resolve a real document tree (closure table, alias path) and read TVs from an EAV table; `evo-parser`/`evo-latte` do it with `getTemplateVarOutput('*')` per card (N+1 queries), `evo-phalcon` with one hand-written `IN (…)` query that also skips document-group access checks. Drupal and TYPO3 read one flat, indexed `phramark_article` table. The stacks are therefore comparable as "CMS-native request path over the same fixture", not as identical SQL.
-- Both cross-CMS adapters bypass their CMS page/theme layer (Drupal now as well). Only the Evolution stacks run a full CMS front controller.
+- The Drupal and TYPO3 adapters bypass their CMS page/theme layer (Drupal now as well). The Evolution stacks, Winter, MODX and WordPress run a full CMS front controller (Winter: `Cms\Classes\Controller`, theme page, component, Twig; MODX: `modRequest` → `modResource` → `modParser`, template, snippet, chunk; WordPress: `WP_Rewrite` → `WP_Query` page lookup → `template_include` → Gantry outline through Timber/Twig).
+- MODX runs with `cache_resource=0`, the equivalent of Evolution's `enable_cache=0`: the document is parsed on every request instead of being served from `core/cache/resource`. Its default session handler stores a session row in `modx_session` for every guest request (MODX-native behaviour, kept), and its default dashboard widgets that fetch modx.com feeds and update checks server-side are removed so a manager login times the CMS, not the internet.
+- WordPress runs with `DISABLE_WP_CRON` and `WP_HTTP_BLOCK_EXTERNAL` (web requests only) and without the dashboard's wordpress.org news and Site Health widgets: a guest request must not spawn a loopback cron request and a manager page load must not wait for api.wordpress.org update checks, so the timed steps measure the CMS, not the internet (the MODX equivalent is its removed feed widgets). Gantry keeps its compiled SCSS and Twig under `wp-content/cache/gantry5`, which the warm-up fills; the object cache is WordPress's default per-request one, so options and post objects are read from MySQL on every request like every other stack's uncached document.
+- The WordPress admin workload edits pages in the Classic Editor's Text tab (an official wordpress.org plugin, `wp_default_editor=html`): title input and body textarea, a form post, a redirect back to the editor. That is the same plain-form shape as the Drupal, Evolution and Winter fixtures and keeps the measured server work comparable; the block editor would time a React application's REST round-trips instead.
 - The always-on PHP memory probe (`auto_prepend_file`) costs one shutdown function and a file append per request on every stack alike.
 - Load generator, MySQL, PHP-FPM and nginx share one host. Use a separate load host for public numbers.
 
@@ -55,10 +61,10 @@ Remaining, documented differences that are design choices rather than bugs:
 
 ```sh
 docker compose -f benchmark/compose.yaml up --build                        # evo-parser, evo-latte, evo-phalcon
-docker compose -f benchmark/compose.yaml --profile cross-cms up --build    # + drupal-11, typo3
+docker compose -f benchmark/compose.yaml --profile cross-cms up --build    # + drupal-11, typo3, winter, modx, wordpress-gantry
 ```
 
-Then open http://127.0.0.1:8080/articles/category-042 (8081 … 8085 for the other stacks). Use `127.0.0.1`, not `localhost`: Chromium's dual-stack connect to Docker Desktop's port proxy can stall for 30 s per connection.
+Then open http://127.0.0.1:8080/articles/category-042 (8081 … 8088 for the other stacks). Use `127.0.0.1`, not `localhost`: Chromium's dual-stack connect to Docker Desktop's port proxy can stall for 30 s per connection.
 
 Admin panels (user `benchmark` everywhere):
 
@@ -67,6 +73,9 @@ Admin panels (user `benchmark` everywhere):
 | evo-* | http://127.0.0.1:8080/manager/ (8081, 8082, 8085) | `benchmark-admin` | Folder "Admin workload" (id 10103) with pages 10104–10108 |
 | drupal-11 | http://127.0.0.1:8083/user/login | `benchmark-admin` | Content type "Basic page" with a plain-text body; the five lowest page nodes |
 | typo3 | http://127.0.0.1:8084/typo3/ | `Benchmark1!` | Root page "Admin workload" (uid 10103) with pages 10104–10108, each with one text element of the same uid |
+| winter | http://127.0.0.1:8086/backend/ | `benchmark-admin` | "Benchmark pages" (plugin `Phramark.Benchmark`, table `phramark_benchmark_pages`) with pages 10104–10108 |
+| modx | http://127.0.0.1:8087/manager/ | `benchmark-admin` | Container "Admin workload" (id 10103) with resources 10104–10108 on the "Admin page" template |
+| wordpress-gantry | http://127.0.0.1:8088/wp-login.php | `benchmark-admin` | Page "Admin workload" (id 10103) with child pages 10104–10108, edited in the Classic Editor (Text tab) |
 
 Re-running `up` re-seeds the fixture and re-syncs adapter code into existing volumes. The setup containers restart nothing, so after a re-seed restart the FPM containers (`docker compose … up -d --force-recreate php-parser …`) or use `bench`, which does.
 
@@ -81,6 +90,20 @@ benchmark/scripts/bench admin off     8080
 benchmark/scripts/bench admin tracing 8080
 ```
 
+`benchmark/scripts/matrix` runs many cells in one go and ends by recording the container versions and refreshing `docs/results.json`. Without options it runs every reachable stack × guest/admin × JIT off/tracing at 30 rps; options select a part of the matrix:
+
+```sh
+benchmark/scripts/matrix                                            # everything, 30 rps
+benchmark/scripts/matrix --solutions=evo-phalcon,winter             # two stacks, all four cells each
+benchmark/scripts/matrix --jit=off                                  # JIT off only (or --jit=tracing, --jit=off,tracing)
+benchmark/scripts/matrix --workload=guest --rate=50                 # guest cells only, at 50 rps
+benchmark/scripts/matrix --solutions=modx --jit=tracing --workload=admin
+benchmark/scripts/matrix --repeats=5 --solutions=typo3              # five runs per cell: the spread is the measuring error
+DURATION=120s ROUNDS=3 benchmark/scripts/matrix --solutions=drupal-11,typo3 --jit=off
+```
+
+Ports work in place of stack ids (`benchmark/scripts/matrix 30 8082 8086`). A cell that fails is reported at the end and does not stop the others.
+
 Keep `PHP_FPM_PM_MAX_CHILDREN` (default 8), `DURATION` (default 60s), `CONNECTIONS` (32) and `ROUNDS` identical across the cells you compare. Results:
 
 | Cell | File |
@@ -92,7 +115,7 @@ Capacity is the highest offered rate with zero non-2xx responses and p99 below 1
 
 ### Admin workload details
 
-`benchmark/workloads/admin` is a Playwright project with one adapter per CMS (`lib/adapters/`): Evolution manager (iframe shell, `a=27`/`a=4`/`a=5` document forms), Drupal (`/user/login`, `/node/{nid}/edit`, `/node/add/page`, logout confirmation form) and TYPO3 backend (tokenised module routes read from the module menu, FormEngine editing a page record and its text element in one form). Each recorded step is one editorial action; `ms` is wall time until the admin UI is ready for the next action, `serverMs` is the summed server time of the document requests (form post plus its redirect) within that step, with static assets excluded.
+`benchmark/workloads/admin` is a Playwright project with one adapter per CMS (`lib/adapters/`): Evolution manager (iframe shell, `a=27`/`a=4`/`a=5` document forms), Drupal (`/user/login`, `/node/{nid}/edit`, `/node/add/page`, logout confirmation form), TYPO3 backend (tokenised module routes read from the module menu, FormEngine editing a page record and its text element in one form) Winter backend (`/backend/backend/auth/signin`, the plugin's Form/List controller at `/backend/phramark/benchmark/pages/update/{id}` and `/create`; Save is Winter's AJAX framework posting to the `onSave` handler, a create answers with a redirect to the new record's editor), MODX manager (ExtJS: `/manager/` login form, `?a=resource/update&id={id}` and `?a=resource/create&parent=10103` resource forms; Save is a multipart XHR to `/connectors/index.php` with `action=Resource/Update` or `Resource/Create`, after which the manager loads the new resource's editor) and WordPress (`/wp-login.php`, `/wp-admin/post.php?post={id}&action=edit` and `/wp-admin/post-new.php?post_type=page` with the Classic Editor's Text tab; Save is the form post to `post.php`, which redirects back to the editor of the saved or new page, so the id is read from that URL; logout is the nonce-protected admin-bar link). Each recorded step is one editorial action; `ms` is wall time until the admin UI is ready for the next action, `serverMs` is the summed server time of the document requests (form post plus its redirect) within that step, plus Winter's AJAX handler requests (`X-Winter-Request-Handler`) and MODX's connector requests (`/connectors/index.php`: saves, but also the resource tree, toolbar and combo-box loads the manager issues on every page), with static assets excluded. On Winter and MODX an update save leaves the form in place, so the saved values are verified by one untimed reload tagged `verify`.
 
 | Action | Count per round | What is timed |
 | --- | --- | --- |
@@ -110,11 +133,11 @@ Every step also records memory on both sides:
 | `phpPeakMb` / `phpPeakRealMb` | PHP | Exact script peak and allocator peak (`memory_get_peak_usage`) of the largest request the step caused; requests are attributed by the `X-Phramark-Step` header the browser sends, logged by `benchmark/fixtures/memory-prepend.php` |
 | `containerPeakMb` | PHP | Peak resident memory of the stack's PHP-FPM container during the run (`docker stats`, 1 s samples) |
 | `jsHeapUsedMb`, `jsHeapTotalMb` | Frontend | Renderer JS heap after the step (Chrome DevTools `Performance.getMetrics`) |
-| `domNodes`, `jsListeners` | Frontend | DOM nodes and event listeners alive in the renderer after the step (same source; counts nodes not yet garbage-collected) |
+| `domNodes`, `jsListeners` | Frontend | DOM nodes and event listeners alive in the renderer after the step (same source; counts nodes not yet garbage-collected). Chrome keeps one renderer for the whole same-site session, so the heap and node counts of a page-per-action manager include what earlier pages left for the garbage collector; the drop after logout shows that collection |
 
 The guest result files carry the same PHP-side numbers for the whole run (per-request peak percentiles and container peak RSS) in a `---- memory ----` section.
 
-The browser runs in a container on the compose network (`mcr.microsoft.com/playwright`), an untimed warm-up pass precedes the recorded rounds, and `benchmark/scripts/admin-reset PORT` restores the seeded pages and removes created ones before and after the run (Evolution: SQL restore; Drupal: drush script; TYPO3: re-seed). `ROUNDS=5 benchmark/scripts/admin 8083` repeats the session. To run it from the host instead: `cd benchmark/workloads/admin && npm install && PHRAMARK_BASE_URL=http://127.0.0.1:8083 PHRAMARK_STACK=drupal-11 npx playwright test` (Drupal from the host needs `PHRAMARK_DRUPAL_NIDS=16,17,18,19,20` when the page nodes are not 1–5; the `admin` script looks them up).
+The browser runs in a container on the compose network (`mcr.microsoft.com/playwright`), an untimed warm-up pass precedes the recorded rounds, and `benchmark/scripts/admin-reset PORT` restores the seeded pages and removes created ones before and after the run (Evolution: SQL restore; Drupal: drush script; TYPO3, Winter, MODX and WordPress: re-seed; the WordPress reset also drops the revisions and auto-drafts the editor produced). `ROUNDS=5 benchmark/scripts/admin 8083` repeats the session. To run it from the host instead: `cd benchmark/workloads/admin && npm install && PHRAMARK_BASE_URL=http://127.0.0.1:8083 PHRAMARK_STACK=drupal-11 npx playwright test` (Drupal from the host needs `PHRAMARK_DRUPAL_NIDS=16,17,18,19,20` when the page nodes are not 1–5; the `admin` script looks them up).
 
 ## Tracing the request path
 
@@ -125,6 +148,36 @@ php benchmark/scripts/trace-summary.php benchmark/results/trace-evo-phalcon.json
 
 The summary exits non-zero when the traced components disagree with the stack's `RuntimeProfile` claim; `composer test` also checks any recorded trace against the claims.
 
+## Measuring error
+
+A single cell is one number with no error bar. The error of this harness is measured, not assumed:
+
+1. **Repetitions.** `REPEATS=N benchmark/scripts/matrix 30` runs every cell N times; every guest run keeps its own file (`guest-<stack>-jit-<mode>-rps-<rate>-<timestamp>.txt`) and every admin session its own report. `Phramark\ResultSet` groups them per cell and reports, for each metric, the median, min, max and the coefficient of variation (CV = standard deviation / mean). The results site shows the min–max as whiskers on the bars and the CVs in the "Measuring error" table; the tables and the README show the latest run.
+2. **Noise floor.** Run one cell 5 times back-to-back (`REPEATS=5 benchmark/scripts/matrix 30 8087`) before comparing anything: its CV is what this host contributes. On the shared laptop that produced the smoke numbers, p50 varies by a few percent between runs and admin actions by 2–10 %; a difference between two stacks below about twice the larger CV is not a result.
+3. **Within one run.** wrk2 records the full HdrHistogram, so p50 and p99 come with the whole distribution (raw output in the result file); the admin report keeps the p95, min and max of the five repetitions of each action inside the session, and its warm-up pass keeps a cold OPcache out of round 1.
+4. **Systematic error is controlled, not measured:** identical PHP/OPcache/FPM settings, the same fixture and page contract verified before every run, the JIT mode read back from the container, the load generator on the compose network rather than through the host port proxy. What remains systematic and shared by every stack is the host itself (load generator, MySQL, PHP-FPM and nginx on one machine), so the numbers compare stacks with each other, not with a production server.
+
+## Memory over time
+
+Every run keeps its memory series, and the results site draws them as small multiples so a growing line is visible, with the trend (last quarter over first quarter, and a least-squares slope) written under each panel:
+
+| Series | Source | What a rising line means |
+| --- | --- | --- |
+| Guest: PHP peak per request | `.memory.log` (one line per request from `memory-prepend.php`), cut into 40 time slices | The request itself allocates more as the run goes on: a per-process cache or a leak that survives requests (PHP frees per request, so this is normally flat) |
+| Guest: PHP-FPM container RSS | `.rss.log` (`docker stats`, 1 s samples) | The workers' resident memory: OPcache filling, per-worker static caches, or a leak across requests |
+| Admin: JS heap, DOM nodes per step | the report's steps (Chrome DevTools `Performance.getMetrics` after every action) | The manager's frontend retains state across actions: a single-page manager (ExtJS, React) grows until a full reload; a page-per-action manager returns to its baseline |
+| Admin: PHP peak per step and per request | the report's steps and its `.memory.log` | The largest request of each action; a growing line across the five repetitions of one action is a server-side accumulation |
+
+## Results site and exact versions
+
+`benchmark/scripts/matrix` ends by recording the exact versions the containers run (`php benchmark/scripts/versions.php`, read from Composer's `installed.json`, the CMS version files and WP-CLI into `benchmark/results/versions.json`) and by writing `docs/results.json` (`php benchmark/scripts/summary.php --json`): the same collector (`Phramark\ResultSet`) that renders the Markdown tables below. `docs/` is a static site (`index.html`, `site.js`, `CNAME`) published at **https://phramark.artur.work**, where every table is sortable by any column. To refresh it by hand:
+
+```sh
+php benchmark/scripts/versions.php                        # benchmark/results/versions.json
+php benchmark/scripts/summary.php --json > docs/results.json
+php benchmark/scripts/summary.php                         # the Markdown tables of the section below
+```
+
 ## Tests
 
 ```sh
@@ -134,79 +187,125 @@ cd benchmark/workloads/admin && npm test              # Node: edit helpers, time
 
 ## Local smoke numbers
 
-Full matrix (`DURATION=30s ROUNDS=1 benchmark/scripts/matrix 30`) on one Windows 11 laptop with Docker Desktop, 8 FPM workers, load generator on the same host, 2026-09-20. A smoke run that shows every cell working; single rounds on a shared machine, so treat differences below ~20 % as noise. Regenerate with `php benchmark/scripts/summary.php`.
+Full matrix (`benchmark/scripts/matrix 30`, `DURATION=60s`, `ROUNDS=1`) on one Windows 11 laptop with Docker Desktop, 8 FPM workers, load generator on the same host, 2026-09-20. A smoke run that shows every cell working; single rounds on a shared machine, so treat differences below ~20 % as noise. Sortable at https://phramark.artur.work; regenerate with `php benchmark/scripts/summary.php`. The versions table names exactly what ran, per stack, linked to the source repositories.
+
+### Versions tested
+
+Recorded from the running containers on 2026-09-20T14:43:04Z: PHP 8.4.25, MySQL 8.4.7, nginx/1.27.5, OPcache validate_timestamps=0, memory_consumption=512, max_accelerated_files=100000.
+
+| Stack | Components (exact versions) |
+| --- | --- |
+| evo-parser | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (3.5.x@851c705, 2026-09-10), [illuminate/database](https://github.com/illuminate/database) v12.69.2 |
+| evo-latte | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (3.5.x@851c705, 2026-09-10), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [illuminate/database](https://github.com/illuminate/database) v12.69.2, [latte/latte](https://github.com/nette/latte) v3.1.6 |
+| evo-latte-parser | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (3.5.x@851c705, 2026-09-10), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [illuminate/database](https://github.com/illuminate/database) v12.69.2, [latte/latte](https://github.com/nette/latte) v3.1.6 |
+| evo-phalcon | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (3.5.x@851c705, 2026-09-10), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [elcreator/aphalcon](https://github.com/elcreator/aPhalcon) 0.1.0, [illuminate/database](https://github.com/illuminate/database) v12.69.2, [latte/latte](https://github.com/nette/latte) v3.1.6, [phalcon (extension)](https://github.com/phalcon/cphalcon) 5.9.3 |
+| drupal-11 | [drupal/core](https://github.com/drupal/core) 11.4.7, [drush/drush](https://github.com/drush-ops/drush) 13.8.0, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.19, [symfony/http-kernel](https://github.com/symfony/http-kernel) v7.4.19, [twig/twig](https://github.com/twigphp/Twig) v3.28.0 |
+| typo3 | [doctrine/dbal](https://github.com/doctrine/dbal) 4.4.4, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.19, [typo3/cms-core](https://github.com/TYPO3/typo3) v14.3.7, [typo3fluid/fluid](https://github.com/TYPO3/Fluid) 5.3.2 |
+| winter | [doctrine/dbal](https://github.com/doctrine/dbal) 2.13.9, [laravel/framework](https://github.com/laravel/framework) v9.52.22, [symfony/http-foundation](https://github.com/symfony/http-foundation) v6.4.46, [twig/twig](https://github.com/twigphp/Twig) v3.29.0, [winter/storm](https://github.com/wintercms/storm) v1.2.14, [winter/wn-cms-module](https://github.com/wintercms/wn-cms-module) v1.2.14 |
+| modx | [MODX Revolution](https://github.com/modxcms/revolution) 3.2.4-pl, [xpdo/xpdo](https://github.com/modxcms/xpdo) v3.1.7 |
+| wordpress-gantry | [WordPress](https://github.com/WordPress/WordPress) 7.1.1, [classic-editor](https://github.com/WordPress/classic-editor) 1.7.0, [gantry5](https://github.com/gantry/gantry5) 5.6.4, [g5_hydrogen](https://github.com/gantry/gantry5) 5.6.4, [timber/timber](https://github.com/timber/timber) 1.24.1, [twig/twig](https://github.com/twigphp/Twig) v2.16.1 |
 
 ### Guest workload (wrk2, constant offered rate)
 
 | Stack | JIT | Offered | Achieved rps | p50 | p99 | Non-2xx | PHP peak/request (script median) | PHP alloc peak p95 | FPM container peak RSS |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| evo-parser | off | 30 | 29.96 | 373.50ms | 626.69ms | 0 | 1.8 MiB | 4.0 MiB | 78.0 MiB |
-| evo-parser | tracing | 30 | 30.06 | 327.68ms | 573.44ms | 0 | 1.8 MiB | 4.0 MiB | 86.9 MiB |
-| evo-latte | off | 30 | 30.01 | 380.16ms | 688.64ms | 0 | 1.8 MiB | 4.0 MiB | 81.9 MiB |
-| evo-latte | tracing | 30 | 30.07 | 331.77ms | 559.61ms | 0 | 1.9 MiB | 4.0 MiB | 89.5 MiB |
-| evo-latte-parser | off | 30 | 29.96 | 370.43ms | 625.15ms | 0 | 1.8 MiB | 4.0 MiB | 81.3 MiB |
-| evo-latte-parser | tracing | 30 | 30.07 | 322.82ms | 587.26ms | 0 | 1.9 MiB | 4.0 MiB | 89.9 MiB |
-| evo-phalcon | off | 30 | 30.89 | 48.19ms | 98.62ms | 0 | 1.0 MiB | 2.0 MiB | 71.1 MiB |
-| evo-phalcon | tracing | 30 | 29.82 | 45.44ms | 105.41ms | 0 | 1.0 MiB | 2.0 MiB | 79.2 MiB |
-| drupal-11 | off | 30 | 30.75 | 76.80ms | 137.34ms | 0 | 2.1 MiB | 4.0 MiB | 70.2 MiB |
-| drupal-11 | tracing | 30 | 30.85 | 74.11ms | 163.20ms | 0 | 2.1 MiB | 4.0 MiB | 88.4 MiB |
-| typo3 | off | 30 | 30.88 | 45.85ms | 82.30ms | 0 | 3.1 MiB | 4.0 MiB | 81.5 MiB |
-| typo3 | tracing | 30 | 30.88 | 45.69ms | 74.11ms | 0 | 3.1 MiB | 4.0 MiB | 178.2 MiB |
+| evo-parser | off | 30 | 29.99 | 392.96ms | 743.42ms | 0 | 1.8 MiB | 4.0 MiB | 81.4 MiB |
+| evo-parser | tracing | 30 | 30.03 | 351.74ms | 668.67ms | 0 | 1.8 MiB | 4.0 MiB | 91.6 MiB |
+| evo-latte | off | 30 | 30.03 | 380.16ms | 690.69ms | 0 | 1.8 MiB | 4.0 MiB | 84.5 MiB |
+| evo-latte | tracing | 30 | 30.08 | 346.37ms | 642.56ms | 0 | 1.9 MiB | 4.0 MiB | 93.8 MiB |
+| evo-latte-parser | off | 30 | 30.03 | 384.51ms | 644.61ms | 0 | 1.8 MiB | 4.0 MiB | 84.2 MiB |
+| evo-latte-parser | tracing | 30 | 30.07 | 333.05ms | 573.95ms | 0 | 1.9 MiB | 4.0 MiB | 93.6 MiB |
+| evo-phalcon | off | 30 | 30.37 | 50.88ms | 169.73ms | 0 | 1.0 MiB | 2.0 MiB | 74.8 MiB |
+| evo-phalcon | tracing | 30 | 30.38 | 48.74ms | 246.40ms | 0 | 1.0 MiB | 2.0 MiB | 83.3 MiB |
+| drupal-11 | off | 30 | 30.37 | 79.68ms | 145.66ms | 0 | 2.1 MiB | 4.0 MiB | 71.2 MiB |
+| drupal-11 | tracing | 30 | 30.37 | 81.73ms | 166.53ms | 0 | 2.1 MiB | 4.0 MiB | 72.7 MiB |
+| typo3 | off | 30 | 30.38 | 46.43ms | 100.86ms | 0 | 3.1 MiB | 4.0 MiB | 81.8 MiB |
+| typo3 | tracing | 30 | 30.38 | 49.82ms | 110.78ms | 0 | 3.1 MiB | 4.0 MiB | 90.0 MiB |
+| winter | off | 30 | 30.38 | 90.05ms | 197.38ms | 0 | 1.4 MiB | 2.0 MiB | 82.1 MiB |
+| winter | tracing | 30 | 30.38 | 86.46ms | 219.90ms | 0 | 1.4 MiB | 2.0 MiB | 93.5 MiB |
+| modx | off | 30 | 30.38 | 115.14ms | 211.84ms | 0 | 0.7 MiB | 2.0 MiB | 50.3 MiB |
+| modx | tracing | 30 | 30.38 | 103.93ms | 188.03ms | 0 | 0.7 MiB | 2.0 MiB | 58.0 MiB |
+| wordpress-gantry | off | 30 | 30.14 | 249.98ms | 436.99ms | 0 | 4.9 MiB | 6.0 MiB | 131.0 MiB |
+| wordpress-gantry | tracing | 30 | 30.12 | 229.12ms | 400.38ms | 0 | 4.9 MiB | 6.0 MiB | 148.2 MiB |
 
 ### Admin workload (Playwright; medians per action, wall / server)
 
 | Stack | JIT | login | open-edit | save-edit | open-create | save-create | logout | Total wall |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| evo-parser | off | 1801.45 / 231.22 ms | 164.97 / 97.02 ms | 742.83 / 418.82 ms | 150.34 / 84.15 ms | 855.68 / 501.98 ms | 171.98 / 120.64 ms | 11528 ms |
-| evo-parser | tracing | 1843.25 / 289.29 ms | 203.36 / 131.78 ms | 868.98 / 544.45 ms | 163.14 / 110.5 ms | 957.57 / 625.22 ms | 285.19 / 243.68 ms | 13261 ms |
-| evo-latte | off | 1796.47 / 236.22 ms | 167.32 / 96.98 ms | 765.55 / 424.76 ms | 140.41 / 83.26 ms | 867.98 / 529.1 ms | 221.56 / 175.61 ms | 11963 ms |
-| evo-latte | tracing | 1842.31 / 276.43 ms | 209.94 / 137.18 ms | 878.58 / 541.34 ms | 170.51 / 111.35 ms | 953.84 / 627.61 ms | 269.11 / 226.12 ms | 13154 ms |
-| evo-latte-parser | off | 1853.42 / 246.8 ms | 159.19 / 99 ms | 748 / 413.92 ms | 138.18 / 87.62 ms | 829.9 / 483.38 ms | 224.78 / 177.56 ms | 11878 ms |
-| evo-latte-parser | tracing | 1821.65 / 271.61 ms | 208.76 / 134.19 ms | 863.98 / 537.28 ms | 166.75 / 108.63 ms | 933.58 / 596.27 ms | 210.25 / 160.3 ms | 12892 ms |
-| evo-phalcon | off | 1806.83 / 246.35 ms | 163.94 / 104.18 ms | 754.28 / 424.28 ms | 142.53 / 83.66 ms | 852.59 / 505.07 ms | 175.33 / 119.83 ms | 11712 ms |
-| evo-phalcon | tracing | 1829.27 / 299.92 ms | 184.85 / 128.04 ms | 901.17 / 558.27 ms | 168.52 / 111.92 ms | 975.54 / 651.23 ms | 279.95 / 240.1 ms | 13437 ms |
-| drupal-11 | off | 518.95 / 410.19 ms | 255.78 / 202.62 ms | 756.37 / 696.64 ms | 91.75 / 44.16 ms | 733.56 / 677.63 ms | 288.67 / 167.95 ms | 9804 ms |
-| drupal-11 | tracing | 386.45 / 276.98 ms | 150.76 / 104.48 ms | 356.49 / 294.94 ms | 92.25 / 44.09 ms | 359.91 / 288.75 ms | 262.23 / 108.65 ms | 5411 ms |
-| typo3 | off | 1662.1 / 1241.17 ms | 482.85 / 145.47 ms | 721.04 / 368.34 ms | 275.92 / 98.89 ms | 1730.76 / 749.64 ms | 183.32 / 110.4 ms | 17971 ms |
-| typo3 | tracing | 1483.14 / 1000.97 ms | 495.56 / 154.29 ms | 781.4 / 360.74 ms | 392.34 / 305.72 ms | 1864.73 / 974.53 ms | 175.52 / 109.05 ms | 19072 ms |
+| evo-parser | off | 1845.75 / 313.98 ms | 168.43 / 105.14 ms | 771.67 / 443.13 ms | 144.34 / 87.02 ms | 894.2 / 524.75 ms | 172.22 / 125.13 ms | 11892 ms |
+| evo-parser | tracing | 1813.44 / 285.87 ms | 212.37 / 133.86 ms | 896.32 / 563.29 ms | 174.63 / 109.53 ms | 978.25 / 651.88 ms | 224.84 / 163.45 ms | 13463 ms |
+| evo-latte | off | 1815.63 / 251.83 ms | 164.43 / 104.95 ms | 750.15 / 420.12 ms | 141.7 / 85.41 ms | 977.99 / 530.85 ms | 237.49 / 190.7 ms | 12143 ms |
+| evo-latte | tracing | 1831.94 / 291.98 ms | 218.51 / 140.78 ms | 887.51 / 562.3 ms | 187.68 / 121.4 ms | 987.77 / 668.48 ms | 269.89 / 220.81 ms | 13515 ms |
+| evo-latte-parser | off | 1848.89 / 252.74 ms | 163.48 / 107.58 ms | 769.19 / 423.94 ms | 141.39 / 83.72 ms | 846.46 / 512.25 ms | 171.5 / 116.52 ms | 12086 ms |
+| evo-latte-parser | tracing | 1830.28 / 290.46 ms | 213.61 / 136.35 ms | 902.91 / 565.11 ms | 187.24 / 122.36 ms | 996.67 / 654.97 ms | 204.87 / 153.18 ms | 13523 ms |
+| evo-phalcon | off | 1828.4 / 254.03 ms | 191.26 / 111.62 ms | 822.23 / 472.78 ms | 145.68 / 88.5 ms | 872.71 / 529.98 ms | 181.32 / 131.11 ms | 12256 ms |
+| evo-phalcon | tracing | 1827.44 / 280.16 ms | 204.76 / 135.79 ms | 899.38 / 567.5 ms | 173.66 / 118.76 ms | 971.41 / 643.73 ms | 223.49 / 174.25 ms | 13393 ms |
+| drupal-11 | off | 438.04 / 323.07 ms | 184.56 / 123.62 ms | 408.37 / 350.09 ms | 95.76 / 51.34 ms | 377.69 / 312.74 ms | 228.35 / 112.08 ms | 6048 ms |
+| drupal-11 | tracing | 393.18 / 283.32 ms | 168.08 / 120.09 ms | 366.58 / 304.22 ms | 90.22 / 45.64 ms | 361.35 / 302.04 ms | 240.87 / 114.47 ms | 5516 ms |
+| typo3 | off | 1540.28 / 1046.71 ms | 470.23 / 155.25 ms | 780.94 / 399.2 ms | 282.51 / 110.61 ms | 1766.2 / 762.9 ms | 192.55 / 106.57 ms | 18461 ms |
+| typo3 | tracing | 1532.43 / 1048.91 ms | 492.05 / 151.92 ms | 832.47 / 386 ms | 329.31 / 124.17 ms | 2016.74 / 1207.93 ms | 373.2 / 328.92 ms | 20554 ms |
+| winter | off | 1266.67 / 205.39 ms | 140.25 / 35.36 ms | 134.34 / 42.68 ms | 133.91 / 36.25 ms | 228.5 / 75.64 ms | 144.38 / 79.2 ms | 4742 ms |
+| winter | tracing | 1334.07 / 222.71 ms | 119.37 / 32.52 ms | 124.54 / 34.29 ms | 118.56 / 32.06 ms | 201.4 / 64 ms | 148.33 / 73.57 ms | 4304 ms |
+| modx | off | 639.83 / 377.5 ms | 640.16 / 249.61 ms | 279.43 / 138.07 ms | 599.16 / 182.47 ms | 1451.74 / 389.44 ms | 501.18 / 122.3 ms | 15748 ms |
+| modx | tracing | 730.8 / 384.02 ms | 629.49 / 207.05 ms | 275.27 / 108.5 ms | 597.13 / 166.69 ms | 1435.32 / 354.56 ms | 504.28 / 84.22 ms | 15706 ms |
+| wordpress-gantry | off | 534.92 / 262.91 ms | 288.93 / 71.61 ms | 506.83 / 122.44 ms | 329.05 / 79.2 ms | 501.8 / 141.32 ms | 211.23 / 73.44 ms | 9101 ms |
+| wordpress-gantry | tracing | 526.12 / 249.59 ms | 279.28 / 61.21 ms | 440.89 / 128.02 ms | 342.2 / 276.81 ms | 480.77 / 130.28 ms | 255.3 / 91.11 ms | 8488 ms |
 
 ### Admin workload memory (medians per action)
 
 | Stack | JIT | Side | login | open-edit | save-edit | open-create | save-create | logout | FPM container peak |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| evo-parser | off | PHP peak (script) | 2.5 MiB | 1.23 MiB | 5.94 MiB | 1.26 MiB | 5.93 MiB | 2.12 MiB | 83.8 MiB |
-| evo-parser | off | Frontend JS heap | 14.03 MiB | 11.54 MiB | 12.86 MiB | 8.99 MiB | 9.02 MiB | 10.2 MiB |  |
-| evo-parser | off | Frontend DOM nodes | 27289 | 8294 | 9742 | 3600 | 3732 | 3872 |  |
-| evo-parser | tracing | PHP peak (script) | 2.56 MiB | 1.42 MiB | 11.44 MiB | 1.45 MiB | 11.43 MiB | 2.25 MiB | 95.6 MiB |
-| evo-parser | tracing | Frontend JS heap | 14.01 MiB | 10.07 MiB | 9.42 MiB | 9.24 MiB | 9.04 MiB | 8.82 MiB |  |
-| evo-parser | tracing | Frontend DOM nodes | 27228 | 5472 | 4094 | 3713 | 3732 | 2557 |  |
-| evo-latte | off | PHP peak (script) | 2.53 MiB | 1.24 MiB | 5.95 MiB | 1.27 MiB | 5.94 MiB | 2.13 MiB | 95.9 MiB |
-| evo-latte | off | Frontend JS heap | 14.02 MiB | 11.57 MiB | 12.79 MiB | 8.98 MiB | 9.4 MiB | 8.83 MiB |  |
-| evo-latte | off | Frontend DOM nodes | 27356 | 8294 | 9742 | 3600 | 3671 | 2557 |  |
-| evo-latte | tracing | PHP peak (script) | 2.59 MiB | 1.61 MiB | 11.45 MiB | 1.42 MiB | 11.44 MiB | 2.25 MiB | 90 MiB |
-| evo-latte | tracing | Frontend JS heap | 14.86 MiB | 10.07 MiB | 9.83 MiB | 9.28 MiB | 9.03 MiB | 9.44 MiB |  |
-| evo-latte | tracing | Frontend DOM nodes | 27309 | 5466 | 5414 | 3594 | 3732 | 3539 |  |
-| evo-latte-parser | off | PHP peak (script) | 2.53 MiB | 1.24 MiB | 5.95 MiB | 1.27 MiB | 5.94 MiB | 2.13 MiB | 99.5 MiB |
-| evo-latte-parser | off | Frontend JS heap | 14 MiB | 16.15 MiB | 17.08 MiB | 10.2 MiB | 10.21 MiB | 10.58 MiB |  |
-| evo-latte-parser | off | Frontend DOM nodes | 27371 | 21118 | 19542 | 5415 | 4877 | 5017 |  |
-| evo-latte-parser | tracing | PHP peak (script) | 2.59 MiB | 1.61 MiB | 11.45 MiB | 1.42 MiB | 11.44 MiB | 2.25 MiB | 92.5 MiB |
-| evo-latte-parser | tracing | Frontend JS heap | 14.83 MiB | 11.13 MiB | 12.11 MiB | 10.2 MiB | 9.38 MiB | 9.24 MiB |  |
-| evo-latte-parser | tracing | Frontend DOM nodes | 27309 | 7482 | 8930 | 4848 | 3671 | 2557 |  |
-| evo-phalcon | off | PHP peak (script) | 2.59 MiB | 1.24 MiB | 6.02 MiB | 1.28 MiB | 6.01 MiB | 2.14 MiB | 90.8 MiB |
-| evo-phalcon | off | Frontend JS heap | 13.99 MiB | 9.8 MiB | 9.38 MiB | 9.26 MiB | 10.54 MiB | 13.14 MiB |  |
-| evo-phalcon | off | Frontend DOM nodes | 27309 | 5472 | 4094 | 4429 | 5497 | 8097 |  |
-| evo-phalcon | tracing | PHP peak (script) | 2.6 MiB | 1.39 MiB | 11.52 MiB | 1.42 MiB | 11.51 MiB | 2.26 MiB | 98.6 MiB |
-| evo-phalcon | tracing | Frontend JS heap | 14.02 MiB | 9.82 MiB | 9.85 MiB | 10.54 MiB | 9.17 MiB | 9.23 MiB |  |
-| evo-phalcon | tracing | Frontend DOM nodes | 27309 | 5411 | 5414 | 6350 | 3610 | 2557 |  |
-| drupal-11 | off | PHP peak (script) | 3.11 MiB | 4.82 MiB | 4.23 MiB | 4.69 MiB | 4.23 MiB | 2.83 MiB | 97 MiB |
-| drupal-11 | off | Frontend JS heap | 11.91 MiB | 20.13 MiB | 20.91 MiB | 34.99 MiB | 36.09 MiB | 44.23 MiB |  |
-| drupal-11 | off | Frontend DOM nodes | 2504 | 4808 | 5027 | 8865 | 9084 | 11102 |  |
-| drupal-11 | tracing | PHP peak (script) | 3.11 MiB | 4.89 MiB | 4.23 MiB | 4.69 MiB | 4.23 MiB | 2.83 MiB | 79.8 MiB |
-| drupal-11 | tracing | Frontend JS heap | 11.87 MiB | 19.72 MiB | 20.88 MiB | 34.92 MiB | 36.02 MiB | 43.85 MiB |  |
-| drupal-11 | tracing | Frontend DOM nodes | 2501 | 4805 | 5021 | 8862 | 9078 | 11099 |  |
-| typo3 | off | PHP peak (script) | 6.27 MiB | 7.28 MiB | 7.34 MiB | 6.53 MiB | 6.93 MiB | 4.5 MiB | 33.5 MiB |
-| typo3 | off | Frontend JS heap | 34.13 MiB | 43.14 MiB | 36.38 MiB | 38.76 MiB | 36.52 MiB | 40.86 MiB |  |
-| typo3 | off | Frontend DOM nodes | 34136 | 38430 | 35259 | 24280 | 30889 | 19910 |  |
+| evo-parser | off | PHP peak (script) | 2.5 MiB | 1.23 MiB | 5.94 MiB | 1.26 MiB | 5.93 MiB | 2.12 MiB | 93.3 MiB |
+| evo-parser | off | Frontend JS heap | 14.01 MiB | 10.11 MiB | 10.18 MiB | 8.46 MiB | 9.33 MiB | 9.75 MiB |  |
+| evo-parser | off | Frontend DOM nodes | 27228 | 5472 | 5414 | 2455 | 3732 | 3919 |  |
+| evo-parser | tracing | PHP peak (script) | 2.56 MiB | 1.44 MiB | 11.44 MiB | 1.45 MiB | 11.43 MiB | 2.25 MiB | 99 MiB |
+| evo-parser | tracing | Frontend JS heap | 14.01 MiB | 10.23 MiB | 10.18 MiB | 9.56 MiB | 9.42 MiB | 10.97 MiB |  |
+| evo-parser | tracing | Frontend DOM nodes | 27289 | 5411 | 5414 | 3539 | 3732 | 5017 |  |
+| evo-latte | off | PHP peak (script) | 2.53 MiB | 1.24 MiB | 5.95 MiB | 1.27 MiB | 5.94 MiB | 2.13 MiB | 93.6 MiB |
+| evo-latte | off | Frontend JS heap | 13.99 MiB | 16.38 MiB | 16.98 MiB | 9.87 MiB | 9.05 MiB | 10.98 MiB |  |
+| evo-latte | off | Frontend DOM nodes | 27309 | 18098 | 19546 | 4582 | 3732 | 5017 |  |
+| evo-latte | tracing | PHP peak (script) | 2.59 MiB | 1.61 MiB | 11.45 MiB | 1.42 MiB | 11.44 MiB | 2.25 MiB | 98.4 MiB |
+| evo-latte | tracing | Frontend JS heap | 13.98 MiB | 10.17 MiB | 10.77 MiB | 9.87 MiB | 9.09 MiB | 9.18 MiB |  |
+| evo-latte | tracing | Frontend DOM nodes | 27309 | 5411 | 6920 | 4732 | 3549 | 2557 |  |
+| evo-latte-parser | off | PHP peak (script) | 2.53 MiB | 1.24 MiB | 5.95 MiB | 1.27 MiB | 5.94 MiB | 2.13 MiB | 89.3 MiB |
+| evo-latte-parser | off | Frontend JS heap | 13.99 MiB | 15.03 MiB | 15.21 MiB | 9.9 MiB | 10.24 MiB | 11.56 MiB |  |
+| evo-latte-parser | off | Frontend DOM nodes | 27310 | 15205 | 13833 | 4582 | 5710 | 5999 |  |
+| evo-latte-parser | tracing | PHP peak (script) | 2.59 MiB | 1.61 MiB | 11.45 MiB | 1.42 MiB | 11.44 MiB | 2.25 MiB | 93.9 MiB |
+| evo-latte-parser | tracing | Frontend JS heap | 14.01 MiB | 9.77 MiB | 9.35 MiB | 9.28 MiB | 10.13 MiB | 10.11 MiB |  |
+| evo-latte-parser | tracing | Frontend DOM nodes | 27310 | 5411 | 4094 | 3774 | 4877 | 3872 |  |
+| evo-phalcon | off | PHP peak (script) | 2.59 MiB | 1.24 MiB | 6.02 MiB | 1.28 MiB | 6.01 MiB | 2.14 MiB | 95.5 MiB |
+| evo-phalcon | off | Frontend JS heap | 14 MiB | 16.06 MiB | 17.02 MiB | 9.28 MiB | 9.03 MiB | 10.95 MiB |  |
+| evo-phalcon | off | Frontend DOM nodes | 27356 | 18769 | 19542 | 3600 | 3732 | 5017 |  |
+| evo-phalcon | tracing | PHP peak (script) | 2.6 MiB | 1.59 MiB | 11.52 MiB | 1.39 MiB | 11.51 MiB | 2.26 MiB | 92.8 MiB |
+| evo-phalcon | tracing | Frontend JS heap | 14 MiB | 15.07 MiB | 15.52 MiB | 9.86 MiB | 9.31 MiB | 12.22 MiB |  |
+| evo-phalcon | tracing | Frontend DOM nodes | 27309 | 15207 | 13890 | 4521 | 3732 | 7828 |  |
+| drupal-11 | off | PHP peak (script) | 3.11 MiB | 4.82 MiB | 4.23 MiB | 4.69 MiB | 4.23 MiB | 2.83 MiB | 87.2 MiB |
+| drupal-11 | off | Frontend JS heap | 11.9 MiB | 19.73 MiB | 20.89 MiB | 34.96 MiB | 36.06 MiB | 43.86 MiB |  |
+| drupal-11 | off | Frontend DOM nodes | 2498 | 4805 | 5021 | 8862 | 9078 | 11093 |  |
+| drupal-11 | tracing | PHP peak (script) | 3.11 MiB | 4.89 MiB | 4.23 MiB | 4.69 MiB | 4.23 MiB | 2.83 MiB | 82.1 MiB |
+| drupal-11 | tracing | Frontend JS heap | 11.87 MiB | 20.16 MiB | 20.94 MiB | 35.05 MiB | 36.15 MiB | 43.91 MiB |  |
+| drupal-11 | tracing | Frontend DOM nodes | 2498 | 4802 | 5021 | 8865 | 9084 | 11102 |  |
+| typo3 | off | PHP peak (script) | 6.27 MiB | 7.28 MiB | 7.34 MiB | 6.53 MiB | 6.93 MiB | 4.5 MiB | 32.8 MiB |
+| typo3 | off | Frontend JS heap | 34.23 MiB | 43.26 MiB | 36.46 MiB | 41.58 MiB | 36.68 MiB | 41.31 MiB |  |
+| typo3 | off | Frontend DOM nodes | 34035 | 38306 | 38673 | 30690 | 25474 | 19852 |  |
 | typo3 | tracing | PHP peak (script) | 6.33 MiB | 7.28 MiB | 7.34 MiB | 6.53 MiB | 6.93 MiB | 4.5 MiB | 32.9 MiB |
-| typo3 | tracing | Frontend JS heap | 31.93 MiB | 71 MiB | 71.28 MiB | 121.17 MiB | 130.7 MiB | 18.07 MiB |  |
-| typo3 | tracing | Frontend DOM nodes | 32859 | 70225 | 78869 | 153005 | 147777 | 12401 |  |
+| typo3 | tracing | Frontend JS heap | 31.78 MiB | 69.77 MiB | 70.06 MiB | 120.99 MiB | 130.84 MiB | 18.29 MiB |  |
+| typo3 | tracing | Frontend DOM nodes | 32930 | 67647 | 76294 | 153051 | 147824 | 12409 |  |
+| winter | off | PHP peak (script) | 1.88 MiB | 1.96 MiB | 1.42 MiB | 1.95 MiB | 1.96 MiB | 1.35 MiB | 85.4 MiB |
+| winter | off | Frontend JS heap | 23.55 MiB | 24.4 MiB | 23.82 MiB | 48.27 MiB | 53.58 MiB | 63 MiB |  |
+| winter | off | Frontend DOM nodes | 5230 | 4262 | 4295 | 9579 | 10477 | 14516 |  |
+| winter | tracing | PHP peak (script) | 1.91 MiB | 1.96 MiB | 1.49 MiB | 1.95 MiB | 1.97 MiB | 1.35 MiB | 94.5 MiB |
+| winter | tracing | Frontend JS heap | 23.58 MiB | 24.82 MiB | 25.47 MiB | 46.36 MiB | 46.7 MiB | 60.83 MiB |  |
+| winter | tracing | Frontend DOM nodes | 5229 | 4289 | 4322 | 7802 | 8707 | 12746 |  |
+| modx | off | PHP peak (script) | 1.05 MiB | 0.95 MiB | 0.74 MiB | 0.92 MiB | 0.96 MiB | 0.74 MiB | 63.5 MiB |
+| modx | off | Frontend JS heap | 23.12 MiB | 19.01 MiB | 22.14 MiB | 54.27 MiB | 45.21 MiB | 28.81 MiB |  |
+| modx | off | Frontend DOM nodes | 9869 | 4189 | 2031 | 12011 | 9859 | 2197 |  |
+| modx | tracing | PHP peak (script) | 1.2 MiB | 0.95 MiB | 0.74 MiB | 0.92 MiB | 0.96 MiB | 0.74 MiB | 72.1 MiB |
+| modx | tracing | Frontend JS heap | 22.9 MiB | 37.69 MiB | 32.9 MiB | 41.82 MiB | 37.97 MiB | 28.81 MiB |  |
+| modx | tracing | Frontend DOM nodes | 9706 | 9270 | 9570 | 11714 | 9701 | 2197 |  |
+| wordpress-gantry | off | PHP peak (script) | 4.57 MiB | 4.57 MiB | 4.57 MiB | 4.57 MiB | 4.57 MiB | 3.16 MiB | 85.1 MiB |
+| wordpress-gantry | off | Frontend JS heap | 65.64 MiB | 97.82 MiB | 93.37 MiB | 219.01 MiB | 233.59 MiB | 311.37 MiB |  |
+| wordpress-gantry | off | Frontend DOM nodes | 5407 | 14736 | 13018 | 41763 | 45571 | 60605 |  |
+| wordpress-gantry | tracing | PHP peak (script) | 4.56 MiB | 4.56 MiB | 4.56 MiB | 4.56 MiB | 4.56 MiB | 3.15 MiB | 33.3 MiB |
+| wordpress-gantry | tracing | Frontend JS heap | 44.58 MiB | 97.79 MiB | 85.59 MiB | 130.51 MiB | 156.61 MiB | 207.04 MiB |  |
+| wordpress-gantry | tracing | Frontend DOM nodes | 1947 | 13143 | 9486 | 21733 | 25541 | 38293 |  |

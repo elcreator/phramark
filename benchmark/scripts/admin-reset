@@ -16,10 +16,16 @@ case "$stack" in
     $compose --profile cross-cms run --rm -T setup-cross-cms sh -c 'cd /sites/drupal-11 && vendor/bin/drush php:script /opt/phramark/benchmark/fixtures/cms/drupal-admin-reset.php && vendor/bin/drush cache:rebuild' ;;
   typo3)
     $compose --profile cross-cms run --rm -T setup-cross-cms sh -c 'cd /sites/typo3 && php /opt/phramark/benchmark/fixtures/cms/typo3-admin-seed.php "$DB_HOST" benchmark_typo3 "$DB_USER" "$DB_PASSWORD" && vendor/bin/typo3 cache:flush' ;;
+  winter)
+    $compose --profile cross-cms run --rm -T setup-cross-cms sh -c 'cd /sites/winter && php /opt/phramark/benchmark/fixtures/cms/winter-admin-seed.php "$DB_HOST" benchmark_winter "$DB_USER" "$DB_PASSWORD" && php artisan cache:clear --no-interaction' ;;
+  modx)
+    $compose --profile cross-cms run --rm -T setup-cross-cms sh -c 'cd /sites/modx && php /opt/phramark/benchmark/fixtures/cms/modx-admin-seed.php "$DB_HOST" benchmark_modx "$DB_USER" "$DB_PASSWORD" && rm -rf core/cache/*' ;;
+  wordpress-gantry)
+    $compose --profile cross-cms run --rm -T setup-cross-cms sh -c 'cd /sites/wordpress-gantry && php /opt/phramark/benchmark/fixtures/cms/wordpress-admin-seed.php "$DB_HOST" benchmark_wordpress "$DB_USER" "$DB_PASSWORD"' ;;
 esac
 
 # Evolution's manager reads settings and document listings through a PHP
-# site cache that OPcache keeps (validate_timestamps=0); Drupal and TYPO3
-# keep container/file caches. A fresh FPM makes every stack see the restored
+# site cache that OPcache keeps (validate_timestamps=0); Drupal, TYPO3,
+# Winter, MODX and WordPress keep container/file/object caches. A fresh FPM makes every stack see the restored
 # fixture from the same state; nginx resolves the FPM address dynamically.
 docker restart "$php" >/dev/null

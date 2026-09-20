@@ -1,0 +1,12 @@
+list: $/phramark/benchmark/models/page/columns.yaml
+modelClass: Phramark\Benchmark\Models\Page
+title: Benchmark pages
+recordUrl: phramark/benchmark/pages/update/:id
+noRecordsMessage: backend::lang.list.no_records
+recordsPerPage: 20
+showSetup: false
+showCheckboxes: false
+toolbar:
+    buttons: list_toolbar
+    search:
+        prompt: backend::lang.list.search_prompt

@@ -8,7 +8,7 @@
 set -eu
 
 host=${PHRAMARK_HOST:-127.0.0.1}
-ports=${*:-8080 8081 8082 8083 8084 8085}
+ports=${*:-8080 8081 8082 8083 8084 8085 8086 8087 8088}
 
 for port in $ports; do
   # A stack whose containers were just recreated may need a moment.

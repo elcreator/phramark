@@ -12,7 +12,9 @@ register_shutdown_function(static function (): void {
     foreach ($files as $file) {
         if (preg_match('#/vendor/([^/]+/[^/]+)/#', $file, $match) === 1) {
             $key = 'vendor:' . $match[1];
-        } elseif (preg_match('#^/var/www/html/(core|manager|web/core|web/modules|typo3|plugins|modules)/#', $file, $match) === 1) {
+        } elseif (preg_match('#^/var/www/html/(wp-content/(?:plugins|mu-plugins|themes)/[^/]+|core|manager|web/core|web/modules|typo3|plugins|modules|wp-includes|wp-admin|wp-content)/#', $file, $match) === 1) {
+            // WordPress plugins and themes are keyed individually so the
+            // Gantry framework (wp-content/plugins/gantry5) stands apart.
             $key = 'site:' . $match[1];
         } else {
             $key = 'site:other';
