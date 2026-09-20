@@ -1,0 +1,204 @@
+name: phramark
+
+services:
+  mysql:
+    build:
+      context: ..
+      dockerfile: benchmark/images/mysql/Dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: benchmark-root
+      MYSQL_DATABASE: benchmark_canonical
+      MYSQL_USER: benchmark
+      MYSQL_PASSWORD: benchmark
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin --protocol=tcp ping -h 127.0.0.1 -pbenchmark-root --silent"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  setup:
+    build:
+      context: ..
+      dockerfile: benchmark/images/php/Dockerfile
+    environment:
+      DB_HOST: mysql
+      DB_ROOT_PASSWORD: benchmark-root
+      DB_USER: benchmark
+      DB_PASSWORD: benchmark
+      EVO_ADMIN_PASSWORD: benchmark-admin
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["php", "/opt/phramark/benchmark/fixtures/setup.php"]
+    volumes:
+      - evo-parser:/sites/evo-parser
+      - evo-latte:/sites/evo-latte
+      - evo-latte-parser:/sites/evo-latte-parser
+      - evo-phalcon:/sites/evo-phalcon
+
+  php-parser:
+    build:
+      context: ..
+      dockerfile: benchmark/images/php/Dockerfile
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    environment:
+      PHP_FPM_PM_MAX_CHILDREN: ${PHP_FPM_PM_MAX_CHILDREN:-8}
+      PHP_JIT: ${PHP_JIT:-off}
+    command: ["/usr/local/bin/phramark-fpm"]
+    volumes:
+      - evo-parser:/var/www/html
+
+  php-latte:
+    build:
+      context: ..
+      dockerfile: benchmark/images/php/Dockerfile
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    environment:
+      PHP_FPM_PM_MAX_CHILDREN: ${PHP_FPM_PM_MAX_CHILDREN:-8}
+      PHP_JIT: ${PHP_JIT:-off}
+    command: ["/usr/local/bin/phramark-fpm"]
+    volumes:
+      - evo-latte:/var/www/html
+
+  php-latte-parser:
+    build:
+      context: ..
+      dockerfile: benchmark/images/php/Dockerfile
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    environment:
+      PHP_FPM_PM_MAX_CHILDREN: ${PHP_FPM_PM_MAX_CHILDREN:-8}
+      PHP_JIT: ${PHP_JIT:-off}
+    command: ["/usr/local/bin/phramark-fpm"]
+    volumes:
+      - evo-latte-parser:/var/www/html
+
+  php-phalcon:
+    build:
+      context: ..
+      dockerfile: benchmark/images/php/Dockerfile
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    environment:
+      PHP_FPM_PM_MAX_CHILDREN: ${PHP_FPM_PM_MAX_CHILDREN:-8}
+      PHP_JIT: ${PHP_JIT:-off}
+    command: ["/usr/local/bin/phramark-fpm"]
+    volumes:
+      - evo-phalcon:/var/www/html
+
+  nginx-parser:
+    image: nginx:1.27-alpine
+    depends_on: [php-parser]
+    ports: ["8080:80"]
+    volumes:
+      - evo-parser:/var/www/html:ro
+      - ./config/nginx-parser.conf:/etc/nginx/conf.d/default.conf:ro
+
+  nginx-latte:
+    image: nginx:1.27-alpine
+    depends_on: [php-latte]
+    ports: ["8081:80"]
+    volumes:
+      - evo-latte:/var/www/html:ro
+      - ./config/nginx-latte.conf:/etc/nginx/conf.d/default.conf:ro
+
+  nginx-latte-parser:
+    image: nginx:1.27-alpine
+    depends_on: [php-latte-parser]
+    ports: ["8085:80"]
+    volumes:
+      - evo-latte-parser:/var/www/html:ro
+      - ./config/nginx-latte-parser.conf:/etc/nginx/conf.d/default.conf:ro
+
+  nginx-phalcon:
+    image: nginx:1.27-alpine
+    depends_on: [php-phalcon]
+    ports: ["8082:80"]
+    volumes:
+      - evo-phalcon:/var/www/html:ro
+      - ./config/nginx-phalcon.conf:/etc/nginx/conf.d/default.conf:ro
+
+  setup-cross-cms:
+    profiles: ["cross-cms"]
+    build:
+      context: ..
+      dockerfile: benchmark/images/cms-php/Dockerfile
+    environment:
+      DB_HOST: mysql
+      DB_ROOT_PASSWORD: benchmark-root
+      DB_USER: benchmark
+      DB_PASSWORD: benchmark
+      DRUPAL_ADMIN_PASSWORD: benchmark-admin
+      TYPO3_ADMIN_PASSWORD: Benchmark1!
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["sh", "/opt/phramark/benchmark/fixtures/setup-cross-cms.sh"]
+    volumes:
+      - drupal-11:/sites/drupal-11
+      - typo3:/sites/typo3
+
+  php-drupal-11:
+    profiles: ["cross-cms"]
+    build:
+      context: ..
+      dockerfile: benchmark/images/cms-php/Dockerfile
+    depends_on:
+      setup-cross-cms:
+        condition: service_completed_successfully
+    environment:
+      PHP_FPM_PM_MAX_CHILDREN: ${PHP_FPM_PM_MAX_CHILDREN:-8}
+      PHP_JIT: ${PHP_JIT:-off}
+    command: ["/usr/local/bin/phramark-fpm"]
+    volumes:
+      - drupal-11:/var/www/html
+
+  nginx-drupal-11:
+    profiles: ["cross-cms"]
+    image: nginx:1.27-alpine
+    depends_on: [php-drupal-11]
+    ports: ["8083:80"]
+    volumes:
+      - drupal-11:/var/www/html:ro
+      - ./config/nginx-drupal-11.conf:/etc/nginx/conf.d/default.conf:ro
+
+  php-typo3:
+    profiles: ["cross-cms"]
+    build:
+      context: ..
+      dockerfile: benchmark/images/cms-php/Dockerfile
+    depends_on:
+      setup-cross-cms:
+        condition: service_completed_successfully
+    environment:
+      PHP_FPM_PM_MAX_CHILDREN: ${PHP_FPM_PM_MAX_CHILDREN:-8}
+      PHP_JIT: ${PHP_JIT:-off}
+    command: ["/usr/local/bin/phramark-fpm"]
+    volumes:
+      - typo3:/var/www/html
+
+  nginx-typo3:
+    profiles: ["cross-cms"]
+    image: nginx:1.27-alpine
+    depends_on: [php-typo3]
+    ports: ["8084:80"]
+    volumes:
+      - typo3:/var/www/html:ro
+      - ./config/nginx-typo3.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  mysql-data:
+  evo-parser:
+  evo-latte:
+  evo-latte-parser:
+  evo-phalcon:
+  drupal-11:
+  typo3:

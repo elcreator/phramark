@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# Fairness gate: every reachable stack must answer the canonical category URL
+# with HTTP 200 and the same visible contract (articles, authors, reading
+# times, hero images). Run it after warm-up and before every measurement.
+#
+#   benchmark/scripts/verify [CATEGORY...]
+set -eu
+exec php "$(dirname "$0")/verify.php" "${PHRAMARK_HOST:-127.0.0.1}" "$@"

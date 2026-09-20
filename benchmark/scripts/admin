@@ -1,0 +1,63 @@
+#!/usr/bin/env sh
+# Admin workload: a Playwright session logs into the CMS admin, edits five
+# seeded pages (appends EDITED to title and body, saves), creates five pages
+# (saves) and logs out. Every step is timed and carries the browser's JS heap
+# and DOM size (frontend side) and PHP's peak memory of the requests it
+# caused (server side). Results land in benchmark/results as
+# admin-<stack>-jit-<mode>-<timestamp>.{json,txt}.
+#
+#   benchmark/scripts/admin PORT
+#
+# ROUNDS repeats the session (default 1). The fixture is reset before and
+# after the run. The browser runs in a container on the compose network and
+# talks to nginx directly, so host port-proxy latency is not measured.
+set -eu
+
+. "$(dirname "$0")/lib.sh"
+port=${1:?Usage: admin PORT}
+stack_for_port "$port"
+rounds=${ROUNDS:-1}
+jit=$(jit_for_container "$php")
+root=$(repo_root)
+results=benchmark/results
+
+mkdir -p "$results"
+docker build -q -t phramark-playwright -f benchmark/images/playwright/Dockerfile . >/dev/null
+benchmark/scripts/admin-reset "$port"
+trap 'memory_sampler_stop; benchmark/scripts/admin-reset "$port"' EXIT
+
+# Drupal node ids are whatever the install assigned; the adapter is told.
+nids=
+if [ "$stack" = drupal-11 ]; then
+  nids=$(docker exec "$php" sh -c "cd /var/www/html && vendor/bin/drush sql:query \"SELECT nid FROM node WHERE type='page' ORDER BY nid LIMIT ${PAGES:-5}\"" | sed 's/[^0-9]//g' | paste -sd, -)
+  echo "drupal page nodes: $nids"
+fi
+echo "admin workload: stack=$stack jit=$jit rounds=$rounds"
+memory_log_reset "$php"
+memory_sampler_start "$php" "$results/.admin-rss.samples"
+before=$(ls "$results"/admin-"$stack"-jit-"$jit"-*.json 2>/dev/null | wc -l)
+docker run --rm --network phramark_default \
+  -v "$root/benchmark/results:/results" \
+  -e PHRAMARK_BASE_URL="http://$target:80" \
+  -e PHRAMARK_STACK="$stack" \
+  -e PHRAMARK_JIT="$jit" \
+  -e PHRAMARK_ROUNDS="$rounds" \
+  -e PHRAMARK_PAGES="${PAGES:-5}" \
+  -e PHRAMARK_DRUPAL_NIDS="$nids" \
+  phramark-playwright | grep -v -E '^(Running|Results:|Phramark admin|Total wall|action |login |open-|save-|logout |\s*$)' || true
+memory_sampler_stop
+report=$(ls -t "$results"/admin-"$stack"-jit-"$jit"-*.json | head -1)
+if [ "$(ls "$results"/admin-"$stack"-jit-"$jit"-*.json | wc -l)" -le "$before" ]; then
+  echo "The admin workload produced no report; see the Playwright output." >&2
+  exit 1
+fi
+
+# Attribute PHP-side memory to the recorded steps and add the FPM container's
+# peak RSS, then print the final report.
+memory_log_fetch "$php" "${report%.json}.memory.log"
+php benchmark/scripts/memory-summary.php "${report%.json}.memory.log" --json > "${report%.json}.memory.json"
+peak=$(memory_sampler_peak_mib "$results/.admin-rss.samples")
+rm -f "$results/.admin-rss.samples"
+docker run --rm -v "$root/benchmark/results:/results" --entrypoint node phramark-playwright \
+  lib/merge-memory.mjs "/results/$(basename "$report")" "/results/$(basename "${report%.json}.memory.json")" "$peak"
+echo "Results: $report"

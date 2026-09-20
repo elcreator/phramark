@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_schema().
+ */
+function phramark_benchmark_schema(): array
+{
+    return [
+        'phramark_article' => [
+            'description' => 'Deterministic Phramark category articles.',
+            'fields' => [
+                'id' => ['type' => 'serial', 'unsigned' => true, 'not null' => true],
+                'category' => ['type' => 'int', 'unsigned' => true, 'not null' => true],
+                'title' => ['type' => 'varchar', 'length' => 255, 'not null' => true],
+                'introtext' => ['type' => 'text', 'not null' => true],
+                'alias' => ['type' => 'varchar', 'length' => 64, 'not null' => true],
+                'hero_image' => ['type' => 'varchar', 'length' => 255, 'not null' => true],
+                'author' => ['type' => 'varchar', 'length' => 64, 'not null' => false],
+                'reading_time' => ['type' => 'int', 'unsigned' => true, 'not null' => false],
+                'published_at' => ['type' => 'int', 'unsigned' => true, 'not null' => true],
+            ],
+            'primary key' => ['id'],
+            'indexes' => ['category_published' => ['category', 'published_at']],
+        ],
+    ];
+}
+
+/**
+ * Implements hook_theme().
+ */
+function phramark_benchmark_theme(): array
+{
+    return [
+        'phramark_category' => [
+            'variables' => ['category' => null, 'category_alias' => null, 'description' => null, 'introtext' => null, 'articles' => []],
+            'template' => 'category-page',
+        ],
+    ];
+}

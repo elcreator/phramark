@@ -1,0 +1,11 @@
+# Drupal's route provider only matches placeholders that span a whole path
+# segment, so "category-{category}" never matched. The segment is captured
+# whole and validated by the requirement instead. The controller is named
+# without a leading backslash so the class resolver finds its service.
+phramark_benchmark.category:
+  path: '/articles/{category}'
+  defaults:
+    _controller: 'Drupal\phramark_benchmark\Controller\CategoryController::show'
+  requirements:
+    _permission: 'access content'
+    category: 'category-\d{3}'

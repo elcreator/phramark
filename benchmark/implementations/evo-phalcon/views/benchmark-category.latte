@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    {var $page = phalcon('benchmarkCategory')->forDocument((int) $id)}
+    <title>{$page['category']['pagetitle']}</title>
+    <meta name="description" content="{$page['category']['description']}">
+</head>
+<body>
+<header><a href="/">Phramark benchmark</a></header>
+<main>
+    <h1>{$page['category']['pagetitle']}</h1>
+    <p class="intro">{$page['category']['introtext']}</p>
+    <section class="articles">
+        {foreach $page['cards'] as $card}
+            <article>
+                <img src="{$card['hero_image'] ?? ''}" alt="">
+                <h2><a href="/articles/{$alias}/{$card['alias']}">{$card['pagetitle']}</a></h2>
+                <p class="intro">{$card['introtext']}</p>
+                <p class="meta"><span class="author">{$card['author'] ?? ''}</span> · <span class="reading-time">{$card['reading_time'] ?? ''} min</span></p>
+            </article>
+        {/foreach}
+    </section>
+</main>
+<footer>Deterministic CMS benchmark fixture</footer>
+</body>
+</html>

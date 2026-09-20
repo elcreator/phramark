@@ -1,0 +1,5 @@
+name: Phramark benchmark
+type: module
+description: Deterministic category workload for framework-component benchmarks.
+package: Phramark
+core_version_requirement: ^11

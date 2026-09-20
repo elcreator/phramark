@@ -1,0 +1,53 @@
+#!/usr/bin/env sh
+# One cell of the benchmark matrix: WORKLOAD (guest|admin) × JIT (off|tracing)
+# for one stack PORT. Restarts the stack's containers with the requested JIT
+# mode, warms and verifies it, then runs the workload.
+#
+#   benchmark/scripts/bench guest off 8080 [OFFERED_RPS]
+#   benchmark/scripts/bench guest tracing 8080 [OFFERED_RPS]
+#   benchmark/scripts/bench admin off 8080
+#   benchmark/scripts/bench admin tracing 8080
+#
+# The four calls above are the full matrix for one stack. Keep
+# PHP_FPM_PM_MAX_CHILDREN, DURATION and ROUNDS identical across the cells you
+# compare; the JIT mode is read back from the container into the result name.
+set -eu
+
+workload=${1:?Usage: bench guest|admin off|tracing PORT [OFFERED_RPS]}
+jit=${2:?Usage: bench guest|admin off|tracing PORT [OFFERED_RPS]}
+port=${3:?Usage: bench guest|admin off|tracing PORT [OFFERED_RPS]}
+rate=${4:-${OFFERED_RPS:-100}}
+
+case "$workload" in guest|admin) ;; *) echo "WORKLOAD must be guest or admin" >&2; exit 2 ;; esac
+case "$jit" in off|tracing) ;; *) echo "JIT must be off or tracing" >&2; exit 2 ;; esac
+
+. "$(dirname "$0")/lib.sh"
+stack_for_port "$port"
+service=${php#phramark-}; service=${service%-1}
+nginx_service=${nginx#phramark-}; nginx_service=${nginx_service%-1}
+
+profile=
+case "$stack" in
+  drupal-11|typo3) profile="--profile cross-cms" ;;
+esac
+
+# Recreate only this stack's FPM (the JIT mode is applied at container start)
+# and its nginx, which caches the FPM address.
+PHP_JIT="$jit" docker compose -f benchmark/compose.yaml $profile up -d --no-deps --force-recreate "$service" "$nginx_service" >/dev/null
+sleep 3
+actual=$(jit_for_container "$php")
+if [ "$actual" != "$jit" ]; then
+  echo "expected PHP_JIT=$jit but the container runs $actual" >&2
+  exit 1
+fi
+
+benchmark/scripts/warmup "$port"
+PHRAMARK_PORTS=$port benchmark/scripts/verify
+# Verify once more the way the load generator sees the stack: by service
+# name on the compose network, where host-based checks (trusted hosts,
+# base URLs) can differ from 127.0.0.1.
+docker run --rm --network phramark_default -v "$(repo_root):/opt/phramark:ro" -w /opt/phramark phramark-setup   sh -c "PHRAMARK_PORTS=$port php benchmark/scripts/verify.php $target 42 --port=80"
+case "$workload" in
+  guest) benchmark/scripts/run "$rate" "$port" ;;
+  admin) benchmark/scripts/admin "$port" ;;
+esac

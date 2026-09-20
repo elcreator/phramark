@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+# Runs the whole benchmark matrix: every reachable stack × guest/admin ×
+# JIT off/tracing, then prints the summary table.
+#
+#   benchmark/scripts/matrix [OFFERED_RPS] [PORT...]
+#
+# DURATION (wrk2, default 60s) and ROUNDS (admin sessions, default 1) apply
+# to every cell. Failed cells are reported and skipped, not fatal.
+set -u
+
+rate=${1:-30}
+shift 2>/dev/null || true
+ports=${*:-8080 8081 8082 8083 8084 8085}
+failed=
+
+for port in $ports; do
+  if ! curl -s --max-time 3 "http://${PHRAMARK_HOST:-127.0.0.1}:$port/" >/dev/null; then
+    echo "port $port: not reachable, skipped"
+    continue
+  fi
+  for jit in off tracing; do
+    for workload in guest admin; do
+      echo
+      echo "===== $workload / JIT $jit / port $port ====="
+      if ! benchmark/scripts/bench "$workload" "$jit" "$port" "$rate"; then
+        failed="$failed $workload:$jit:$port"
+      fi
+    done
+  done
+done
+
+echo
+php benchmark/scripts/summary.php
+[ -z "$failed" ] || { echo "FAILED cells:$failed" >&2; exit 1; }

@@ -1,0 +1,12 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Phramark\Typo3Benchmark\:
+    resource: '../Classes/*'
+
+  # Middlewares are resolved from the container by name at request time.
+  Phramark\Typo3Benchmark\Middleware\CategoryMiddleware:
+    public: true

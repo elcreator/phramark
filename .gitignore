@@ -1,0 +1,7 @@
+/benchmark/results/*.txt
+/benchmark/results/*.json
+/benchmark/workloads/admin/node_modules/
+/benchmark/workloads/admin/test-results/
+/benchmark/workloads/admin/playwright-report/
+/benchmark/results/*.log
+/benchmark/results/archive/

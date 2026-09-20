@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+# Warms OPcache, CMS caches and the InnoDB buffer pool of every reachable
+# stack by requesting all 100 category pages in the canonical URL form. Any
+# non-200 answer (including a redirect) aborts: it means the fairness gate
+# (benchmark/scripts/verify) would fail too.
+#
+#   benchmark/scripts/warmup [PORT...]
+set -eu
+
+host=${PHRAMARK_HOST:-127.0.0.1}
+ports=${*:-8080 8081 8082 8083 8084 8085}
+
+for port in $ports; do
+  # A stack whose containers were just recreated may need a moment.
+  reachable=0
+  for attempt in 1 2 3 4 5; do
+    if curl -s --max-time 3 "http://$host:$port/" >/dev/null; then reachable=1; break; fi
+    sleep 2
+  done
+  if [ "$reachable" = 0 ]; then
+    echo "port $port: not reachable, skipped"
+    continue
+  fi
+  for category in $(seq -w 1 100); do
+    code=$(curl -s -o "${TMPDIR:-/tmp}/phramark-warmup.html" -w '%{http_code}' "http://$host:$port/articles/category-$category")
+    if [ "$code" != 200 ]; then
+      echo "port $port: /articles/category-$category answered HTTP $code" >&2
+      exit 1
+    fi
+  done
+  echo "port $port: warm"
+done

@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+# Restores the admin workload fixture of one stack (seeded page titles and
+# bodies, removal of pages the workload created) and clears its caches.
+#
+#   benchmark/scripts/admin-reset PORT
+set -eu
+
+. "$(dirname "$0")/lib.sh"
+stack_for_port "${1:?Usage: admin-reset PORT}"
+compose="docker compose -f benchmark/compose.yaml"
+
+case "$stack" in
+  evo-*)
+    $compose run --rm -T setup php /opt/phramark/benchmark/fixtures/admin-reset.php "$stack" ;;
+  drupal-11)
+    $compose --profile cross-cms run --rm -T setup-cross-cms sh -c 'cd /sites/drupal-11 && vendor/bin/drush php:script /opt/phramark/benchmark/fixtures/cms/drupal-admin-reset.php && vendor/bin/drush cache:rebuild' ;;
+  typo3)
+    $compose --profile cross-cms run --rm -T setup-cross-cms sh -c 'cd /sites/typo3 && php /opt/phramark/benchmark/fixtures/cms/typo3-admin-seed.php "$DB_HOST" benchmark_typo3 "$DB_USER" "$DB_PASSWORD" && vendor/bin/typo3 cache:flush' ;;
+esac
+
+# Evolution's manager reads settings and document listings through a PHP
+# site cache that OPcache keeps (validate_timestamps=0); Drupal and TYPO3
+# keep container/file caches. A fresh FPM makes every stack see the restored
+# fixture from the same state; nginx resolves the FPM address dynamically.
+docker restart "$php" >/dev/null

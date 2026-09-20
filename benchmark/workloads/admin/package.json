@@ -1,0 +1,14 @@
+{
+  "name": "phramark-admin-workload",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Playwright-driven CMS admin workload for Phramark",
+  "type": "module",
+  "scripts": {
+    "bench": "playwright test",
+    "test": "node --test unit/*.test.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

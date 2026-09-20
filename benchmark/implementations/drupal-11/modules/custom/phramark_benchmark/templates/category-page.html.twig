@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>{{ category }}</title><meta name="description" content="{{ description }}"></head>
+  <body>
+    <header><a href="/">Phramark benchmark</a></header>
+    <main><h1>{{ category }}</h1><p class="intro">{{ introtext }}</p><section class="articles">
+      {% for article in articles %}
+        <article>
+          <img src="{{ article.hero_image }}" alt="">
+          <h2><a href="/articles/{{ category_alias }}/{{ article.alias }}">{{ article.title }}</a></h2>
+          <p class="intro">{{ article.introtext }}</p>
+          <p class="meta"><span class="author">{{ article.author|default('') }}</span> · <span class="reading-time">{{ article.reading_time|default('') }} min</span></p>
+        </article>
+      {% endfor %}
+    </section></main><footer>Deterministic CMS benchmark fixture</footer>
+  </body>
+</html>

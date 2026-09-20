@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{$pagetitle}</title>
+    <meta name="description" content="{$description}">
+</head>
+<body>
+<header><a href="/">Phramark benchmark</a></header>
+<main>
+    <h1>{$pagetitle}</h1>
+    <p class="intro">{$introtext}</p>
+    {var $cards = $evo->getDocumentChildren((int) $id, 1, 0, 'id,pagetitle,introtext,alias,pub_date', '', 'menuindex', 'ASC', 20)}
+    <section class="articles">
+        {foreach $cards as $card}
+            {var $tvs = $evo->getTemplateVarOutput('*', (int) $card['id'])}
+            <article>
+                <img src="{$tvs['hero_image'] ?? ''}" alt="">
+                <h2><a href="/articles/{$alias}/{$card['alias']}">{$card['pagetitle']}</a></h2>
+                <p class="intro">{$card['introtext']}</p>
+                <p class="meta"><span class="author">{$tvs['author'] ?? ''}</span> · <span class="reading-time">{$tvs['reading_time'] ?? ''} min</span></p>
+            </article>
+        {/foreach}
+    </section>
+</main>
+<footer>Deterministic CMS benchmark fixture</footer>
+</body>
+</html>

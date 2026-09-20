@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Lists recorded results: guest wrk2 text, admin Playwright json/txt, traces.
+set -eu
+
+find benchmark/results -type f \( -name '*.txt' -o -name '*.json' \) -print | sort

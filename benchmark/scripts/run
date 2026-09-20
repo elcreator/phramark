@@ -1,0 +1,46 @@
+#!/usr/bin/env sh
+# Guest workload: wrk2 holds a constant offered rate against the category
+# pages of one stack. Results land in benchmark/results as
+# guest-<stack>-jit-<mode>-rps-<rate>.txt, with a memory section: PHP peak
+# memory per request (memory-prepend.php) and the FPM container's peak RSS.
+#
+#   benchmark/scripts/run OFFERED_RPS [PORT]
+#
+# wrk2 reports latency corrected for coordinated omission: an offered rate
+# above the stack's capacity yields queueing latency in the seconds, which is
+# a capacity signal, not a request latency. Compare stacks at a rate every one
+# of them sustains, or search for each one's capacity.
+set -eu
+
+rate=${1:?Usage: run OFFERED_RPS [PORT]}
+port=${2:-8080}
+duration=${DURATION:-60s}
+connections=${CONNECTIONS:-32}
+threads=${THREADS:-4}
+
+. "$(dirname "$0")/lib.sh"
+stack_for_port "$port"
+jit=$(jit_for_container "$php")
+output=${OUTPUT:-benchmark/results/guest-${stack}-jit-${jit}-rps-${rate}.txt}
+base=${output%.txt}
+
+mkdir -p benchmark/results
+docker build -q -t phramark-wrk2 -f benchmark/images/loadgen/Dockerfile . >/dev/null
+echo "guest workload: stack=$stack jit=$jit rate=$rate duration=$duration connections=$connections"
+memory_log_reset "$php"
+memory_sampler_start "$php" "$base.rss.samples"
+trap 'memory_sampler_stop' EXIT
+docker run --rm --network phramark_default phramark-wrk2 \
+  -t "$threads" -c "$connections" -d "$duration" -R "$rate" --latency \
+  -s /workloads/category.lua "http://${target}:80" >"$output"
+memory_sampler_stop
+memory_log_fetch "$php" "$base.memory.log"
+{
+  echo
+  echo "---- memory ----"
+  php benchmark/scripts/memory-summary.php "$base.memory.log"
+  echo "PHP-FPM container peak RSS: $(memory_sampler_peak_mib "$base.rss.samples") MiB (docker stats, 1 s samples)"
+} >>"$output"
+rm -f "$base.rss.samples"
+grep -E 'Requests/sec|Non-2xx|Socket errors|^ *(50|99)\.000%|^PHP' "$output" || true
+echo "Results: $output"

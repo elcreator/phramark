@@ -1,0 +1,3 @@
+services:
+  Drupal\phramark_benchmark\Controller\CategoryController:
+    arguments: ['@database', '@renderer']
