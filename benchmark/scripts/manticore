@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# Runs the Manticore compile job (benchmark/README.md, "Manticore") through
+# the compose service: pulls ghcr.io/elcreator/phramark-manticore unless it
+# is already local, installs the Evolution fixture if needed, then sweeps
+# the evo-parser tree, tries the whole-program build and times the
+# category-page workload into benchmark/results/manticore. Never part of
+# the default matrix: `benchmark/scripts/matrix --solutions=evo-manticore`
+# or this script by hand. MANTICORE_BUILD=1 builds the image locally instead
+# of pulling it; PAGES and REPS size the workload.
+set -eu
+
+cd "$(dirname "$0")/../.."
+build=
+[ "${MANTICORE_BUILD:-0}" = 1 ] && build=--build
+exec docker compose -f benchmark/compose.yaml --profile manticore run --rm $build -T manticore

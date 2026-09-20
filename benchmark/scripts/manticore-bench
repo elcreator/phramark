@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# Runs inside benchmark/images/manticore (PHP 8.5 CLI + Manticore). Compiles
+# benchmark/workloads/manticore/category-page.php to a native binary, checks
+# that the binary and the interpreter print the same checksum, then times
+# both over the same page count (best of $REPS wall-clock seconds and peak
+# RSS from GNU time): native -O2, PHP 8.5 with OPcache and JIT off, PHP 8.5
+# with OPcache and the tracing JIT — the two JIT modes of the CMS matrix.
+# Writes <out>/category-page.json and <out>/category-page.md.
+#
+# Usage: manticore-bench <out-dir> [pages] [reps]
+set -euo pipefail
+
+out=${1:?out-dir}
+pages=${2:-20000}
+reps=${3:-5}
+workload=/opt/phramark/benchmark/workloads/manticore/category-page.php
+work=$(mktemp -d)
+mkdir -p "$out"
+
+php_off=(php -d opcache.enable_cli=1 -d opcache.jit=0 -d opcache.jit_buffer_size=0 "$workload")
+php_jit=(php -d opcache.enable_cli=1 -d opcache.jit=tracing -d opcache.jit_buffer_size=128M "$workload")
+
+echo "compile: manticore compile -O2 $workload"
+compile_start=$(date +%s.%N)
+manticore compile -O2 "$workload" -o "$work/category-page" 2>&1 | grep -v 'incompatible-library-redeclaration\|^ *[0-9]* |\|^ *|\|^ *\^\|note:\|warnings generated' || true
+compile_seconds=$(awk -v a="$compile_start" -v b="$(date +%s.%N)" 'BEGIN { printf "%.1f", b - a }')
+[ -x "$work/category-page" ] || { echo 'compile failed' >&2; exit 1; }
+
+# 100 pages = every distinct category page once (the checksum covers them all)
+expected=$("${php_off[@]}" 100)
+native=$("$work/category-page" 100)
+[ "$expected" = "$native" ] || { printf 'parity failed:\n php: %s\n native: %s\n' "$expected" "$native" >&2; exit 1; }
+echo "parity: $native"
+
+# best wall-clock seconds and the max RSS (KiB) of that run, over $reps runs
+measure() {
+  local best_s='' best_rss='' s rss line
+  for _ in $(seq 1 "$reps"); do
+    line=$( { /usr/bin/time -f '%e %M' "$@" >/dev/null; } 2>&1 | tail -1)
+    s=${line% *}; rss=${line#* }
+    if [ -z "$best_s" ] || awk -v a="$s" -v b="$best_s" 'BEGIN { exit !(a < b) }'; then best_s=$s; best_rss=$rss; fi
+  done
+  printf '%s %s\n' "$best_s" "$best_rss"
+}
+
+declare -A seconds rss
+for runtime in native php-jit-off php-jit-tracing; do
+  case $runtime in
+    native) read -r s r < <(measure "$work/category-page" "$pages") ;;
+    php-jit-off) read -r s r < <(measure "${php_off[@]}" "$pages") ;;
+    php-jit-tracing) read -r s r < <(measure "${php_jit[@]}" "$pages") ;;
+  esac
+  seconds[$runtime]=$s; rss[$runtime]=$r
+  printf '%-16s %6ss  %8s KiB\n' "$runtime" "$s" "$r"
+done
+
+php_version=$(php -r 'echo PHP_VERSION;')
+manticore_version=$(manticore version 2>/dev/null | head -1)
+clang_version=$(clang --version | head -1)
+binary_bytes=$(stat -c %s "$work/category-page")
+
+pages_per_second() { awk -v p="$pages" -v s="$1" 'BEGIN { printf "%.0f", p / s }'; }
+speedup() { awk -v a="$1" -v b="$2" 'BEGIN { printf "%.2f", a / b }'; }
+
+cat > "$out/category-page.json" <<JSON
+{
+  "workload": "category-page",
+  "description": "In-memory render of the shared category page contract (20 article cards, fixture TV rule), no database, no CMS bootstrap.",
+  "pages": $pages,
+  "reps": $reps,
+  "measured_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "versions": {"php": "$php_version", "manticore": "$manticore_version", "clang": "$clang_version"},
+  "compile_seconds": $compile_seconds,
+  "binary_bytes": $binary_bytes,
+  "runtimes": {
+    "native": {"seconds": ${seconds[native]}, "pages_per_second": $(pages_per_second "${seconds[native]}"), "max_rss_kib": ${rss[native]}},
+    "php-jit-off": {"seconds": ${seconds[php-jit-off]}, "pages_per_second": $(pages_per_second "${seconds[php-jit-off]}"), "max_rss_kib": ${rss[php-jit-off]}},
+    "php-jit-tracing": {"seconds": ${seconds[php-jit-tracing]}, "pages_per_second": $(pages_per_second "${seconds[php-jit-tracing]}"), "max_rss_kib": ${rss[php-jit-tracing]}}
+  }
+}
+JSON
+
+{
+  echo "| Runtime | Wall (s, best of $reps) | Pages/s | Peak RSS (MiB) | vs native |"
+  echo "| --- | ---: | ---: | ---: | ---: |"
+  for runtime in native php-jit-off php-jit-tracing; do
+    printf '| %s | %s | %s | %s | %s× |\n' "$runtime" "${seconds[$runtime]}" "$(pages_per_second "${seconds[$runtime]}")" \
+      "$(awk -v k="${rss[$runtime]}" 'BEGIN { printf "%.1f", k / 1024 }')" "$(speedup "${seconds[$runtime]}" "${seconds[native]}")"
+  done
+  echo
+  echo "$pages pages per run; $manticore_version, $clang_version, PHP $php_version; compile ${compile_seconds}s, binary $binary_bytes bytes."
+} > "$out/category-page.md"
+cat "$out/category-page.md"
+rm -rf "$work"

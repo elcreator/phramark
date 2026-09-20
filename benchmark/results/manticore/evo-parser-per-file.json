@@ -1,0 +1,423 @@
+{
+    "total": 9687,
+    "ok": 9257,
+    "fail": 430,
+    "timeout": 0,
+    "cached": 9686,
+    "areas": {
+        ".github/docker/ci/smoke.php": {
+            "files": 1,
+            "ok": 1
+        },
+        "assets": {
+            "files": 62,
+            "ok": 51
+        },
+        "core/bootstrap.php": {
+            "files": 1,
+            "ok": 1
+        },
+        "core/config": {
+            "files": 14,
+            "ok": 14
+        },
+        "core/database": {
+            "files": 14,
+            "ok": 14
+        },
+        "core/factory": {
+            "files": 4,
+            "ok": 4
+        },
+        "core/functions": {
+            "files": 16,
+            "ok": 12
+        },
+        "core/includes": {
+            "files": 4,
+            "ok": 2
+        },
+        "core/lang": {
+            "files": 66,
+            "ok": 66
+        },
+        "core/modifiers": {
+            "files": 6,
+            "ok": 1
+        },
+        "core/src": {
+            "files": 312,
+            "ok": 292
+        },
+        "core/storage": {
+            "files": 2,
+            "ok": 1
+        },
+        "core/tests": {
+            "files": 106,
+            "ok": 106
+        },
+        "core/vendor (autoload.php)": {
+            "files": 1,
+            "ok": 1
+        },
+        "core/vendor (blade-ui-kit)": {
+            "files": 14,
+            "ok": 14
+        },
+        "core/vendor (brianium)": {
+            "files": 22,
+            "ok": 22
+        },
+        "core/vendor (brick)": {
+            "files": 16,
+            "ok": 9
+        },
+        "core/vendor (carbonphp)": {
+            "files": 7,
+            "ok": 7
+        },
+        "core/vendor (composer)": {
+            "files": 360,
+            "ok": 307
+        },
+        "core/vendor (dmitry-suffi)": {
+            "files": 3,
+            "ok": 3
+        },
+        "core/vendor (doctrine)": {
+            "files": 487,
+            "ok": 486
+        },
+        "core/vendor (dragonmantank)": {
+            "files": 10,
+            "ok": 10
+        },
+        "core/vendor (egulias)": {
+            "files": 87,
+            "ok": 87
+        },
+        "core/vendor (evolutioncms-services)": {
+            "files": 40,
+            "ok": 40
+        },
+        "core/vendor (fidry)": {
+            "files": 31,
+            "ok": 30
+        },
+        "core/vendor (filp)": {
+            "files": 33,
+            "ok": 21
+        },
+        "core/vendor (fruitcake)": {
+            "files": 2,
+            "ok": 2
+        },
+        "core/vendor (graham-campbell)": {
+            "files": 3,
+            "ok": 3
+        },
+        "core/vendor (guzzlehttp)": {
+            "files": 97,
+            "ok": 96
+        },
+        "core/vendor (hamcrest)": {
+            "files": 78,
+            "ok": 77
+        },
+        "core/vendor (illuminate)": {
+            "files": 1100,
+            "ok": 1069
+        },
+        "core/vendor (james-heinrich)": {
+            "files": 17,
+            "ok": 12
+        },
+        "core/vendor (jean85)": {
+            "files": 6,
+            "ok": 6
+        },
+        "core/vendor (justinrainbow)": {
+            "files": 157,
+            "ok": 156
+        },
+        "core/vendor (laravel)": {
+            "files": 99,
+            "ok": 96
+        },
+        "core/vendor (league)": {
+            "files": 65,
+            "ok": 65
+        },
+        "core/vendor (marc-mabe)": {
+            "files": 5,
+            "ok": 2
+        },
+        "core/vendor (mockery)": {
+            "files": 98,
+            "ok": 49
+        },
+        "core/vendor (monolog)": {
+            "files": 125,
+            "ok": 124
+        },
+        "core/vendor (myclabs)": {
+            "files": 27,
+            "ok": 26
+        },
+        "core/vendor (nesbot)": {
+            "files": 923,
+            "ok": 915
+        },
+        "core/vendor (nikic)": {
+            "files": 271,
+            "ok": 268
+        },
+        "core/vendor (nunomaduro)": {
+            "files": 72,
+            "ok": 71
+        },
+        "core/vendor (pestphp)": {
+            "files": 547,
+            "ok": 516
+        },
+        "core/vendor (phar-io)": {
+            "files": 74,
+            "ok": 74
+        },
+        "core/vendor (phpdocumentor)": {
+            "files": 160,
+            "ok": 160
+        },
+        "core/vendor (phpmailer)": {
+            "files": 65,
+            "ok": 64
+        },
+        "core/vendor (phpoption)": {
+            "files": 4,
+            "ok": 4
+        },
+        "core/vendor (phpstan)": {
+            "files": 91,
+            "ok": 91
+        },
+        "core/vendor (phpunit)": {
+            "files": 1138,
+            "ok": 1132
+        },
+        "core/vendor (predis)": {
+            "files": 664,
+            "ok": 651
+        },
+        "core/vendor (psr)": {
+            "files": 39,
+            "ok": 39
+        },
+        "core/vendor (ralouphie)": {
+            "files": 1,
+            "ok": 1
+        },
+        "core/vendor (ramsey)": {
+            "files": 144,
+            "ok": 143
+        },
+        "core/vendor (react)": {
+            "files": 10,
+            "ok": 10
+        },
+        "core/vendor (rosell-dk)": {
+            "files": 95,
+            "ok": 85
+        },
+        "core/vendor (sebastian)": {
+            "files": 88,
+            "ok": 86
+        },
+        "core/vendor (secondnetwork)": {
+            "files": 2,
+            "ok": 2
+        },
+        "core/vendor (seld)": {
+            "files": 10,
+            "ok": 10
+        },
+        "core/vendor (simplepie)": {
+            "files": 83,
+            "ok": 46
+        },
+        "core/vendor (staabm)": {
+            "files": 3,
+            "ok": 3
+        },
+        "core/vendor (symfony)": {
+            "files": 940,
+            "ok": 921
+        },
+        "core/vendor (ta-tikoma)": {
+            "files": 26,
+            "ok": 26
+        },
+        "core/vendor (theseer)": {
+            "files": 10,
+            "ok": 10
+        },
+        "core/vendor (tracy)": {
+            "files": 44,
+            "ok": 39
+        },
+        "core/vendor (vlucas)": {
+            "files": 41,
+            "ok": 41
+        },
+        "core/vendor (voku)": {
+            "files": 194,
+            "ok": 194
+        },
+        "core/vendor (webmozart)": {
+            "files": 5,
+            "ok": 5
+        },
+        "core/vendor (wikimedia)": {
+            "files": 8,
+            "ok": 8
+        },
+        "index.php": {
+            "files": 1,
+            "ok": 0
+        },
+        "manager": {
+            "files": 336,
+            "ok": 257
+        }
+    },
+    "diagnostics": {
+        "compile failed: MIR.verify: dangling local $var read in <fn> but never defined": 162,
+        "compile failed: MIR.lower: unsupported statement kind Class at line N": 42,
+        "parse failed: expected ';' after echo at line N": 36,
+        "compile failed: lazy body <file>": 23,
+        "timeout: the monitored command dumped core": 18,
+        "compile failed: MIR.lower: unsupported assign target kind StaticAccess at <file>": 11,
+        "compile failed (emit): unsupported: cannot take a storable reference to this expression \u2014 it has no address, so the reference would be a copy and every write through it would be lost (:N)": 5,
+        "parse failed: expected ';' after expression at line N": 4,
+        "parse failed: unexpected token in expression: Semicolon at line N": 3,
+        "parse failed: expected class name at line N": 3,
+        "compile failed: MIR.lower: $var as a whole array is unsupported (it would need a runtime name table); use $var['name']": 3,
+        "compile failed (emit): unsupported: a reference into an element of a array-elemented array (`$var[$var] = &$var`) \u2014 the element channel is raw and a reference cell is not. See docs/design/reference-cells.md. (:N)": 2,
+        "compile failed: MIR.lower: $var needs a literal string key (a dynamic one would need a runtime name table)": 2,
+        "parse failed: unexpected token in expression: Less at line N": 2,
+        "compile failed: Brick\\Math\\BigDecimal::negated() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Brick\\Math\\BigInteger::negated() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Brick\\Math\\BigNumber::jsonSerialize() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Brick\\Math\\BigRational::negated() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Brick\\Math\\Internal\\Calculator\\BcMathCalculator::add() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Brick\\Math\\Internal\\Calculator\\GmpCalculator::add() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Brick\\Math\\Internal\\Calculator\\NativeCalculator::add() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "parse failed: unexpected token in expression: CloseParen at line N": 1,
+        "line N: error: GuzzleHttp\\Psr7\\MultipartStream__createElement(): argument N to GuzzleHttp\\Psr7\\MultipartStream::getHeader() \u2014 array KEY repr conflict \u2014 a string-keyed array read as int-keyed walks the key as the wrong type (assoc[string, string] given, vec[string] expected)": 1,
+        "compile failed: Illuminate\\Support\\LazyCollection::crossJoin() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Console\\Application::addCommands() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Console\\BufferedConsoleOutput::doWrite() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Console\\Command::run() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Console\\OutputStyle::askQuestion() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Console\\QuestionHelper::writePrompt() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Database\\Eloquent\\Collection::countBy() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Database\\Eloquent\\Relations\\MorphTo::addEagerConstraints() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Database\\Query\\Grammars\\MySqlGrammar::prepareBindingsForUpdate() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Database\\Query\\Grammars\\PostgresGrammar::prepareBindingsForUpdate() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Database\\Query\\Grammars\\SQLiteGrammar::prepareBindingsForUpdate() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Database\\Query\\Grammars\\SqlServerGrammar::prepareBindingsForUpdate() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Http\\Client\\Promises\\FluentPromise::then() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Http\\Client\\Promises\\LazyPromise::then() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Http\\JsonResponse::fromJsonString() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Http\\Request::getAcceptableContentTypes() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Http\\Resources\\Json\\ResourceCollection::toArray() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Http\\Resources\\JsonApi\\AnonymousResourceCollection::with() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Http\\Resources\\JsonApi\\JsonApiResource::toAttributes() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Http\\Response::getContent() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Redis\\Connections\\PhpRedisClusterConnection::scan() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Illuminate\\Support\\EncodedHtmlString::toHtml() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Adapter\\Phpunit\\TestListener::endTest() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\CompositeExpectation::andReturn() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\CountValidator\\AtLeast::isEligible() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\CountValidator\\AtMost::validate() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\CountValidator\\CountValidatorAbstract::isEligible() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\CountValidator\\Exact::validate() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Expectation::andReturn() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\ExpectsHigherOrderMessage::__call() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\CachingGenerator::generate() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\DefinedTargetClass::factory() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\AvoidMethodClashPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\CallTypeHintPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\ClassAttributesPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\ClassNamePass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\ClassPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\ConstantsPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\InstanceMockPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\InterfacePass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\MagicMethodTypeHintsPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\MethodDefinitionPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\RemoveBuiltinMethodsThatAreFinalPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\RemoveDestructorPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\RemoveUnserializeForInternalSerializableClassesPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulation\\Pass\\TraitPass::apply() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\StringManipulationGenerator::generate() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Generator\\UndefinedTargetClass::factory() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Loader\\EvalLoader::load() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Loader\\RequireLoader::load() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\AndAnyOtherArgs::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\Any::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\AnyArgs::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\AnyOf::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\Closure::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\Contains::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\Ducktype::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\HasKey::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\HasValue::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\IsEqual::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\IsSame::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\MultiArgumentClosure::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\MustBe::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\NoArgs::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\Not::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\NotAnyOf::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\Pattern::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\Subset::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Matcher\\Type::match() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\Mock::mockery_init() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Mockery\\VerificationExpectation::__clone() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "error: expected value token": 1,
+        "compile failed: MIR.lower: unsupported statement kind Function at line N": 1,
+        "compile failed (emit): only a single trailing spread into a dynamic closure is supported (:N)": 1,
+        "error: invalid redefinition of function 'manticore_PhpParser_Internal_TokenPolyfill____construct'": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Abstract\\AbstractFunctionCallUnwrapMutator::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Abstract\\AbstractFunctionReplaceMutator::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Array\\UnwrapArrayMap::mutate() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Laravel\\Remove\\LaravelRemoveStringableUpper::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Laravel\\Unwrap\\LaravelUnwrapStrUpper::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Logical\\FalseToTrue::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Logical\\TrueToFalse::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Number\\DecrementInteger::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Number\\IncrementInteger::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Removal\\RemoveEarlyReturn::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Removal\\RemoveFunctionCall::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Removal\\RemoveMethodCall::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Return\\AlwaysReturnEmptyArray::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Return\\AlwaysReturnNull::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\String\\ConcatSwitchSides::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\String\\EmptyStringToNotEmpty::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\String\\NotEmptyStringToEmpty::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\String\\UnwrapStrIreplace::mutate() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\String\\UnwrapStrReplace::mutate() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Visibility\\ConstantProtectedToPrivate::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Visibility\\ConstantPublicToProtected::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Visibility\\FunctionProtectedToPrivate::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Visibility\\FunctionPublicToProtected::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Visibility\\PropertyProtectedToPrivate::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Mutate\\Mutators\\Visibility\\PropertyPublicToProtected::can() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed: Pest\\Plugins\\Parallel\\Paratest\\CleanConsoleOutput::doWrite() has #[\\Override] attribute, but no matching parent method exists at line N": 1,
+        "compile failed (emit): unsupported: a storable reference to an element of a obj-elemented array \u2014 the element channel is raw, and a reference box is a cell channel. Every other reader of this array would see a denormal. See docs/design/reference-cells.md. (:N)": 1,
+        "parse failed: expected function name at line N": 1,
+        "line N: error: Symfony\\Component\\Finder\\Iterator\\VcsIgnoredFilterIterator__parentDirectoriesDownwards(): argument N to array_reverse() \u2014 array ELEMENT repr conflict \u2014 string elements read as array (vec[string] given, vec[vec[cell]] expected)": 1,
+        "line N: error: Symfony\\Component\\Translation\\Loader\\XliffFileLoader__extractPgsSegmentText(): argument N to Symfony\\Component\\Translation\\Loader\\XliffFileLoader->collectPgsText() \u2014 array KEY repr conflict \u2014 a string-keyed array read as int-keyed walks the key as the wrong type (assoc[string, bool] given, vec[bool] expected)": 1
+    }
+}

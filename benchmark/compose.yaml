@@ -272,6 +272,35 @@ services:
       - wordpress-gantry:/var/www/html:ro
       - ./config/nginx-wordpress-gantry.conf:/etc/nginx/conf.d/default.conf:ro
 
+  manticore:
+    # Manticore AOT compiler experiment (benchmark/README.md, "Manticore"):
+    # compiles the installed evo-parser tree file by file and as one program,
+    # then times the category-page workload native vs PHP 8.5. A job, not a
+    # stack: it serves nothing, has no nginx and no port, and runs only when
+    # asked for (`benchmark/scripts/matrix --solutions=evo-manticore`).
+    # The image is pulled from GHCR (the compiler's bootstrap takes minutes)
+    # and built locally only with --build; the object cache volume and the
+    # result cache in benchmark/results/manticore make a repeat run fast.
+    profiles: ["manticore"]
+    image: ghcr.io/elcreator/phramark-manticore:${MANTICORE_IMAGE_TAG:-0.10.0}
+    build:
+      context: ..
+      dockerfile: benchmark/images/manticore/Dockerfile
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    environment:
+      MANTICORE_OBJ_CACHE: "1"
+      MANTICORE_OBJ_CACHE_DIR: /cache/obj
+      MANTICORE_RESULT_CACHE: /out/compile-cache.tsv
+      PAGES: ${PAGES:-20000}
+      REPS: ${REPS:-5}
+    command: ["bash", "/opt/phramark/benchmark/scripts/manticore-run", "/site", "/out"]
+    volumes:
+      - evo-parser:/site:ro
+      - manticore-cache:/cache
+      - ./results/manticore:/out
+
 volumes:
   mysql-data:
   evo-parser:
@@ -283,3 +312,4 @@ volumes:
   winter:
   modx:
   wordpress-gantry:
+  manticore-cache:

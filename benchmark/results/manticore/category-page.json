@@ -1,0 +1,15 @@
+{
+  "workload": "category-page",
+  "description": "In-memory render of the shared category page contract (20 article cards, fixture TV rule), no database, no CMS bootstrap.",
+  "pages": 20000,
+  "reps": 5,
+  "measured_at": "2026-09-20T22:47:01Z",
+  "versions": {"php": "8.5.10", "manticore": "manticore 0.10.0", "clang": "Debian clang version 19.1.7 (3+b1)"},
+  "compile_seconds": 0.4,
+  "binary_bytes": 1396408,
+  "runtimes": {
+    "native": {"seconds": 2.93, "pages_per_second": 6826, "max_rss_kib": 175120},
+    "php-jit-off": {"seconds": 1.54, "pages_per_second": 12987, "max_rss_kib": 27864},
+    "php-jit-tracing": {"seconds": 1.42, "pages_per_second": 14085, "max_rss_kib": 29640}
+  }
+}

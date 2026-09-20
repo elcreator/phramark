@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Runs inside benchmark/images/manticore. Attempts `manticore build` of the
+# Evolution tree in $1 as one whole program (core/ + every Composer package),
+# and on each front-end failure excludes the offending file and retries, up
+# to $3 rounds, so the log in $2 lists the blockers in the order the compiler
+# meets them. With $4, the exclusion list of the previous run is read from
+# that file first and written back at the end, so a repeat run starts where
+# the last one stopped instead of rediscovering one blocker per round.
+# Usage: manticore-build-iterate <site> <log> [rounds] [excludes-file]
+set -uo pipefail
+site=${1:?site}; log=${2:?log}; rounds=${3:-40}; cached=${4:-}
+work=/work/evo
+rm -rf "$work" && cp -R "$site" "$work" && cd "$work" && cp core/composer.json core/composer.lock .
+excludes=("core/vendor/bin" "core/tests" "core/storage" "vendor/bin")
+if [ -n "$cached" ] && [ -s "$cached" ]; then
+  while IFS= read -r line; do [ -n "$line" ] && excludes+=("$line"); done < "$cached"
+  printf 'seeded %d exclusions from %s\n' "$((${#excludes[@]} - 4))" "$cached"
+fi
+: > "$log"
+for round in $(seq 1 "$rounds"); do
+  printf '{"applications":[{"name":"evo","src":"core","entry":"index.php","output":"bin/evo","composer":true,"exclude":[%s]}]}\n' \
+    "$(printf '"%s",' "${excludes[@]}" | sed 's/,$//')" > manticore.json
+  out=$(timeout 1200 manticore build 2>&1); rc=$?
+  err=$(printf '%s\n' "$out" | grep -v '^build: + composer autoload' | grep -v '^\s*$' | tail -3 | tr '\n' ' ')
+  printf 'round %d rc=%d: %s\n' "$round" "$rc" "$err" >> "$log"
+  [ "$rc" -eq 0 ] && { echo "built bin/evo" >> "$log"; ls -la bin/evo >> "$log"; break; }
+  diag=$(printf '%s\n' "$out" | grep -v 'composer autoload')
+  file=$(printf '%s\n' "$diag" | grep -oE '^[A-Za-z0-9_./-]+\.php' | head -1)
+  [ -z "$file" ] && file=$(printf '%s\n' "$diag" | grep -oE '(core|vendor)/[A-Za-z0-9_./-]+\.php' | head -1)
+  if [ -z "$file" ]; then
+    # A diagnostic that names a class (Foo\Bar::baz() ...) rather than a
+    # file: exclude the file that declares that class.
+    class=$(printf '%s\n' "$diag" | grep -oE '[A-Za-z_][A-Za-z0-9_\\]*::' | head -1 | sed 's/::$//; s/.*\\//')
+    [ -n "$class" ] && file=$(grep -rlE "^(final |abstract |readonly )*(class|interface|trait|enum) $class\b" core --include='*.php' 2>/dev/null | head -1)
+  fi
+  [ -z "$file" ] && { echo "no file to exclude; stopping" >> "$log"; break; }
+  case " ${excludes[*]} " in *" $file "*) echo "$file already excluded; stopping" >> "$log"; break ;; esac
+  excludes+=("$file")
+done
+printf 'excluded %d files\n' "$((${#excludes[@]} - 4))" >> "$log"
+[ -n "$cached" ] && printf '%s\n' "${excludes[@]:4}" > "$cached"

@@ -1,0 +1,55 @@
+case                  native(s)     php(s)   speedup  rss-n(MB)  rss-p(MB)   parity
+----------------------------------------------------------------------------------------
+alloc_churn 62.9 ms
+alloc_churn                0.03       0.15      5.0x                         ok
+array                      0.13       0.46      3.5x                         ok
+assoc                      0.07       0.15      2.1x                         ok
+assoc_small                0.03       0.08      2.7x                         ok
+closures                   0.03       0.27      9.0x                         ok
+dijkstra                   0.05       0.15      3.0x                         ok
+explode                    0.07       0.14      2.0x                         ok
+fib                        0.10       1.98     19.8x                         ok
+fiber_pingpong             0.04       0.06      1.5x                         ok
+fiber_switch               0.07       0.11      1.6x                         ok
+foreach_assoc              0.06       0.05      0.8x                         ok
+funcarr                    0.02       0.21     10.5x                         ok
+generator_yield            0.02       0.17      8.5x                         ok
+http_parse                 1.54          -         -                     -   php-skip
+http_scale                 1.55          -         -                     -   php-skip
+implode_int                0.21       0.15      0.7x                         ok
+in_array                   0.14       0.09      0.6x                         ok
+json                       0.10       0.15      1.5x                         ok
+json_decode                0.19       0.28      1.5x                         ok
+json_decode_object         0.04       0.08      2.0x                         ok
+json_decode_records        0.14       0.18      1.3x                         ok
+json_deep                  0.05       0.06      1.2x                         ok
+json_escape_heavy          0.04       0.03      0.8x                         ok
+json_objects               0.26       0.35      1.3x                         ok
+json_pretty                0.10       0.05      0.5x                         ok
+json_records               0.41       0.75      1.8x                         ok
+json_utf8                  0.14       0.16      1.1x                         ok
+ksort_asort                0.04       0.03      0.8x                         ok
+loop                       0.06       0.50      8.3x                         ok
+mandelbrot                 0.05       0.28      5.6x                         ok
+mathf                      0.03       0.17      5.7x                         ok
+matmul                     0.01       0.06      6.0x                         ok
+nbody                      0.09       0.18      2.0x                         ok
+nested_array_local 12.1 ms
+nested_array_local         0.02       0.07      3.5x                         ok
+net_bulk                   0.01       0.03      3.0x                         ok
+net_lines                  0.01       0.03      3.0x                         ok
+oop                        0.11       1.10     10.0x                         ok
+refslot                    0.00       0.03       inf                         ok
+sieve                      0.09       0.20      2.2x                         ok
+sort                       0.10       0.08      0.8x                         ok
+spectralnorm               0.02       0.53     26.5x                         ok
+sprintf                    0.08       0.08      1.0x                         ok
+strcat                     0.17       0.51      3.0x                         ok
+strops                     0.02       0.04      2.0x                         ok
+tokenize                   0.05          -         -                     -   php-skip
+unset_churn                0.00       0.03       inf                         ok
+variadic_pack 115.9 ms
+variadic_pack              0.11       0.08      0.7x                         ok
+wordcount                  0.02       0.06      3.0x                         ok
+-------------------------------------------------------------------
+ran 48 · native faster on 36 · php 8.5.10

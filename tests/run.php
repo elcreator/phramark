@@ -302,4 +302,90 @@ try {
 } catch (InvalidArgumentException) {
 }
 
+// Manticore workload: the in-memory category page must honour the same
+// contract and fixture rules as the CMS stacks, so a native-vs-PHP number
+// describes the same page assembly.
+define('PHRAMARK_WORKLOAD_LIB', true);
+require dirname(__DIR__) . '/benchmark/workloads/manticore/category-page.php';
+$manticorePage = CategoryPageWorkload::renderCategory(42);
+foreach (['Phramark benchmark', 'class="intro"', 'class="articles"', 'class="meta"', 'class="author"', 'class="reading-time"', 'Deterministic CMS benchmark fixture'] as $marker) {
+    expect(str_contains($manticorePage, $marker), true, 'The Manticore workload page is missing ' . $marker);
+}
+$manticoreContract = FixturePlan::expectedCategoryPage(42);
+expect(str_contains($manticorePage, '<title>' . $manticoreContract['title'] . '</title>'), true, 'The Manticore workload must render the fixture category title.');
+expect(substr_count($manticorePage, '<article>'), $manticoreContract['articles'], 'The Manticore workload must render 20 article cards.');
+expect(substr_count($manticorePage, '<img src="/assets/images/article-'), $manticoreContract['hero_images'], 'Every Manticore workload card carries a hero image.');
+expect(substr_count($manticorePage, '<span class="author">Author '), $manticoreContract['authors'], 'Manticore workload authors must follow the fixture TV presence.');
+expect(substr_count($manticorePage, '<span class="reading-time"> min</span>'), $manticoreContract['articles'] - $manticoreContract['reading_times'], 'Manticore workload reading times must follow the fixture TV presence.');
+foreach ([1, 4213, 10_000] as $articleNumber) {
+    $manticoreTvs = CategoryPageWorkload::templateVariables($articleNumber);
+    foreach (FixturePlan::tvPresence($articleNumber) as $name => $present) {
+        expect(isset($manticoreTvs[$name]), $present, sprintf('TV %s presence of article %d differs between the Manticore workload and the fixture plan.', $name, $articleNumber));
+    }
+}
+expect(str_contains($manticorePage, 'href="/articles/category-042/article-004101"'), true, 'Manticore workload article links must follow the fixture aliases.');
+expect(CategoryPageWorkload::run(3), CategoryPageWorkload::run(3), 'The Manticore workload checksum must be deterministic.');
+expect(CategoryPageWorkload::run(3)['bytes'], strlen(CategoryPageWorkload::renderCategory(1)) + strlen(CategoryPageWorkload::renderCategory(2)) + strlen(CategoryPageWorkload::renderCategory(3)), 'The Manticore workload must cycle through categories in order.');
+expect(CategoryPageWorkload::run(101)['bytes'] > 0 && CategoryPageWorkload::run(1)['checksum'] < 1_000_000_007, true, 'The Manticore workload checksum must stay below its modulus.');
+
+// Manticore compile report summary: areas and normalised diagnostics.
+require dirname(__DIR__) . '/benchmark/scripts/manticore-summary.php';
+$manticoreRows = array_map('parseLine', [
+    "ok\t/site/core/src/Core.php\t1.20\t",
+    "fail\t/site/core/src/Legacy/Cache.php\t0.70\tcompile failed: MIR.verify: dangling local \$modx read in __main but never defined",
+    "fail\t/site/core/functions/nodes.php\t0.50\tcompile failed: MIR.verify: dangling local \$_lang read in ls but never defined",
+    "ok\t/site/core/vendor/illuminate/support/Str.php\t2.60\t",
+    "fail\t/site/manager/index.php\t0.10\t/site/manager/index.php: parse failed: expected ';' after echo at line 1, column 66",
+    "timeout\t/site/core/lang/ru/global.php\t30.00\t",
+]);
+expect($manticoreRows[0]['area'], 'core/src', 'Evolution core files are grouped per core directory.');
+expect($manticoreRows[3]['area'], 'core/vendor (illuminate)', 'Vendor files are grouped per Composer vendor.');
+expect($manticoreRows[1]['diagnostic'], $manticoreRows[2]['diagnostic'], 'Variable and function names must not split one diagnostic class.');
+expect($manticoreRows[4]['diagnostic'], "parse failed: expected ';' after echo at line N", 'File paths and positions are stripped from diagnostics.');
+expect($manticoreRows[5]['diagnostic'], '(no diagnostic; timeout or non-zero exit)', 'Timeouts carry a placeholder diagnostic.');
+$manticoreSummary = summarise($manticoreRows);
+expect([$manticoreSummary['total'], $manticoreSummary['ok'], $manticoreSummary['fail'], $manticoreSummary['timeout']], [6, 2, 3, 1], 'Summary counts changed.');
+expect($manticoreSummary['areas']['core/src'], ['files' => 2, 'ok' => 1], 'Per-area counts changed.');
+expect(array_key_first($manticoreSummary['diagnostics']), 'compile failed: MIR.verify: dangling local $var read in <fn> but never defined', 'Diagnostics are sorted by frequency.');
+expect(parseLine("ok\t/site/core/src/Core.php\t0.00\t\tcached")['cached'], true, 'The origin column marks verdicts taken from the result cache.');
+expect(parseLine("fail\t/site/a.php\t0.10\tparse failed: x at line 1, column 2\tcompiled")['diagnostic'], 'parse failed: x at line N', 'The origin column must not leak into the diagnostic.');
+expect(summarise([parseLine("ok\t/site/a.php\t0.00\t\tcached"), parseLine("ok\t/site/b.php\t1.00\t\tcompiled")])['cached'], 1, 'Cached verdicts are counted.');
+
+// Manticore result cache: a verdict is keyed by content hash and toolchain,
+// survives a path change, and misses on a content or toolchain change.
+require dirname(__DIR__) . '/benchmark/scripts/manticore-cache.php';
+$slashes = fn (string $path): string => str_replace('\\', '/', $path);
+$cacheDir = $slashes(sys_get_temp_dir()) . '/phramark-cache-' . getmypid();
+mkdir($cacheDir . '/tree/sub', 0777, true);
+file_put_contents($cacheDir . '/tree/a.php', "<?php echo 1;\n");
+file_put_contents($cacheDir . '/tree/sub/b.php', "<?php echo 2;\n");
+file_put_contents($cacheDir . '/tree/notes.txt', 'not php');
+$cacheFile = $cacheDir . '/compile-cache.tsv';
+$toolchain = 'manticore 0.10.0 | clang 19.1.7';
+$slashes = fn (string $path): string => str_replace('\\', '/', $path);
+expect(array_map($slashes, phpFiles($cacheDir . '/tree')), [$cacheDir . '/tree/a.php', $cacheDir . '/tree/sub/b.php'], 'Only PHP files are planned, in sorted order.');
+$cold = plan(loadCache($cacheFile), $toolchain, phpFiles($cacheDir . '/tree'));
+expect([$cold['hits'], count($cold['misses'])], [[], 2], 'An absent cache misses everything.');
+$report = [
+    "ok\t" . $cacheDir . "/tree/a.php\t1.20\t\tcompiled",
+    "fail\t" . $cacheDir . "/tree/sub/b.php\t0.30\tparse failed: expected ';' after echo at line 1, column 5\tcompiled",
+];
+saveCache($cacheFile, merge(loadCache($cacheFile), $toolchain, $report));
+expect(count(loadCache($cacheFile)), 2, 'Compiled verdicts enter the cache.');
+rename($cacheDir . '/tree/a.php', $cacheDir . '/tree/sub/renamed.php');
+$warm = plan(loadCache($cacheFile), $toolchain, phpFiles($cacheDir . '/tree'));
+expect($warm['misses'], [], 'Unchanged content hits regardless of its path.');
+expect($slashes($warm['hits'][0]), "fail\t" . $cacheDir . "/tree/sub/b.php\t0.00\tparse failed: expected ';' after echo at line 1, column 5\tcached", 'A hit replays status and diagnostic and is marked cached.');
+expect(count(plan(loadCache($cacheFile), 'manticore 0.11.0 | clang 19.1.7', phpFiles($cacheDir . '/tree'))['misses']), 2, 'Another toolchain misses.');
+file_put_contents($cacheDir . '/tree/sub/b.php', "<?php echo 3;\n");
+expect(array_map($slashes, plan(loadCache($cacheFile), $toolchain, phpFiles($cacheDir . '/tree'))['misses']), [$cacheDir . '/tree/sub/b.php'], 'Changed content misses.');
+saveCache($cacheFile, merge(loadCache($cacheFile), $toolchain, ["ok\t" . $cacheDir . "/tree/sub/b.php\t0.50\t\tcompiled", "ok\t" . $cacheDir . "/tree/sub/renamed.php\t0.00\t\tcached"]));
+expect(count(loadCache($cacheFile)), 3, 'A new content hash is added; cached rows are not re-entered.');
+foreach (['/tree/sub/renamed.php', '/tree/sub/b.php', '/tree/notes.txt', '/compile-cache.tsv'] as $file) {
+    unlink($cacheDir . $file);
+}
+rmdir($cacheDir . '/tree/sub');
+rmdir($cacheDir . '/tree');
+rmdir($cacheDir);
+
 fwrite(STDOUT, "Phramark tests passed.\n");

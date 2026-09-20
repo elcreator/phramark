@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# The whole Manticore experiment, run by the `manticore` compose service
+# inside benchmark/images/manticore: the per-file compile sweep of the
+# installed Evolution tree, the whole-program build rounds, and the timed
+# category-page workload. Everything lands in <out>.
+# Usage: manticore-run <site-tree> <out-dir> [jobs]
+set -euo pipefail
+
+site=${1:?site tree}
+out=${2:?out dir}
+jobs=${3:-$(nproc)}
+scripts=/opt/phramark/benchmark/scripts
+mkdir -p "$out"
+
+manticore version | tee "$out/versions.txt"
+php -v | head -1 | tee -a "$out/versions.txt"
+clang --version | head -1 | tee -a "$out/versions.txt"
+
+echo "== per-file sweep of $site ($jobs jobs)"
+bash "$scripts/manticore-compile-all" "$site" "$out/evo-parser-per-file.tsv" "$jobs" 60 | tee "$out/evo-parser-per-file.summary.txt"
+php "$scripts/manticore-summary.php" "$out/evo-parser-per-file.tsv" > "$out/evo-parser-per-file.md"
+php "$scripts/manticore-summary.php" "$out/evo-parser-per-file.tsv" --json > "$out/evo-parser-per-file.json"
+
+echo "== whole-program build rounds"
+bash "$scripts/manticore-build-iterate" "$site" "$out/evo-parser-build-rounds.log" 80 "$out/evo-parser-build-excludes.txt"
+tail -3 "$out/evo-parser-build-rounds.log"
+
+echo "== category-page workload"
+bash "$scripts/manticore-bench" "$out" "${PAGES:-20000}" "${REPS:-5}"

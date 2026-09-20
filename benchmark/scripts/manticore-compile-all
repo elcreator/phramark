@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Runs inside benchmark/images/manticore (PHP 8.5 + Manticore). Compiles every
+# PHP file of the tree given as $1 with `manticore compile`, one file at a
+# time, and writes a TSV report (status, path, seconds, first diagnostic,
+# origin) to $2. With MANTICORE_RESULT_CACHE set to a cache file
+# (benchmark/scripts/manticore-cache.php), files whose content hash was
+# already compiled by this toolchain are reported from the cache instead of
+# compiled again, and the new verdicts are folded back into the cache.
+# Usage: manticore-compile-all <tree> <report.tsv> [jobs] [per-file-timeout-s, default 30]
+set -euo pipefail
+
+tree=${1:?tree}
+report=${2:?report}
+jobs=${3:-$(nproc)}
+limit=${4:-30}
+out=$(mktemp -d)
+scripts=$(cd "$(dirname "$0")" && pwd)
+toolchain="$(manticore version 2>/dev/null | head -1) | clang $(clang --version | sed -n 's/.*version \([0-9.]*\).*/\1/p' | head -1)"
+
+one() {
+  local file=$1 start status diag
+  start=$(date +%s.%N)
+  if diag=$(timeout "$limit" manticore compile --no-analyze "$file" -o "$out/$(echo "$file" | md5sum | cut -c1-12)" 2>&1); then
+    status=ok
+  else
+    status=$([ $? -eq 124 ] && echo timeout || echo fail)
+  fi
+  diag=$(printf '%s' "$diag" | grep -v '^\s*$' | grep -vi 'warning generated\|Wincompatible-library-redeclaration\|^ *[0-9]* |\|^ *|\|^ *\^\|note:' | head -1 | tr '\t' ' ')
+  printf '%s\t%s\t%s\t%s\tcompiled\n' "$status" "$file" "$(awk -v a="$start" -v b="$(date +%s.%N)" 'BEGIN { printf "%.2f", b - a }')" "$diag"
+}
+export -f one; export out limit
+
+cache=${MANTICORE_RESULT_CACHE:-}
+if [ -n "$cache" ]; then
+  php "$scripts/manticore-cache.php" plan "$cache" "$toolchain" "$tree" "$out/hits.tsv" "$out/misses.txt"
+  files=$out/misses.txt
+else
+  find "$tree" -name '*.php' -type f | sort > "$out/misses.txt"
+  : > "$out/hits.tsv"
+  files=$out/misses.txt
+fi
+
+xargs -P "$jobs" -I{} bash -c 'one "$1"' _ {} < "$files" > "$out/compiled.tsv"
+cat "$out/hits.tsv" "$out/compiled.tsv" | sort -t $'\t' -k2,2 > "$report"
+[ -n "$cache" ] && php "$scripts/manticore-cache.php" merge "$cache" "$toolchain" "$report"
+rm -rf "$out"
+
+total=$(wc -l < "$report")
+ok=$(grep -c $'^ok\t' "$report" || true)
+fail=$(grep -c $'^fail\t' "$report" || true)
+to=$(grep -c $'^timeout\t' "$report" || true)
+cached=$(grep -c $'\tcached$' "$report" || true)
+printf 'files=%s ok=%s fail=%s timeout=%s cached=%s\n' "$total" "$ok" "$fail" "$to" "$cached"

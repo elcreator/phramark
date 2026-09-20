@@ -1,0 +1,58 @@
+# Builds benchmark/images/manticore (PHP 8.5 + the Manticore compiler
+# bootstrapped from source, ~7 min) and publishes it to GHCR, so a
+# `benchmark/scripts/manticore` run pulls the compiler instead of
+# bootstrapping it. Runs when the image definition changes, on demand, and
+# monthly to pick up upstream fixes; MANTICORE_REF pins the compiler
+# revision baked in. The tag is the compiler version the image reports.
+name: manticore-image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - benchmark/images/manticore/Dockerfile
+      - .github/workflows/manticore-image.yml
+  schedule:
+    - cron: "17 4 1 * *"
+  workflow_dispatch:
+    inputs:
+      manticore_ref:
+        description: manticorephp/compiler branch or tag to build
+        default: main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: benchmark/images/manticore/Dockerfile
+          build-args: MANTICORE_REF=${{ inputs.manticore_ref || 'main' }}
+          load: true
+          tags: phramark-manticore:candidate
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test and read the compiler version
+        id: version
+        run: |
+          docker run --rm phramark-manticore:candidate bash -c 'printf "<?php echo str_replace(\"a\", \"b\", \"a\"), PHP_EOL;" > /tmp/t.php && manticore compile /tmp/t.php -o /tmp/t >/dev/null && [ "$(/tmp/t)" = b ]'
+          echo "tag=$(docker run --rm phramark-manticore:candidate manticore version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - name: Push
+        run: |
+          for tag in ${{ steps.version.outputs.tag }} latest; do
+            docker tag phramark-manticore:candidate ghcr.io/${{ github.repository_owner }}/phramark-manticore:$tag
+            docker push ghcr.io/${{ github.repository_owner }}/phramark-manticore:$tag
+          done

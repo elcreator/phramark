@@ -6,6 +6,8 @@
 #   benchmark/scripts/matrix [OPTIONS] [OFFERED_RPS] [PORT...]
 #
 #   --solutions=evo-phalcon,winter   stacks by id (default: all; PORT... also works)
+#                    evo-manticore is never in the default set: name it here to
+#                    run the Manticore compile job (no port, no guest/admin cells)
 #   --jit=off | --jit=tracing | --jit=off,tracing   JIT modes (default: both)
 #   --workload=guest | --workload=admin | --workload=guest,admin   (default: both)
 #   --rate=30        offered rps for the guest workload (default 30)
@@ -22,6 +24,7 @@ set -u
 
 rate=
 ports=
+manticore=0
 jits="off tracing"
 workloads="guest admin"
 repeats=${REPEATS:-1}
@@ -29,6 +32,7 @@ for argument in "$@"; do
   case "$argument" in
     --solutions=*|--stacks=*)
       for stack in $(echo "${argument#*=}" | tr ',' ' '); do
+        if [ "$stack" = evo-manticore ]; then manticore=1; continue; fi
         ports="$ports $(port_for_stack "$stack")" || exit 2
       done ;;
     --jit=*) jits=$(echo "${argument#*=}" | tr ',' ' ') ;;
@@ -40,7 +44,7 @@ for argument in "$@"; do
   esac
 done
 rate=${rate:-30}
-ports=${ports:-8080 8081 8082 8083 8084 8085 8086 8087 8088}
+if [ -z "$ports" ] && [ "$manticore" = 0 ]; then ports="8080 8081 8082 8083 8084 8085 8086 8087 8088"; fi
 for jit in $jits; do case "$jit" in off|tracing) ;; *) echo "--jit must be off, tracing or off,tracing" >&2; exit 2 ;; esac; done
 for workload in $workloads; do case "$workload" in guest|admin) ;; *) echo "--workload must be guest, admin or guest,admin" >&2; exit 2 ;; esac; done
 failed=
@@ -70,6 +74,12 @@ for port in $ports; do
     done
   done
 done
+
+if [ "$manticore" = 1 ]; then
+  echo
+  echo "===== evo-manticore: Manticore compile job ====="
+  benchmark/scripts/manticore || failed="$failed evo-manticore"
+fi
 
 echo
 # The exact versions the containers ran, then the tables: Markdown for the

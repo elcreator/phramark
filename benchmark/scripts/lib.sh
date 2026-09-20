@@ -32,7 +32,7 @@ port_for_stack() {
     winter) echo 8086 ;;
     modx) echo 8087 ;;
     wordpress-gantry) echo 8088 ;;
-    *) echo "unknown stack '$1' (evo-parser, evo-latte, evo-latte-parser, evo-phalcon, drupal-11, typo3, winter, modx, wordpress-gantry)" >&2; return 2 ;;
+    *) echo "unknown stack '$1' (evo-parser, evo-latte, evo-latte-parser, evo-phalcon, drupal-11, typo3, winter, modx, wordpress-gantry; evo-manticore is a job without a port)" >&2; return 2 ;;
   esac
 }
 

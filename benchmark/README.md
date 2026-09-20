@@ -185,6 +185,66 @@ composer test                                         # PHP: fixture plan, page 
 cd benchmark/workloads/admin && npm test              # Node: edit helpers, timeline statistics, report
 ```
 
+## Manticore: can a CMS be compiled ahead of time?
+
+[Manticore](https://github.com/manticorephp/compiler) is a PHP 8.5 → native AOT compiler: it takes one program (a file, or a `manticore.json` manifest over a source tree and its Composer packages) and links a standalone binary against its own runtime, with no Zend engine, no php-fpm, no extensions. It is not an accelerator for existing PHP files, so it cannot sit behind nginx as another stack of this matrix. `evo-manticore` is therefore an experiment with three questions, all run inside `benchmark/images/manticore` (PHP 8.5 CLI on Debian trixie, clang 19, the compiler bootstrapped from source by its own installer; nothing from that repository runs on the host):
+
+1. **How much of Evolution CMS 3.5 does it compile file by file?** `benchmark/scripts/manticore-compile-all` runs `manticore compile --no-analyze` on every PHP file of the installed `evo-parser` tree (core, manager, assets and all 58 Composer packages) and records the first diagnostic of every failure; `benchmark/scripts/manticore-summary.php` groups them per area and per diagnostic class.
+2. **Does the whole program build?** `benchmark/scripts/manticore-build-iterate` runs `manticore build` with `"composer": true` over `core/` with `index.php` as the entry, excludes the file the front end stops on, and retries, so the log lists the blockers in the order the compiler meets them.
+3. **What does native code gain on the page assembly the CMS stacks do?** `benchmark/workloads/manticore/category-page.php` renders the shared category page contract (20 article cards, the fixture's TV presence rule, the markup of the `benchmarkCategory` snippet) from in-memory rows, no database, no CMS bootstrap. `benchmark/scripts/manticore-bench` compiles it with `-O2`, checks that the binary and PHP 8.5 print the same checksum, and times both with GNU `time` (best of 5 wall-clock runs, peak RSS): native, PHP with OPcache and JIT off, PHP with the tracing JIT.
+
+```sh
+benchmark/scripts/matrix --solutions=evo-manticore            # the job alone; never part of the default matrix
+benchmark/scripts/matrix --solutions=winter,evo-manticore     # after the Winter cells
+benchmark/scripts/manticore                                   # the same job by hand (MANTICORE_BUILD=1 builds the image locally)
+```
+
+`evo-manticore` is opt-in: `matrix` without `--solutions` runs the nine served stacks and nothing else, and the job only runs when that list names it. It writes into `benchmark/results/manticore` and never touches `docs/results.json`.
+
+Two things the compiler does not tell you: invoked as a bare `manticore` from `PATH` it finds neither its prelude nor its stdlib (both are located relative to `argv[0]`), and the stdlib is then silently not linked, so every `str_replace()` becomes "undefined function". The image sets `MANTICORE_PRELUDE`, `MANTICORE_STDLIB_O` and `MANTICORE_STDLIB_SIG`.
+
+### Caches: what a repeat run reuses
+
+A cold run bootstraps the compiler (about 7 minutes: Zend seeds a native compiler that then rebuilds itself), compiles 9,687 files (8 minutes on 48 cores, 3 hours on a 3-CPU Docker Desktop VM) and rediscovers 41 whole-program blockers one build round at a time. Three caches, each kept where its size fits, take a repeat run down to about 3½ minutes, most of it the timed workload itself:
+
+| Cache | Where | What it saves | Key |
+| --- | --- | --- | --- |
+| Compiler image `ghcr.io/elcreator/phramark-manticore:<version>` | GitHub Container Registry, published by `.github/workflows/manticore-image.yml` (on Dockerfile changes, monthly, on demand) | the toolchain install and the compiler bootstrap; `benchmark/scripts/manticore` pulls it and builds locally only with `MANTICORE_BUILD=1` | the compiler version the image reports |
+| Result cache `benchmark/results/manticore/compile-cache.tsv` (1 MB, in git) | this repository | the per-file sweep: a file whose content hash was already compiled by the same toolchain is reported from the cache, not compiled (`benchmark/scripts/manticore-cache.php`; 9,686 of 9,687 hits on a repeat, the one miss is a file Evolution regenerates on every setup) | `sha256(file)` + `manticore <version> \| clang <version>`, so an upgraded compiler misses everything and a moved or re-installed tree still hits |
+| Exclusion list `benchmark/results/manticore/evo-parser-build-excludes.txt` (in git) | this repository | the whole-program rounds: a repeat starts from the 41 known blockers and reaches the compiler's crash in one round instead of 42 | the file list itself; delete it to rediscover from scratch |
+| Object cache (`MANTICORE_OBJ_CACHE=1`, Manticore's own, content-addressed on the emitted LLVM IR) | the `manticore-cache` Docker volume on the host that runs the job | `clang` on unchanged IR — 5.3× on a repeat compile of the same files — for the workload compile and the build rounds | sha1 of the IR text + clang flags |
+
+The object cache is deliberately not published: it is about 300 KB per compiled file (roughly 3 GB for the tree), and the result cache already answers the question the sweep asks. A per-package `.o`/`.sig` cache over the Composer dependency graph — compile every package in `composer.lock` once as a library, cache it by package version, link the application against the cached objects — is the design that would make a *successful* whole-program build incremental; Manticore 0.10 has no such stage (`build` compiles the unioned source set as one unit, and traits and generic classes cannot cross a library boundary), and until the whole program compiles at all there is nothing for it to cache.
+
+### Results (2026-09-20, 48-core Threadripper, Docker, Manticore 0.10.0, clang 19.1.7, PHP 8.5.10)
+
+Raw files: [benchmark/results/manticore](results/manticore) (`evo-parser-per-file.tsv`/`.md`/`.json`, `evo-parser-build-rounds.log`, `category-page.md`/`.json`, `manticore-own-bench.txt`).
+
+**File by file: 9,257 of 9,687 files compile (95.6 %)**, 1.6 s each on average, none time out. Evolution's own code: `core/src` 291/312, `core/lang` 66/66, `manager` 257/336, `core/functions` 11/16, `core/modifiers` 1/6; the big packages on the request path: illuminate 1069/1100, symfony 911/940, doctrine 486/487, nesbot/carbon 915/923. What stops the other 430, by diagnostic class:
+
+| Diagnostic | Files | What it is |
+| --- | ---: | --- |
+| `MIR.verify: dangling local $x read ... never defined` | 162 | `global $x` / variables that arrive from an including scope: the manager's procedural files, `core/functions`, modifiers |
+| `MIR.lower: unsupported statement kind Class` | 42 | a class declared inside `if (!class_exists(...))` or a function (`core/includes/aliases.inc.php`, Carbon's `lazy/` shims) |
+| `parse failed: expected ';' after echo` (+ 9 similar) | 45 | inline-HTML templates (`<?= ... ?>` closing a statement): Tracy panels, Whoops and Illuminate console views |
+| `lazy body ... unexpected token` | 23 | function bodies the parser accepts lazily and rejects on demand |
+| compiler segfault (rc 139) | 18 | `index.php` (the front controller), 13 Predis argument builders, Symfony `AbstractUnicodeString` and `ClosureLoader`, Ramsey `AbstractCollection`, Termwind `Node` |
+| `unsupported assign target kind StaticAccess`, references into array elements, `$GLOBALS`/`compact`-style name tables, `#[\Override]` on interface methods | 24 | listed in `evo-parser-per-file.md` |
+
+**Whole program: does not build.** `manticore build` over `core/` with `index.php` as the entry and `"composer": true` (every package in `composer.lock` compiled as source) stops on one file per round; after 41 exclusions — the 35 inline-HTML views above, `Enum`/`Override`-named symbols in three packages, the PHPUnit function file, a `lazy body` in `core/functions/nodes.php` — the front end accepts the tree and the compiler segfaults (round 42, `evo-parser-build-rounds.log`), the same crash `index.php` triggers on its own. Even past that crash a served CMS would need what the compiler lists as unsupported: `extract()` (Evolution's parser and every Blade/Latte view), `eval` (snippets and plugins are PHP strings in the database), dynamic `include` and a MySQL driver (Manticore's PDO is SQLite only).
+
+**Page assembly, native vs PHP 8.5** (`category-page`, 20,000 pages per run, best of 5, output parity checked over all 100 distinct pages):
+
+| Runtime | Wall (s) | Pages/s | Peak RSS (MiB) | vs native |
+| --- | ---: | ---: | ---: | ---: |
+| native (`-O2`, 1.4 MB static binary, 0.8 s compile) | 2.94 | 6,803 | 171.0 | 1.00× |
+| PHP 8.5 OPcache, JIT off | 1.55 | 12,903 | 27.2 | 0.53× |
+| PHP 8.5 OPcache, JIT tracing | 1.41 | 14,184 | 29.0 | 0.48× |
+
+The native binary is **2× slower** than the interpreter on this workload and its resident memory grows with the page count (23 MiB at 2,000 pages, 47 MiB at 5,000, 171 MiB at 20,000; PHP stays at 27–29 MiB), which points at the allocator never returning memory or a leak in the string path. The reason is where the time goes: compiled user code is faster (a string-concatenation loop 5×, `sprintf` 1.7× — and `manticore-own-bench.txt` reproduces the project's own suite: native faster on 36 of 45 comparable cases, `fib` 20×, `spectralnorm` 26×, `oop` 10×), but Manticore's standard library is itself PHP compiled to native, and on a CMS page the standard library *is* the work: `htmlspecialchars()` runs 2.5× slower than Zend's C implementation and `crc32()` 9× slower, `sort`/`in_array`/`implode`/`json_pretty` also lose in the project's own table. A page render is one escape call per attribute and text node, so the escape cost dominates and the compiled control flow around it cannot compensate.
+
+So the answer to "evo-manticore" is: not a stack, not a faster one either, at this version. The experiment stays in the repository as a compatibility census of a real CMS tree against the compiler, and as the fixed harness to rerun when a newer Manticore lands.
+
 ## Local smoke numbers
 
 Full matrix (`benchmark/scripts/matrix 30`, `DURATION=60s`, `ROUNDS=1`) on one Windows 11 laptop with Docker Desktop, 8 FPM workers, load generator on the same host, 2026-09-20. A smoke run that shows every cell working; single rounds on a shared machine, so treat differences below ~20 % as noise. Sortable at https://phramark.artur.work; regenerate with `php benchmark/scripts/summary.php`. The versions table names exactly what ran, per stack, linked to the source repositories.

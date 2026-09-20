@@ -26,11 +26,14 @@ Every stack is a real CMS install serving the same page contract; the framework 
 
 October CMS is not included (its Composer distribution needs a licence key); Winter CMS, its licence-free fork, stands in for that lineage.
 
+`evo-manticore` is an experiment, not a stack: the [Manticore](https://github.com/manticorephp/compiler) PHP 8.5 → native AOT compiler is bootstrapped inside a container, run over every PHP file of the Evolution tree and over the whole program, and timed against PHP 8.5 on the page-assembly workload; opt-in (`--solutions=evo-manticore`), never in the default matrix — see [benchmark/README.md](benchmark/README.md#manticore-can-a-cms-be-compiled-ahead-of-time) and [benchmark/results/manticore](benchmark/results/manticore).
+
 ## Run it
 
 ```sh
 docker compose -f benchmark/compose.yaml --profile cross-cms up --build   # all stacks on 127.0.0.1:8080–8088
 benchmark/scripts/matrix 30                                               # every stack × guest/admin × JIT off/tracing, then docs/results.json
+benchmark/scripts/matrix --solutions=evo-manticore                        # opt-in: the Manticore compile job (never in the default set)
 composer test && (cd benchmark/workloads/admin && npm test)               # PHP and Node unit tests
 ```
 
