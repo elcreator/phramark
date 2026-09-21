@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import {
   ACTIONS, ACTION_DESCRIPTIONS, GUEST_COLUMNS, actionsNote, adminRows, compareValues, componentsText, errorRows, formatValue, guestRows, nextSort, sortRows, versionRows,
@@ -119,4 +120,10 @@ test('every admin action is explained on the results page', () => {
     assert.ok(actionsNote().includes(`${action} — `), `${action} is in the note under the admin table`);
   }
   assert.ok(actionsNote().startsWith('Wall is what the browser experienced'), 'the note says what wall and server mean');
+});
+
+test('the memory bar charts appear only for figures some run recorded', () => {
+  const source = readFileSync(new URL('../../../../docs/site.js', import.meta.url), 'utf8');
+  assert.match(source, /if \(recorded\('containerPeakMb'\)\) renderBars/, 'no all-empty RSS chart for results from before the cgroup sampler');
+  assert.match(source, /if \(recorded\('containerFootprintMb'\)\) \{/, 'the footprint chart needs --footprint runs');
 });

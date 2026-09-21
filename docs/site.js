@@ -318,12 +318,15 @@ export function renderCharts(root, set) {
     note: 'Whiskers are the min–max of p50 across repetitions of the cell where more than one run exists; without them the cell was run once and its error is unknown.',
     rows: guestRows(set), key: 'p50Ms', range: 'p99Ms', spreadMetric: 'p50Ms', stacks: set.stacks, unit: 'ms',
   });
-  renderBars(section, {
+  // Either memory chart appears only when some run recorded that figure:
+  // runs from before the split have only the docker footprint.
+  const recorded = (key) => guestRows(set).some((row) => row[key] !== null && row[key] !== undefined);
+  if (recorded('containerPeakMb')) renderBars(section, {
     title: 'Guest PHP-FPM peak RSS during the run',
     note: 'The anonymous memory of the FPM container\'s cgroup: the heaps of PHP-FPM and its workers, what a leak would grow. Files the container writes during the run (session files, compiled templates, logs) are not in it.',
     rows: guestRows(set), key: 'containerPeakMb', spreadMetric: 'containerPeakMb', stacks: set.stacks, unit: 'MiB', decimals: 1,
   });
-  if (guestRows(set).some((row) => row.containerFootprintMb !== null && row.containerFootprintMb !== undefined)) {
+  if (recorded('containerFootprintMb')) {
     renderBars(section, {
       title: 'Guest PHP-FPM container footprint during the run (with page cache)',
       note: 'Docker\'s memory figure for the container: the RSS plus the page cache of what the container read and wrote, so it grows with every file a request leaves behind. Recorded with matrix --footprint.',
