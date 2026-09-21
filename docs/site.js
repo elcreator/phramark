@@ -7,6 +7,24 @@ import { cellId, cellLabel, renderBars, renderSmallMultiples, trendOf } from './
 
 export const ACTIONS = ['login', 'open-edit', 'save-edit', 'open-create', 'save-create', 'logout'];
 
+// What each admin action is: one Playwright session per cell, a round of five
+// seeded pages; every number is the median over those five (login and logout
+// happen once per round). Shown under the first admin table and as the
+// tooltip of each action column.
+export const ACTION_DESCRIPTIONS = {
+  login: 'Open the CMS login page, submit the credentials and wait until the admin shell has fully loaded (menus, document tree). Once per round.',
+  'open-edit': 'Open the editor of an existing seeded page and wait until its form is ready: the read path of the admin, PHP bootstrap plus the form and the JS/CSS it pulls in.',
+  'save-edit': 'Change the content of that open page, submit, and wait until the CMS has confirmed the save: the write path, validation, database writes, cache invalidation.',
+  'open-create': 'Open the "new page" form and wait until it is ready, like open-edit but without loading an existing document.',
+  'save-create': 'Fill in title and content, submit, and wait for the confirmation: the write path plus creating the row, alias/URL and tree placement. The created pages are removed afterwards, so every run starts from the same state.',
+  logout: 'End the session and return to the login page.',
+};
+
+export function actionsNote() {
+  return 'Wall is what the browser experienced end to end (network, rendering, JS); server is the PHP time of the main request(s) of the step, the number to compare between versions. Actions: '
+    + ACTIONS.map((action) => `${action} — ${ACTION_DESCRIPTIONS[action]}`).join(' ');
+}
+
 const ms = { unit: 'ms', decimals: 2 };
 const mib = { unit: 'MiB', decimals: 1 };
 
@@ -145,6 +163,7 @@ export function renderTable(root, { title, columns, rows, note }) {
         class: `sort${active ? ` ${sort.direction}` : ''}`,
         'aria-sort': active ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none',
         text: column.label,
+        ...(ACTION_DESCRIPTIONS[column.key] ? { title: ACTION_DESCRIPTIONS[column.key] } : {}),
       });
       button.addEventListener('click', () => {
         sort = nextSort(sort, column.key);
@@ -388,6 +407,7 @@ export function render(set, root) {
       title: metric.title,
       columns,
       rows: adminRows(set, metric.key),
+      note: metric.key === 'ms' ? actionsNote() : undefined,
     });
   }
 }

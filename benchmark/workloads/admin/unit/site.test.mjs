@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ACTIONS, GUEST_COLUMNS, adminRows, compareValues, componentsText, errorRows, formatValue, guestRows, nextSort, sortRows, versionRows,
+  ACTIONS, ACTION_DESCRIPTIONS, GUEST_COLUMNS, actionsNote, adminRows, compareValues, componentsText, errorRows, formatValue, guestRows, nextSort, sortRows, versionRows,
 } from '../../../../docs/site.js';
 import { versionSuffix } from '../lib/report.mjs';
 
@@ -111,4 +111,12 @@ test('versionRows lists the exact component versions per stack', () => {
 
 test('sortRows without a key keeps the incoming order', () => {
   assert.deepEqual(sortRows(guestRows(set), null).map((row) => [row.stack, row.jit]), [['modx', 'off'], ['typo3', 'off'], ['typo3', 'tracing']]);
+});
+
+test('every admin action is explained on the results page', () => {
+  for (const action of ACTIONS) {
+    assert.ok(ACTION_DESCRIPTIONS[action]?.length > 40, `${action} has a description`);
+    assert.ok(actionsNote().includes(`${action} — `), `${action} is in the note under the admin table`);
+  }
+  assert.ok(actionsNote().startsWith('Wall is what the browser experienced'), 'the note says what wall and server mean');
 });
