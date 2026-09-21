@@ -44,6 +44,9 @@ services:
       # The stacks a matrix round needs (a site outside the list may fail to
       # build at the requested versions without failing the run).
       PHRAMARK_STACKS: ${PHRAMARK_STACKS:-}
+      # EVO_NO_SESSION=1: the Evolution sites get core/custom/define.php with
+      # NO_SESSION (no visitor session or cookie on the front end).
+      EVO_NO_SESSION: ${EVO_NO_SESSION:-}
     depends_on:
       mysql:
         condition: service_healthy

@@ -121,8 +121,18 @@ $evolution = static function (string $stack, array $packages): array {
     $core = json_decode(inContainer($container, 'cat /var/www/html/core/composer.json'), true);
     // The ref the site was built from (setup.php's marker: "evo=tag 3.5.7" or
     // "evo=branch 3.5.x <commit>") and the commit that is actually checked out.
-    $ref = preg_replace('/^evo=(\S+) (\S+).*$/', '$1 $2', inContainer($container, 'sed -n "/^evo=/p" /var/www/html/.phramark-versions'));
-    $commit = inContainer($container, 'cd /var/www/html && git config --global --add safe.directory /var/www/html >/dev/null 2>&1; git rev-parse --short HEAD && git log -1 --format=%cs');
+    $marker = inContainer($container, 'sed -n "/^evo=/p" /var/www/html/.phramark-versions');
+    $ref = preg_replace('/^evo=(\S+) (\S+).*$/', '$1 $2', $marker);
+    // A site from a host directory carries no .git (setup.php copies the
+    // project's files only): its commit is read from that checkout here on
+    // the host, with the fingerprint of the files that were actually copied.
+    if (preg_match('/^evo=path \/host\/(\S+) (\S+)/', $marker, $m) === 1) {
+        $checkout = dirname(dirname(__DIR__), 2) . '/' . $m[1];
+        $commit = capture(['git', '-C', $checkout, 'rev-parse', '--short', 'HEAD']);
+        $commit = $commit === '' ? 'files ' . $m[2] : $commit . ' ' . capture(['git', '-C', $checkout, 'log', '-1', '--format=%cs']) . ', files ' . $m[2];
+    } else {
+        $commit = inContainer($container, 'cd /var/www/html && git config --global --add safe.directory /var/www/html >/dev/null 2>&1; git rev-parse --short HEAD && git log -1 --format=%cs');
+    }
     $versions = ['Evolution CMS' => ($core['version'] ?? '?') . ($commit !== '' ? ' (' . ($ref !== '' ? $ref . '@' : '') . str_replace("\n", ', ', $commit) . ')' : '')];
     $versions += composerVersions($container, 'core/vendor/composer/installed.json', $packages);
     // An extension installed from a directory on the host ("dev-local") is
@@ -138,6 +148,11 @@ $evolution = static function (string $stack, array $packages): array {
     }
     if ($stack === 'evo-phalcon') {
         $versions['phalcon (extension)'] = inContainer($container, 'php -r "echo phpversion(\"phalcon\");"');
+    }
+    // A site set up with EVO_NO_SESSION=1 (setup.php writes the define) runs
+    // the front end without a visitor session; a result must say so.
+    if (inContainer($container, 'grep -qs "define(.NO_SESSION., true)" /var/www/html/core/custom/define.php && echo on') === 'on') {
+        $versions['front-end session'] = 'off (NO_SESSION)';
     }
 
     return components($versions);

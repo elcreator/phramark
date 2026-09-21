@@ -68,18 +68,60 @@ function hostPath(string $ref): string
     return $path;
 }
 
-/** A fingerprint of a directory's files (paths, sizes, mtimes; vendor, node_modules and .git skipped). */
+/**
+ * The files of a working copy that belong to the project: what git tracks
+ * plus untracked files that are not ignored (relative paths), or null when
+ * the directory is not a git checkout. A checkout also carries what its
+ * .gitignore hides (a site's own config, logs, IDE state); installing from
+ * it must leave those behind, or the site runs with the developer's setup.
+ *
+ * @return list<string>|null
+ */
+function gitFiles(string $path): ?array
+{
+    if (!file_exists($path . '/.git')) {
+        return null;
+    }
+    // The host tree belongs to another uid: git refuses it without safe.directory.
+    $process = proc_open(['git', '-c', 'safe.directory=*', '-C', $path, 'ls-files', '-z', '-co', '--exclude-standard'], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+    if (!is_resource($process)) {
+        return null;
+    }
+    $output = (string) stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    if (proc_close($process) !== 0) {
+        return null;
+    }
+
+    return array_values(array_filter(explode("\0", $output), 'strlen'));
+}
+
+/**
+ * A fingerprint of a directory's files (paths, sizes, mtimes; vendor,
+ * node_modules and .git skipped): of the project's files in a git checkout
+ * (gitFiles), of every file elsewhere.
+ */
 function directoryFingerprint(string $path): string
 {
     $hash = hash_init('sha256');
-    $iterator = new RecursiveIteratorIterator(new RecursiveCallbackFilterIterator(
-        new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
-        static fn (SplFileInfo $file): bool => !in_array($file->getFilename(), ['.git', 'vendor', 'node_modules'], true),
-    ));
     $entries = [];
-    foreach ($iterator as $file) {
-        if ($file->isFile()) {
-            $entries[] = substr($file->getPathname(), strlen($path)) . ' ' . $file->getSize() . ' ' . $file->getMTime();
+    $files = gitFiles($path);
+    if ($files !== null) {
+        foreach ($files as $file) {
+            if (preg_match('#(^|/)(\.git|vendor|node_modules)/#', $file) !== 1 && is_file($path . '/' . $file)) {
+                $entries[] = '/' . $file . ' ' . filesize($path . '/' . $file) . ' ' . filemtime($path . '/' . $file);
+            }
+        }
+    } else {
+        $iterator = new RecursiveIteratorIterator(new RecursiveCallbackFilterIterator(
+            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+            static fn (SplFileInfo $file): bool => !in_array($file->getFilename(), ['.git', 'vendor', 'node_modules'], true),
+        ));
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $entries[] = substr($file->getPathname(), strlen($path)) . ' ' . $file->getSize() . ' ' . $file->getMTime();
+            }
         }
     }
     sort($entries);

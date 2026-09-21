@@ -101,7 +101,7 @@ function install(string $name): void
     [, $kind, $ref] = $m;
     printf('%s: Evolution CMS %s %s' . PHP_EOL, $name, $kind, $ref);
     if ($kind === 'path') {
-        run(['cp', '-R', $ref . '/.', $path]);
+        copyHostTree($ref, $path);
     } else {
         run(['git', 'clone', '--depth=1', '--branch', $ref, 'https://github.com/evolution-cms/evolution.git', $path]);
     }
@@ -138,7 +138,8 @@ function installPackage(string $site, string $product, string $wanted): void
         $source = $path . '/core/custom/phramark-sources/' . $product;
         run(['rm', '-rf', $source]);
         run(['mkdir', '-p', $source]);
-        run(['sh', '-c', 'cp -R "$1"/. "$2"/ && rm -rf "$2"/vendor "$2"/.git', 'sh', $m[2], $source]);
+        copyHostTree($m[2], $source);
+        run(['rm', '-rf', $source . '/vendor']);
         $custom = $path . '/core/custom/composer.json';
         $json = is_file($custom) ? json_decode((string) file_get_contents($custom), true) : ['name' => 'evolutioncms/custom', 'require' => [], 'autoload' => ['psr-4' => []]];
         $json['repositories']['phramark-' . $product] = ['type' => 'path', 'url' => 'phramark-sources/' . $product, 'options' => ['symlink' => false, 'versions' => [$package => 'dev-local']]];
@@ -277,9 +278,48 @@ function cloneCanonical(string $target): void
     }
 }
 
+/**
+ * A working copy from the host into a site: the project's files only (what
+ * git tracks plus untracked files that are not ignored, see gitFiles), so
+ * that the developer's own config, logs and IDE state stay behind; a
+ * directory that is not a checkout is copied as it is. .git is never copied
+ * (its packs are large and the bind mount is slow); versions.php names the
+ * commit from the checkout on the host instead.
+ */
+function copyHostTree(string $from, string $to): void
+{
+    $files = gitFiles($from);
+    if ($files === null) {
+        run(['cp', '-R', $from . '/.', $to]);
+
+        return;
+    }
+    run(['mkdir', '-p', $to]);
+    $list = tempnam(sys_get_temp_dir(), 'phramark-files');
+    file_put_contents($list, implode("\0", $files));
+    run(['sh', '-c', 'tar -C "$1" --null -T "$2" -cf - | tar -C "$3" -xf -', 'sh', $from, $list, $to]);
+    unlink($list);
+}
+
 function copyTree(string $from, string $to): void
 {
     run(['cp', '-R', $from . '/.', $to]);
+}
+
+/**
+ * Front-end sessions: EVO_NO_SESSION=1 writes core/custom/define.php with
+ * NO_SESSION (no visitor session, no session cookie on the front end; the
+ * manager keeps its session), anything else removes the file. Applied on
+ * every setup run, so a plain `up` switches an installed site too.
+ */
+function writeDefines(string $site): void
+{
+    $file = ROOT . '/' . $site . '/core/custom/define.php';
+    if (filter_var((string) getenv('EVO_NO_SESSION'), FILTER_VALIDATE_BOOLEAN)) {
+        file_put_contents($file, "<?php" . PHP_EOL . PHP_EOL . "define('NO_SESSION', true);" . PHP_EOL);
+    } elseif (is_file($file)) {
+        unlink($file);
+    }
 }
 
 function writeSettings(string $database, bool $parser): void
@@ -345,6 +385,7 @@ try {
             copyTree('/opt/phramark/benchmark/implementations/' . $site, ROOT . '/' . $site);
         }
         writeSettings('benchmark_' . str_replace('-', '_', $site), $site === 'evo-parser');
+        writeDefines($site);
         run(['php', 'artisan', 'cache:clear-full'], ROOT . '/' . $site . '/core');
         run(['chown', '-R', 'www-data:www-data', ROOT . '/' . $site]);
     }

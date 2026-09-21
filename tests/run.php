@@ -157,6 +157,49 @@ expect(preg_match('/_VERSION:-\d/', $cross), 0, 'No hardcoded default versions i
 expect(str_contains($cross, 'site_current "$site" "$wanted" && return'), true, 'A cross-CMS site is reinstalled only when its resolved versions changed.');
 expect(str_contains($setup, "getenv('PHRAMARK_STACKS')") && str_contains($setup, 'is required by this run and could not be installed'), true, 'Evolution sites install independently: a version that cannot be built fails only that site unless the run needs it.');
 expect(str_contains($cross, 'sh "$0" "install_') && str_contains($cross, 'is required by this run and could not be installed'), true, 'Cross-CMS sites install independently, each in its own process.');
+
+// A working copy on the host is installed from git's view of it (tracked plus
+// untracked, ignored files left behind: a developer's site config, logs and
+// IDE state would otherwise become the benchmark site's), and fingerprinted
+// from the same set so that dev noise does not trigger a reinstall.
+$resolver = repositoryFile('benchmark/fixtures/resolve-version.php');
+expect(str_contains($resolver, "'ls-files', '-z', '-co', '--exclude-standard'"), true, 'A checkout on the host is listed by git: tracked plus untracked files, ignored ones excluded.');
+expect(str_contains($resolver, '$files = gitFiles($path);') && str_contains($resolver, "preg_match('#(^|/)(\\.git|vendor|node_modules)/#', \$file) !== 1"), true, 'The path fingerprint covers the git-listed files, with the same vendor/.git/node_modules exclusion as a plain directory.');
+expect(str_contains($setup, 'copyHostTree($ref, $path);') && str_contains($setup, 'copyHostTree($m[2], $source);'), true, 'Evolution and the extensions are copied from a host directory through copyHostTree.');
+expect(str_contains($setup, "'/.git'"), false, '.git is never copied into a site: versions.php names the commit from the host checkout.');
+expect(preg_match("/'cp', '-R', \\\$ref \\. '\\/\\.'/", $setup), 0, 'A host checkout is never copied wholesale.');
+expect(str_contains($setup, 'tar -C "$1" --null -T "$2" -cf - | tar -C "$3" -xf -'), true, 'copyHostTree streams the listed files with tar.');
+
+// EVO_NO_SESSION=1 switches the Evolution front end to NO_SESSION on every
+// setup run (installed sites included), and a result records it.
+expect(str_contains(repositoryFile('benchmark/compose.yaml'), 'EVO_NO_SESSION: ${EVO_NO_SESSION:-}'), true, 'The setup service must take EVO_NO_SESSION from the environment.');
+expect(preg_match('/writeSettings\(.*\);\s+writeDefines\(\$site\);/', $setup), 1, 'The defines are applied to every installed site on every setup run, next to the settings.');
+expect(str_contains(repositoryFile('benchmark/scripts/versions.php'), "\$versions['front-end session'] = 'off (NO_SESSION)'"), true, 'versions.php must record a NO_SESSION site in the result components.');
+if (preg_match('/^function writeDefines\(string \$site\): void
+\{.*?^\}/ms', str_replace("
+", "
+", $setup), $m) !== 1) {
+    throw new RuntimeException('setup.php must define writeDefines(string $site).');
+}
+$sitesDir = sys_get_temp_dir() . '/phramark-defines-' . getmypid();
+mkdir($sitesDir . '/evo-parser/core/custom', 0777, true);
+eval('const ROOT = ' . var_export($sitesDir, true) . ';' . $m[0]);
+$define = $sitesDir . '/evo-parser/core/custom/define.php';
+foreach (['1', 'true', 'yes'] as $on) {
+    putenv('EVO_NO_SESSION=' . $on);
+    writeDefines('evo-parser');
+    expect(is_file($define) && str_contains((string) file_get_contents($define), "define('NO_SESSION', true);"), true, 'EVO_NO_SESSION=' . $on . ' writes core/custom/define.php with NO_SESSION.');
+}
+foreach (['0', '', 'no'] as $off) {
+    putenv('EVO_NO_SESSION=' . $off);
+    writeDefines('evo-parser');
+    expect(is_file($define), false, 'EVO_NO_SESSION=' . var_export($off, true) . ' removes the define again.');
+}
+putenv('EVO_NO_SESSION');
+rmdir($sitesDir . '/evo-parser/core/custom');
+rmdir($sitesDir . '/evo-parser/core');
+rmdir($sitesDir . '/evo-parser');
+rmdir($sitesDir);
 foreach (['benchmark/compose.yaml' => 'EVO_VERSION: ${EVO_VERSION:-latest}', 'benchmark/images/php/Dockerfile' => 'FROM php:${PHP_VERSION}-fpm-bookworm', 'benchmark/images/cms-php/Dockerfile' => 'FROM php:${PHP_VERSION}-fpm-bookworm'] as $file => $needle) {
     expect(str_contains(repositoryFile($file), $needle), true, sprintf('%s must take the version from the environment (%s).', $file, $needle));
 }
