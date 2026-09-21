@@ -78,9 +78,24 @@ export function cellLabel(row, stacks) {
 // ("Evolution + Latte · evo@../evolution" with a version): about 6 px per
 // character at the 11 px label font, never narrower than the plain-stack
 // layout and capped so the bars keep most of the width.
-export function labelGutter(labels, { min = 150, max = 320, perChar = 6.2, padding = 16 } = {}) {
+export function labelGutter(labels, { min = 150, max = 380, perChar = 6.2, padding = 16 } = {}) {
   const longest = Math.max(0, ...labels.map((label) => String(label ?? '').length));
   return Math.min(max, Math.max(min, Math.ceil(longest * perChar + padding)));
+}
+
+// A bar group's label as two lines: the stack, and under it (smaller) the
+// build it was measured at, so a long version never pushes the bars aside.
+// The gutter is sized for both lines at their font sizes.
+export function groupLabelLines(group, stacks) {
+  const stack = stacks?.[group.stack]?.label ?? group.stack ?? group.label;
+  return group.version ? [stack, group.version] : [stack];
+}
+export function twoLineGutter(groups, stacks) {
+  const lines = groups.map((group) => groupLabelLines(group, stacks));
+  return Math.max(
+    labelGutter(lines.map((l) => l[0])),
+    labelGutter(lines.map((l) => l[1] ?? ''), { perChar: 5.4 }),
+  );
 }
 
 export function barGroups(rows, key, stacks) {
@@ -171,7 +186,7 @@ export function renderBars(container, { title, note, rows, key, stacks, unit, de
   const groupGap = 10;
   // The gutter grows with the labels and the chart with it, so the bars
   // keep their width whatever the version labels add.
-  const left = labelGutter(groups.map((group) => group.label));
+  const left = twoLineGutter(groups, stacks);
   const right = 24;
   const top = 8;
   const width = 760 + (left - 150);
@@ -189,7 +204,14 @@ export function renderBars(container, { title, note, rows, key, stacks, unit, de
   }
   groups.forEach((group, groupIndex) => {
     const y0 = top + groupIndex * groupHeight;
-    root.append(svg('text', { class: 'label', x: left - 8, y: y0 + (groupHeight - groupGap) / 2 + 4, 'text-anchor': 'end' }, group.label));
+    const lines = groupLabelLines(group, stacks);
+    const middle = y0 + (groupHeight - groupGap) / 2;
+    if (lines.length === 1) {
+      root.append(svg('text', { class: 'label', x: left - 8, y: middle + 4, 'text-anchor': 'end' }, lines[0]));
+    } else {
+      root.append(svg('text', { class: 'label', x: left - 8, y: middle - 2, 'text-anchor': 'end' }, lines[0]));
+      root.append(svg('text', { class: 'label version', x: left - 8, y: middle + 9, 'text-anchor': 'end' }, lines[1]));
+    }
     group.bars.forEach((bar, barIndex) => {
       const y = y0 + barIndex * (barHeight + gap);
       if (bar.value === null) {

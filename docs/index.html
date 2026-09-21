@@ -87,6 +87,7 @@
     .cursor { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
     .axis { fill: var(--muted); font-size: 10px; }
     .label { fill: var(--fg); font-size: 11px; }
+    .label.version { fill: var(--muted); font-size: 9px; }
     .hit-area { fill: transparent; }
     .hit:hover .bar { filter: brightness(1.1); }
     .tooltip { position: absolute; background: var(--head); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 0.8rem; pointer-events: none; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.15); white-space: nowrap; }
@@ -109,6 +110,6 @@
   <footer>
     Local smoke numbers from one machine (load generator, MySQL, PHP-FPM and nginx on the same host, 8 FPM workers, single rounds): treat differences below ~20 % as noise. wrk2 reports coordinated-omission-corrected latency, so an offered rate above a stack's capacity shows queueing time, not request time.
   </footer>
-  <script type="module" src="site.js?v=20260921T221027Z"></script>
+  <script type="module" src="site.js?v=20260921T221231Z"></script>
 </body>
 </html>

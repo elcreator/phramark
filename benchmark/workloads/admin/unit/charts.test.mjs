@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  barGroups, describeSpread, describeTrend, labelGutter, linePath, linearScale, niceTicks, panelRange, rangeTicks, trendOf,
+  barGroups, describeSpread, describeTrend, groupLabelLines, labelGutter, linePath, twoLineGutter, linearScale, niceTicks, panelRange, rangeTicks, trendOf,
 } from '../../../../docs/charts.js';
 import { adminActionRows, errorRows, seriesPanels } from '../../../../docs/site.js';
 
@@ -127,6 +127,16 @@ test('labelGutter makes room for the longest row label', () => {
   assert.equal(labelGutter(['Evolution', 'MODX']), 150, 'short labels keep the plain layout');
   const wide = labelGutter(['Evolution + Latte · evo@../evolution', 'Drupal']);
   assert.ok(wide > 150 && wide >= 36 * 6.2, `a version label widens the gutter (${wide})`);
-  assert.equal(labelGutter(['x'.repeat(200)]), 320, 'capped so the bars keep most of the width');
+  assert.equal(labelGutter(['x'.repeat(200)]), 380, 'capped so the bars keep most of the width');
   assert.equal(labelGutter([]), 150);
+});
+
+test('bar groups are labelled on two lines, stack over build, and the gutter fits both', () => {
+  const stacks = { 'evo-latte-parser': { label: 'Evolution + Latte + EVO pass' } };
+  const group = { stack: 'evo-latte-parser', version: '3.5.9 ../evolution@3f9ea9220 · aLatteX 0.5.0 · NO_SESSION', label: 'x' };
+  assert.deepEqual(groupLabelLines(group, stacks), ['Evolution + Latte + EVO pass', '3.5.9 ../evolution@3f9ea9220 · aLatteX 0.5.0 · NO_SESSION']);
+  assert.deepEqual(groupLabelLines({ stack: 'modx', version: '', label: 'MODX' }, { modx: { label: 'MODX Revolution' } }), ['MODX Revolution']);
+  const gutter = twoLineGutter([group], stacks);
+  assert.ok(gutter >= 57 * 5.4 && gutter <= 380, `the gutter fits the 57-character build line (${gutter})`);
+  assert.equal(twoLineGutter([{ stack: 'modx', version: '', label: 'MODX' }], {}), 150);
 });
