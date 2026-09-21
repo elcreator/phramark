@@ -85,3 +85,13 @@ test('buildReport carries the run dimensions needed to compare JIT modes', () =>
 test('adminPageIds mirrors FixturePlan::adminPageId', () => {
   assert.deepEqual(adminPageIds(5, 10103), [10104, 10105, 10106, 10107, 10108]);
 });
+
+test('mergePhpMemory records the FPM RSS and, when given, the container footprint', () => {
+  const report = { steps: [{ action: 'login', label: 'round 1', ms: 1 }] };
+  const both = mergePhpMemory(report, { steps: {} }, 60.5, 90.25);
+  assert.equal(both.containerPeakMb, 60.5);
+  assert.equal(both.containerFootprintMb, 90.25);
+  const rssOnly = mergePhpMemory(report, { steps: {} }, 60.5, undefined);
+  assert.equal(rssOnly.containerPeakMb, 60.5);
+  assert.equal('containerFootprintMb' in rssOnly, false, 'no footprint column without --footprint');
+});

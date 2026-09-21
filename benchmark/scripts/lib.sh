@@ -79,22 +79,41 @@ memory_log_fetch() {
   docker exec "$1" cat /var/log/phramark/memory.log > "$2"
 }
 
-# Samples a container's resident memory (docker stats) into FILE until
-# memory_sampler_stop, one "EPOCH VALUE" line per sample (docker stats itself
-# takes a second or two, so the timestamp, not the line number, is the time
-# axis); the peak is what the stack needed as a process, as opposed to
-# per-request PHP peaks.
+# Samples a container's memory into FILE until memory_sampler_stop, one
+# "EPOCH RSS [FOOTPRINT]" line per second. RSS is the anonymous memory of
+# the container's cgroup (memory.stat "anon": the heaps of PHP-FPM and its
+# workers), what the stack needs as a process and what a leak would grow.
+# Docker's own figure (docker stats) also counts the page cache of files
+# the container just wrote (session files, compiled templates, logs), which
+# grows with I/O and looked like a leak; PHRAMARK_FOOTPRINT=1 (matrix
+# --footprint) records it as a second column: the container's footprint
+# with that cache.
 memory_sampler_start() {
   container=$1; file=$2
   : > "$file"
-  ( while :; do sample=$(docker stats --no-stream --format '{{.MemUsage}}' "$container" 2>/dev/null | sed 's#/.*##'); [ -n "$sample" ] && echo "$(date +%s) $sample" >> "$file"; sleep 1; done ) >/dev/null 2>&1 </dev/null &
+  (
+    while :; do
+      rss=$(docker exec "$container" sh -c 'grep "^anon " /sys/fs/cgroup/memory.stat 2>/dev/null || grep "^rss " /sys/fs/cgroup/memory/memory.stat 2>/dev/null' | awk '{ printf "%.2fMiB", $2 / 1048576 }')
+      if [ -n "$rss" ]; then
+        if [ "${PHRAMARK_FOOTPRINT:-0}" = 1 ]; then
+          footprint=$(docker stats --no-stream --format '{{.MemUsage}}' "$container" 2>/dev/null | sed 's#/.*##; s/ //g')
+          echo "$(date +%s) $rss ${footprint:--}" >> "$file"
+        else
+          echo "$(date +%s) $rss" >> "$file"
+        fi
+      fi
+      sleep 1
+    done
+  ) >/dev/null 2>&1 </dev/null &
   memory_sampler_pid=$!
 }
 memory_sampler_stop() {
   kill "$memory_sampler_pid" 2>/dev/null || true
   wait "$memory_sampler_pid" 2>/dev/null || true
 }
-# Converts docker's "123.4MiB"/"1.2GiB" samples to the peak in MiB.
+# The peak of one column of the samples ("123.4MiB"/"1.2GiB") in MiB:
+# column 2 is the RSS (default), 3 the footprint; "-" (no footprint) is
+# skipped and a column that is never there prints nothing.
 memory_sampler_peak_mib() {
-  awk '{ v=$NF; u=v; gsub(/[0-9.]/, "", u); gsub(/[^0-9.]/, "", v); if (u=="GiB") v*=1024; else if (u=="KiB") v/=1024; else if (u=="B") v/=1048576; if (v>max) max=v } END { printf "%.1f", max }' "$1"
+  awk -v col="${2:-2}" '{ v=$col; if (v == "" || v == "-") next; u=v; gsub(/[0-9.]/, "", u); gsub(/[^0-9.]/, "", v); v+=0; if (u=="GiB") v*=1024; else if (u=="KiB") v/=1024; else if (u=="B") v/=1048576; if (!seen || v>max) max=v; seen=1 } END { if (seen) printf "%.1f", max }' "$1"
 }

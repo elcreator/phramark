@@ -35,6 +35,7 @@ docker compose -f benchmark/compose.yaml --profile cross-cms up --build   # all 
 benchmark/scripts/matrix 30                                               # every stack × guest/admin × JIT off/tracing, then docs/results.json
 benchmark/scripts/matrix --solutions=evo-manticore                        # opt-in: the Manticore compile job (never in the default set)
 benchmark/scripts/matrix --versions=evo@3.5.x,evo@3.5.7,evo@3.5.8         # the Evolution stacks at each ref (tag if published, else branch)
+benchmark/scripts/matrix --footprint                                      # also record the FPM container's docker-stats memory (page cache included)
 composer test && (cd benchmark/workloads/admin && npm test)               # PHP and Node unit tests
 ```
 

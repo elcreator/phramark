@@ -49,7 +49,10 @@ export function writeReportFiles(base, report) {
 
 // Attributes PHP-side peak memory (memory-summary.php --json, keyed by the
 // X-Phramark-Step header "action:label") to the recorded steps.
-export function mergePhpMemory(report, memorySummary, containerPeakMb) {
+// containerPeakMb: the FPM cgroup's anonymous memory peak over the run;
+// containerFootprintMb: docker's figure including the page cache, when the
+// run recorded it (PHRAMARK_FOOTPRINT=1).
+export function mergePhpMemory(report, memorySummary, containerPeakMb, containerFootprintMb) {
   const steps = report.steps.map((step) => {
     const stat = memorySummary.steps?.[`${step.action}:${step.label}`];
     // phpPeakMb: exact script peak (memory_get_peak_usage(false)); phpPeakRealMb:
@@ -58,6 +61,7 @@ export function mergePhpMemory(report, memorySummary, containerPeakMb) {
   });
   const merged = { ...report, steps, phpMemory: memorySummary };
   if (typeof containerPeakMb === 'number') merged.containerPeakMb = containerPeakMb;
+  if (typeof containerFootprintMb === 'number') merged.containerFootprintMb = containerFootprintMb;
   const summary = {};
   for (const metric of METRICS) {
     const stats = summarize(steps, metric.key);

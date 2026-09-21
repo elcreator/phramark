@@ -39,7 +39,8 @@ export const GUEST_COLUMNS = [
   { key: 'errors', label: 'Non-2xx', numeric: true },
   { key: 'phpScriptMedianMb', label: 'PHP peak/request (script median)', numeric: true, ...mib },
   { key: 'phpAllocP95Mb', label: 'PHP alloc peak p95', numeric: true, ...mib },
-  { key: 'containerPeakMb', label: 'FPM container peak RSS', numeric: true, ...mib },
+  { key: 'containerPeakMb', label: 'FPM peak RSS', numeric: true, ...mib },
+  { key: 'containerFootprintMb', label: 'FPM footprint (with page cache)', numeric: true, ...mib },
 ];
 
 export const ADMIN_COLUMNS = [
@@ -84,6 +85,7 @@ export function adminRows(set, metric) {
       recordedAt: row.recordedAt,
       totalWallMs: metric === 'ms' ? row.totalWallMs : null,
       containerPeakMb: row.containerPeakMb,
+      containerFootprintMb: row.containerFootprintMb,
     };
     for (const action of ACTIONS) {
       flat[action] = row.actions?.[action]?.[metric] ?? null;
@@ -317,9 +319,17 @@ export function renderCharts(root, set) {
     rows: guestRows(set), key: 'p50Ms', range: 'p99Ms', spreadMetric: 'p50Ms', stacks: set.stacks, unit: 'ms',
   });
   renderBars(section, {
-    title: 'Guest PHP-FPM container peak RSS during the run',
+    title: 'Guest PHP-FPM peak RSS during the run',
+    note: 'The anonymous memory of the FPM container\'s cgroup: the heaps of PHP-FPM and its workers, what a leak would grow. Files the container writes during the run (session files, compiled templates, logs) are not in it.',
     rows: guestRows(set), key: 'containerPeakMb', spreadMetric: 'containerPeakMb', stacks: set.stacks, unit: 'MiB', decimals: 1,
   });
+  if (guestRows(set).some((row) => row.containerFootprintMb !== null && row.containerFootprintMb !== undefined)) {
+    renderBars(section, {
+      title: 'Guest PHP-FPM container footprint during the run (with page cache)',
+      note: 'Docker\'s memory figure for the container: the RSS plus the page cache of what the container read and wrote, so it grows with every file a request leaves behind. Recorded with matrix --footprint.',
+      rows: guestRows(set), key: 'containerFootprintMb', spreadMetric: 'containerFootprintMb', stacks: set.stacks, unit: 'MiB', decimals: 1,
+    });
+  }
   for (const action of ACTIONS) {
     renderBars(section, {
       title: `Admin ${action}: wall time (bar) and server time (inner bar), median per session`,
@@ -340,8 +350,14 @@ export function renderDynamics(root, set) {
     unit: 'MiB', xLabel: 's',
   });
   renderSmallMultiples(section, {
-    title: 'Guest: PHP-FPM container RSS over the run',
+    title: 'Guest: PHP-FPM RSS over the run (cgroup anon)',
     panels: seriesPanels(guest, set.stacks, (row) => row.series?.containerRss && { points: row.series.containerRss.points.map((p) => ({ x: p.t, y: p.mb })), trend: row.series.containerRss.trend }),
+    unit: 'MiB', xLabel: 's',
+  });
+  renderSmallMultiples(section, {
+    title: 'Guest: PHP-FPM container footprint over the run (with page cache)',
+    note: 'Grows with the files a request leaves behind (a session file per visitor, compiled templates, logs), not only with the process. Recorded with matrix --footprint; older runs recorded only this figure.',
+    panels: seriesPanels(guest, set.stacks, (row) => row.series?.containerFootprint && { points: row.series.containerFootprint.points.map((p) => ({ x: p.t, y: p.mb })), trend: row.series.containerFootprint.trend }),
     unit: 'MiB', xLabel: 's',
   });
   const admin = set.admin ?? [];
@@ -394,7 +410,7 @@ export function render(set, root) {
   renderStacks(root, set.stacks);
   renderTable(root, {
     title: 'Guest workload (wrk2, constant offered rate)',
-    note: 'Latest run per stack, version, JIT mode and offered rate. Version is what the stack was built from, read from the components its container reported: the CMS release (3.5.8, 11.4.7), a working copy as directory@commit (3.5.9 ../evolution@3f9ea9220), a branch as branch@commit, and the extensions the harness adds (aLatteX, aPhalcon, Gantry); a run pinned with benchmark/scripts/matrix --versions=evo@3.5.8 and a default build of the same release are one cell. Hover the version for the exact components. wrk2 reports coordinated-omission-corrected latency, so an offered rate above capacity shows queueing time. Memory: PHP script peak per request (median), allocator peak (p95), FPM container peak RSS.',
+    note: 'Latest run per stack, version, JIT mode and offered rate. Version is what the stack was built from, read from the components its container reported: the CMS release (3.5.8, 11.4.7), a working copy as directory@commit (3.5.9 ../evolution@3f9ea9220), a branch as branch@commit, and the extensions the harness adds (aLatteX, aPhalcon, Gantry); a run pinned with benchmark/scripts/matrix --versions=evo@3.5.8 and a default build of the same release are one cell. Hover the version for the exact components. wrk2 reports coordinated-omission-corrected latency, so an offered rate above capacity shows queueing time. Memory: PHP script peak per request (median), allocator peak (p95), FPM peak RSS (the cgroup\'s anonymous memory: the process, not the page cache) and, when recorded with --footprint, the container footprint with the page cache (what docker stats shows).',
     columns: GUEST_COLUMNS,
     rows: guestRows(set),
   });
@@ -402,7 +418,7 @@ export function render(set, root) {
     const columns = ADMIN_COLUMNS
       .filter((column) => metric.key === 'ms' || column.key !== 'totalWallMs')
       .map((column) => (ACTIONS.includes(column.key) ? { ...column, unit: metric.unit, decimals: metric.decimals } : column));
-    if (metric.key === 'phpPeakMb') columns.push({ key: 'containerPeakMb', label: 'FPM container peak', numeric: true, ...mib });
+    if (metric.key === 'phpPeakMb') columns.push({ key: 'containerPeakMb', label: 'FPM peak RSS', numeric: true, ...mib }, { key: 'containerFootprintMb', label: 'FPM footprint (with page cache)', numeric: true, ...mib });
     renderTable(root, {
       title: metric.title,
       columns,

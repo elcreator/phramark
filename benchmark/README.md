@@ -162,7 +162,8 @@ Every step also records memory on both sides:
 | Metric | Side | Source |
 | --- | --- | --- |
 | `phpPeakMb` / `phpPeakRealMb` | PHP | Exact script peak and allocator peak (`memory_get_peak_usage`) of the largest request the step caused; requests are attributed by the `X-Phramark-Step` header the browser sends, logged by `benchmark/fixtures/memory-prepend.php` |
-| `containerPeakMb` | PHP | Peak resident memory of the stack's PHP-FPM container during the run (`docker stats`, 1 s samples) |
+| `containerPeakMb` | PHP | Peak RSS of the stack's PHP-FPM container during the run: the anonymous memory of its cgroup (`memory.stat` `anon`, 1 s samples), the heaps of PHP-FPM and its workers |
+| `containerFootprintMb` | PHP | With `matrix --footprint` (`PHRAMARK_FOOTPRINT=1`): the container's memory as `docker stats` reports it, the RSS plus the page cache of what the container read and wrote. It grows with every file a request leaves behind (a session file per visitor, compiled templates, logs), so a rise here with a flat RSS is I/O, not a leak. Runs from before this split recorded only this figure |
 | `jsHeapUsedMb`, `jsHeapTotalMb` | Frontend | Renderer JS heap after the step (Chrome DevTools `Performance.getMetrics`) |
 | `domNodes`, `jsListeners` | Frontend | DOM nodes and event listeners alive in the renderer after the step (same source; counts nodes not yet garbage-collected). Chrome keeps one renderer for the whole same-site session, so the heap and node counts of a page-per-action manager include what earlier pages left for the garbage collector; the drop after logout shows that collection |
 
@@ -195,7 +196,8 @@ Every run keeps its memory series, and the results site draws them as small mult
 | Series | Source | What a rising line means |
 | --- | --- | --- |
 | Guest: PHP peak per request | `.memory.log` (one line per request from `memory-prepend.php`), cut into 40 time slices | The request itself allocates more as the run goes on: a per-process cache or a leak that survives requests (PHP frees per request, so this is normally flat) |
-| Guest: PHP-FPM container RSS | `.rss.log` (`docker stats`, 1 s samples) | The workers' resident memory: OPcache filling, per-worker static caches, or a leak across requests |
+| Guest: PHP-FPM RSS | `.rss.log` column 2 (cgroup `anon`, 1 s samples) | The workers' resident memory: OPcache filling, per-worker static caches, or a leak across requests |
+| Guest: PHP-FPM container footprint | `.rss.log` column 3 (`docker stats`, with `--footprint`) | The same plus the page cache: what the run wrote to disk |
 | Admin: JS heap, DOM nodes per step | the report's steps (Chrome DevTools `Performance.getMetrics` after every action) | The manager's frontend retains state across actions: a single-page manager (ExtJS, React) grows until a full reload; a page-per-action manager returns to its baseline |
 | Admin: PHP peak per step and per request | the report's steps and its `.memory.log` | The largest request of each action; a growing line across the five repetitions of one action is a server-side accumulation |
 
