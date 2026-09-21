@@ -238,8 +238,9 @@ final class ResultSet
 
     /**
      * "3.5.8", "3.5.9 ../evolution@3f9ea9220", "3.5.x@1a2b3c4" (a branch),
-     * "3.5.8 · aLatteX 0.5.0", "7.1.1 · Gantry 5.6.4"; null when the
-     * components do not name the stack's CMS.
+     * "3.5.8 · aLatteX 0.5.0", "7.1.1 · Gantry 5.6.4", "… · NO_SESSION" for a
+     * site without a front-end session; null when the components do not
+     * name the stack's CMS.
      *
      * @param list<array{name: string, version: string}> $components
      */
@@ -256,6 +257,11 @@ final class ResultSet
             }
             $version = self::shortVersion((string) $byName[$name]);
             $parts[] = $label === '' ? $version : $label . ' ' . $version;
+        }
+        // A site set up without a front-end session (EVO_NO_SESSION=1) is
+        // another build of the same code: it stays a cell of its own.
+        if ($parts !== [] && str_contains((string) ($byName['front-end session'] ?? ''), 'NO_SESSION')) {
+            $parts[] = 'NO_SESSION';
         }
 
         return $parts === [] ? null : implode(' · ', $parts);
