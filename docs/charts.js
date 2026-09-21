@@ -74,6 +74,15 @@ export function cellLabel(row, stacks) {
 // Rows for a grouped horizontal bar chart: one group per stack (and
 // version), one bar per JIT mode present, sorted by the JIT-off value
 // (falls back to tracing).
+// The left gutter of a bar chart, wide enough for the longest row label
+// ("Evolution + Latte · evo@../evolution" with a version): about 6 px per
+// character at the 11 px label font, never narrower than the plain-stack
+// layout and capped so the bars keep most of the width.
+export function labelGutter(labels, { min = 150, max = 320, perChar = 6.2, padding = 16 } = {}) {
+  const longest = Math.max(0, ...labels.map((label) => String(label ?? '').length));
+  return Math.min(max, Math.max(min, Math.ceil(longest * perChar + padding)));
+}
+
 export function barGroups(rows, key, stacks) {
   const groups = new Map();
   for (const row of rows) {
@@ -160,10 +169,12 @@ export function renderBars(container, { title, note, rows, key, stacks, unit, de
   const barHeight = 12;
   const gap = 2;
   const groupGap = 10;
-  const left = 150;
+  // The gutter grows with the labels and the chart with it, so the bars
+  // keep their width whatever the version labels add.
+  const left = labelGutter(groups.map((group) => group.label));
   const right = 24;
   const top = 8;
-  const width = 760;
+  const width = 760 + (left - 150);
   const groupHeight = series.length * (barHeight + gap) - gap + groupGap;
   const height = top + groups.length * groupHeight + 28;
   const maxValue = Math.max(...rows.flatMap((row) => [row[key] ?? 0, range ? row[range] ?? 0 : 0, row.repeats?.metrics?.[spreadMetric]?.max ?? 0]));

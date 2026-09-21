@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  barGroups, describeSpread, describeTrend, linePath, linearScale, niceTicks, panelRange, rangeTicks, trendOf,
+  barGroups, describeSpread, describeTrend, labelGutter, linePath, linearScale, niceTicks, panelRange, rangeTicks, trendOf,
 } from '../../../../docs/charts.js';
 import { adminActionRows, errorRows, seriesPanels } from '../../../../docs/site.js';
 
@@ -121,4 +121,12 @@ test('errorRows pairs guest and admin repetitions per cell with CV in percent', 
   assert.equal(rows.length, 2);
   assert.deepEqual([rows[0].guestRuns, rows[0].p50Cv, rows[0].p99Cv, rows[0].rpsCv, rows[0].adminRuns, rows[0].loginCv, rows[0].totalCv], [3, 5, 10, null, 2, 2, 3]);
   assert.deepEqual([rows[1].guestRuns, rows[1].p50Cv, rows[1].adminRuns, rows[1].loginCv], [1, null, null, null]);
+});
+
+test('labelGutter makes room for the longest row label', () => {
+  assert.equal(labelGutter(['Evolution', 'MODX']), 150, 'short labels keep the plain layout');
+  const wide = labelGutter(['Evolution + Latte · evo@../evolution', 'Drupal']);
+  assert.ok(wide > 150 && wide >= 36 * 6.2, `a version label widens the gutter (${wide})`);
+  assert.equal(labelGutter(['x'.repeat(200)]), 320, 'capped so the bars keep most of the width');
+  assert.equal(labelGutter([]), 150);
 });
