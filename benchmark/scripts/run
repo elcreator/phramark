@@ -45,7 +45,9 @@ memory_log_fetch "$php" "$base.memory.log"
   echo
   echo "---- memory ----"
   php benchmark/scripts/memory-summary.php "$base.memory.log"
-  echo "PHP-FPM container peak RSS: $(memory_sampler_peak_mib "$base.rss.log") MiB (docker stats, 1 s samples)"
+  echo "PHP-FPM peak RSS: $(memory_sampler_peak_mib "$base.rss.log") MiB (cgroup anon, 1 s samples)"
+  footprint=$(memory_sampler_peak_mib "$base.rss.log" 3)
+  [ -z "$footprint" ] || echo "PHP-FPM container footprint peak: $footprint MiB (docker stats, page cache included, 1 s samples)"
 } >>"$output"
 attach_versions "$stack" "$output"
 grep -E 'Requests/sec|Non-2xx|Socket errors|^ *(50|99)\.000%|^PHP' "$output" || true

@@ -60,8 +60,9 @@ fi
 memory_log_fetch "$php" "${report%.json}.memory.log"
 php benchmark/scripts/memory-summary.php "${report%.json}.memory.log" --json > "${report%.json}.memory.json"
 peak=$(memory_sampler_peak_mib "$results/.admin-rss.samples")
+footprint=$(memory_sampler_peak_mib "$results/.admin-rss.samples" 3)
 rm -f "$results/.admin-rss.samples"
 docker run --rm -v "$root/benchmark/results:/results" --entrypoint node phramark-playwright \
-  lib/merge-memory.mjs "/results/$(basename "$report")" "/results/$(basename "${report%.json}.memory.json")" "$peak"
+  lib/merge-memory.mjs "/results/$(basename "$report")" "/results/$(basename "${report%.json}.memory.json")" "$peak" "$footprint"
 attach_versions "$stack" "$report"
 echo "Results: $report"

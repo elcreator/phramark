@@ -50,11 +50,14 @@ final class ResultSet
         foreach ($runs as $key => $rows) {
             usort($rows, static fn (array $a, array $b): int => strcmp($a['recordedAt'], $b['recordedAt']));
             $latest = $rows[count($rows) - 1];
-            $latest['repeats'] = self::spread($rows, ['rps', 'p50Ms', 'p99Ms', 'phpScriptMedianMb', 'phpAllocP95Mb', 'containerPeakMb']);
+            $latest['repeats'] = self::spread($rows, ['rps', 'p50Ms', 'p99Ms', 'phpScriptMedianMb', 'phpAllocP95Mb', 'containerPeakMb', 'containerFootprintMb']);
             $base = $dir . '/' . substr($latest['file'], 0, -4);
+            // The samples' second column is the RSS of a run that recorded one,
+            // else the docker figure of an older run; the third the footprint.
             $latest['series'] = [
                 'phpPeak' => self::requestSeries($base . '.memory.log'),
-                'containerRss' => self::sampleSeries($base . '.rss.log'),
+                'containerRss' => $latest['containerPeakMb'] !== null ? self::sampleSeries($base . '.rss.log', 2) : null,
+                'containerFootprint' => $latest['containerPeakMb'] === null ? self::sampleSeries($base . '.rss.log', 2) : self::sampleSeries($base . '.rss.log', 3),
             ];
             $guest[$key] = $latest;
         }
@@ -80,7 +83,7 @@ final class ResultSet
                 static fn (string $action): array => [$action . '.ms' => $row['actions'][$action]['ms'], $action . '.serverMs' => $row['actions'][$action]['serverMs']],
                 self::ACTIONS
             ));
-            $latest['repeats'] = self::spread(array_map($flat, $rows), array_keys($flat($latest)));
+            $latest['repeats'] = self::spread(array_map(static fn (array $row): array => $flat($row) + ['containerPeakMb' => $row['containerPeakMb'], 'containerFootprintMb' => $row['containerFootprintMb']], $rows), array_merge(array_keys($flat($latest)), ['containerPeakMb', 'containerFootprintMb']));
             $latest['series'] = [
                 'steps' => $latest['steps'],
                 'phpPeak' => self::requestSeries($dir . '/' . substr($latest['file'], 0, -5) . '.memory.log'),
@@ -125,7 +128,12 @@ final class ResultSet
         preg_match('#Requests/sec:\s+([\d.]+)#', $text, $rps);
         preg_match('#Non-2xx or 3xx responses:\s+(\d+)#', $text, $errors);
         preg_match('#PHP memory \(per request, allocator peak\): median (\S+) MiB, p95 (\S+) MiB, max (\S+) MiB over (\d+) requests.*script peak median (\S+) MiB#', $text, $mem);
-        preg_match('#container peak RSS: ([\d.]+) MiB#', $text, $rss);
+        // "PHP-FPM peak RSS: X MiB (cgroup anon …)" is the process memory;
+        // "container footprint peak: Y MiB (docker stats …)" the optional figure
+        // with the page cache. Results from before the split recorded docker's
+        // figure as "container peak RSS": that is a footprint, not an RSS.
+        preg_match('#PHP-FPM peak RSS: ([\d.]+) MiB \(cgroup#', $text, $rss);
+        preg_match('#container (?:footprint peak|peak RSS): ([\d.]+) MiB#', $text, $footprint);
 
         return [
             'stack' => $stack,
@@ -146,6 +154,7 @@ final class ResultSet
             'phpAllocP95Mb' => isset($mem[2]) ? (float) $mem[2] : null,
             'phpAllocMaxMb' => isset($mem[3]) ? (float) $mem[3] : null,
             'containerPeakMb' => isset($rss[1]) ? (float) $rss[1] : null,
+            'containerFootprintMb' => isset($footprint[1]) ? (float) $footprint[1] : null,
         ];
     }
 
@@ -178,6 +187,7 @@ final class ResultSet
             'file' => basename($file),
             'totalWallMs' => round(array_sum(array_column($report['steps'], 'ms'))),
             'containerPeakMb' => isset($report['containerPeakMb']) ? (float) $report['containerPeakMb'] : null,
+            'containerFootprintMb' => isset($report['containerFootprintMb']) ? (float) $report['containerFootprintMb'] : null,
             'actions' => $actions,
             'steps' => array_values(array_map(static fn (array $step, int $index): array => [
                 'index' => $index + 1,
@@ -381,7 +391,7 @@ final class ResultSet
      *
      * @return array{points: list<array{t: int, mb: float}>, trend: array{slopeMbPerMin: float, firstQuarterMb: float, lastQuarterMb: float, growth: float}}|null
      */
-    public static function sampleSeries(string $file): ?array
+    public static function sampleSeries(string $file, int $column = 2): ?array
     {
         if (!is_file($file)) {
             return null;
@@ -389,9 +399,14 @@ final class ResultSet
         $entries = [];
         $timed = true;
         foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $index => $line) {
-            if (preg_match('/^(?:(\d+)\s+)?([\d.]+)\s*(GiB|MiB|KiB|B)$/', trim($line), $m) !== 1) {
+            // "EPOCH RSS [FOOTPRINT]" (memory_sampler_start), or a bare value per line.
+            $fields = preg_split('/\s+/', trim($line)) ?: [];
+            $stamp = isset($fields[0]) && preg_match('/^\d+$/', $fields[0]) === 1 ? $fields[0] : '';
+            $value = $fields[$column - ($stamp === '' ? 2 : 1)] ?? '';
+            if (preg_match('/^([\d.]+)\s*(GiB|MiB|KiB|B)$/', $value, $v) !== 1) {
                 continue;
             }
+            $m = [null, $stamp, $v[1], $v[2]];
             $mb = (float) $m[2] * match ($m[3]) { 'GiB' => 1024, 'MiB' => 1, 'KiB' => 1 / 1024, 'B' => 1 / 1048576 };
             $timed = $timed && $m[1] !== '';
             $entries[] = [$m[1] !== '' ? (float) $m[1] : (float) $index, $mb];
@@ -488,10 +503,10 @@ final class ResultSet
         }
         $name = static fn (array $row): string => $row['stack'] . ($row['version'] !== '' ? ' (' . $row['version'] . ')' : '');
         $out .= "## Guest workload (wrk2, constant offered rate)\n\n";
-        $out .= "| Stack | JIT | Offered | Achieved rps | p50 | p99 | Non-2xx | PHP peak/request (script median) | PHP alloc peak p95 | FPM container peak RSS |\n";
+        $out .= "| Stack | JIT | Offered | Achieved rps | p50 | p99 | Non-2xx | PHP peak/request (script median) | PHP alloc peak p95 | FPM peak RSS | FPM footprint (with page cache) |\n";
         $out .= "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n";
         foreach ($set['guest'] as $row) {
-            $out .= sprintf("| %s | %s | %d | %s | %s | %s | %d | %s | %s | %s |\n", $name($row), $row['jit'], $row['rate'], $number($row['rps']), $ms($row['p50Ms']), $ms($row['p99Ms']), $row['errors'], $mib($row['phpScriptMedianMb']), $mib($row['phpAllocP95Mb']), $mib($row['containerPeakMb']));
+            $out .= sprintf("| %s | %s | %d | %s | %s | %s | %d | %s | %s | %s | %s |\n", $name($row), $row['jit'], $row['rate'], $number($row['rps']), $ms($row['p50Ms']), $ms($row['p99Ms']), $row['errors'], $mib($row['phpScriptMedianMb']), $mib($row['phpAllocP95Mb']), $mib($row['containerPeakMb']), $mib($row['containerFootprintMb']));
         }
 
         $out .= "\n## Admin workload (Playwright; medians per action, wall / server)\n\n";

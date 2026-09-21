@@ -25,6 +25,8 @@
 #   --workload=guest | --workload=admin | --workload=guest,admin   (default: both)
 #   --rate=30        offered rps for the guest workload (default 30)
 #   --repeats=3      run every selected cell N times (default 1, or REPEATS)
+#   --footprint      also record the FPM container's docker-stats memory (page
+#                    cache included) next to its RSS (PHRAMARK_FOOTPRINT=1)
 #
 # DURATION (wrk2, default 60s) and ROUNDS (admin sessions, default 1) apply
 # to every cell; repetitions let the summary report the spread across runs,
@@ -55,6 +57,7 @@ for argument in "$@"; do
     --workload=*|--workloads=*) workloads=$(echo "${argument#*=}" | tr ',' ' ') ;;
     --rate=*) rate=${argument#*=} ;;
     --repeats=*) repeats=${argument#*=} ;;
+    --footprint) PHRAMARK_FOOTPRINT=1; export PHRAMARK_FOOTPRINT ;;
     --*) echo "unknown option $argument" >&2; exit 2 ;;
     *) if [ -z "$rate" ]; then rate=$argument; else ports="$ports $argument"; fi ;;
   esac
