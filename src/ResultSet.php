@@ -303,6 +303,31 @@ final class ResultSet
     }
 
     /**
+     * Cache-busting for the results site: GitHub Pages serves the scripts
+     * with a four-hour max-age, so a reload after a new results build would
+     * draw new data with old code. The version query on site.js (in
+     * index.html) and on charts.js (in site.js) is set to the build's
+     * generatedAt; a changed query is a new URL to the browser.
+     *
+     * @return array<string, string> file name => new contents, only the files that change
+     */
+    public static function stampScripts(string $generatedAt, string $indexHtml, string $siteJs): array
+    {
+        $version = preg_replace('/[^0-9A-Za-z]/', '', $generatedAt);
+        $changed = [];
+        $index = preg_replace('/src="site\.js(\?v=[^"]*)?"/', 'src="site.js?v=' . $version . '"', $indexHtml);
+        if ($index !== null && $index !== $indexHtml) {
+            $changed['index.html'] = $index;
+        }
+        $site = preg_replace("/from '\.\/charts\.js(\?v=[^']*)?'/", "from './charts.js?v=" . $version . "'", $siteJs);
+        if ($site !== null && $site !== $siteJs) {
+            $changed['site.js'] = $site;
+        }
+
+        return $changed;
+    }
+
+    /**
      * The measuring error of a cell: for every metric, the median, min, max
      * and coefficient of variation across its repetitions. With one run the
      * spread is unknown (null), which the site shows instead of pretending.
