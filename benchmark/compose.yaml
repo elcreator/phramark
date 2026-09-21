@@ -22,17 +22,34 @@ services:
     build:
       context: ..
       dockerfile: benchmark/images/php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
     environment:
       DB_HOST: mysql
       DB_ROOT_PASSWORD: benchmark-root
       DB_USER: benchmark
       DB_PASSWORD: benchmark
       EVO_ADMIN_PASSWORD: benchmark-admin
+      # Versions of the parts a stack is built from (Phramark\VersionSpec):
+      # a tag, a branch, or "latest" (newest stable tag). A changed value
+      # reinstalls the sites it applies to; benchmark/scripts/matrix
+      # --versions=evo@3.5.x,evo@3.5.8,latte@0.4.0 drives them per round.
+      EVO_VERSION: ${EVO_VERSION:-latest}
+      ALATTEX_VERSION: ${ALATTEX_VERSION:-latest}
+      APHALCON_VERSION: ${APHALCON_VERSION:-latest}
+      # A version that is a ../path names a directory on the host relative
+      # to this checkout: its parent is mounted at /host, and PHRAMARK_DIR is
+      # the checkout's directory name there.
+      PHRAMARK_DIR: ${PHRAMARK_DIR:-phramark}
+      # The stacks a matrix round needs (a site outside the list may fail to
+      # build at the requested versions without failing the run).
+      PHRAMARK_STACKS: ${PHRAMARK_STACKS:-}
     depends_on:
       mysql:
         condition: service_healthy
     command: ["php", "/opt/phramark/benchmark/fixtures/setup.php"]
     volumes:
+      - ${PHRAMARK_SOURCES:-../..}:/host:ro
       - evo-parser:/sites/evo-parser
       - evo-latte:/sites/evo-latte
       - evo-latte-parser:/sites/evo-latte-parser
@@ -42,6 +59,8 @@ services:
     build:
       context: ..
       dockerfile: benchmark/images/php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
     depends_on:
       setup:
         condition: service_completed_successfully
@@ -56,6 +75,8 @@ services:
     build:
       context: ..
       dockerfile: benchmark/images/php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
     depends_on:
       setup:
         condition: service_completed_successfully
@@ -70,6 +91,8 @@ services:
     build:
       context: ..
       dockerfile: benchmark/images/php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
     depends_on:
       setup:
         condition: service_completed_successfully
@@ -84,6 +107,8 @@ services:
     build:
       context: ..
       dockerfile: benchmark/images/php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
     depends_on:
       setup:
         condition: service_completed_successfully
@@ -131,6 +156,8 @@ services:
     build:
       context: ..
       dockerfile: benchmark/images/cms-php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
     environment:
       DB_HOST: mysql
       DB_ROOT_PASSWORD: benchmark-root
@@ -141,22 +168,34 @@ services:
       WINTER_ADMIN_PASSWORD: benchmark-admin
       MODX_ADMIN_PASSWORD: benchmark-admin
       WORDPRESS_ADMIN_PASSWORD: benchmark-admin
+      DRUPAL_VERSION: ${DRUPAL_VERSION:-latest}
+      TYPO3_VERSION: ${TYPO3_VERSION:-latest}
+      WINTER_VERSION: ${WINTER_VERSION:-latest}
+      MODX_VERSION: ${MODX_VERSION:-latest}
+      WORDPRESS_VERSION: ${WORDPRESS_VERSION:-latest}
+      GANTRY_VERSION: ${GANTRY_VERSION:-latest}
+      CLASSIC_EDITOR_VERSION: ${CLASSIC_EDITOR_VERSION:-latest}
+      PHRAMARK_DIR: ${PHRAMARK_DIR:-phramark}
+      PHRAMARK_STACKS: ${PHRAMARK_STACKS:-}
     depends_on:
       mysql:
         condition: service_healthy
     command: ["sh", "/opt/phramark/benchmark/fixtures/setup-cross-cms.sh"]
     volumes:
-      - drupal-11:/sites/drupal-11
+      - ${PHRAMARK_SOURCES:-../..}:/host:ro
+      - drupal:/sites/drupal
       - typo3:/sites/typo3
       - winter:/sites/winter
       - modx:/sites/modx
       - wordpress-gantry:/sites/wordpress-gantry
 
-  php-drupal-11:
+  php-drupal:
     profiles: ["cross-cms"]
     build:
       context: ..
       dockerfile: benchmark/images/cms-php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
     depends_on:
       setup-cross-cms:
         condition: service_completed_successfully
@@ -165,22 +204,24 @@ services:
       PHP_JIT: ${PHP_JIT:-off}
     command: ["/usr/local/bin/phramark-fpm"]
     volumes:
-      - drupal-11:/var/www/html
+      - drupal:/var/www/html
 
-  nginx-drupal-11:
+  nginx-drupal:
     profiles: ["cross-cms"]
     image: nginx:1.27-alpine
-    depends_on: [php-drupal-11]
+    depends_on: [php-drupal]
     ports: ["8083:80"]
     volumes:
-      - drupal-11:/var/www/html:ro
-      - ./config/nginx-drupal-11.conf:/etc/nginx/conf.d/default.conf:ro
+      - drupal:/var/www/html:ro
+      - ./config/nginx-drupal.conf:/etc/nginx/conf.d/default.conf:ro
 
   php-typo3:
     profiles: ["cross-cms"]
     build:
       context: ..
       dockerfile: benchmark/images/cms-php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
     depends_on:
       setup-cross-cms:
         condition: service_completed_successfully
@@ -205,6 +246,8 @@ services:
     build:
       context: ..
       dockerfile: benchmark/images/cms-php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
     depends_on:
       setup-cross-cms:
         condition: service_completed_successfully
@@ -229,6 +272,8 @@ services:
     build:
       context: ..
       dockerfile: benchmark/images/cms-php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
     depends_on:
       setup-cross-cms:
         condition: service_completed_successfully
@@ -253,6 +298,8 @@ services:
     build:
       context: ..
       dockerfile: benchmark/images/cms-php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
     depends_on:
       setup-cross-cms:
         condition: service_completed_successfully
@@ -307,7 +354,7 @@ volumes:
   evo-latte:
   evo-latte-parser:
   evo-phalcon:
-  drupal-11:
+  drupal:
   typo3:
   winter:
   modx:

@@ -10,7 +10,9 @@ final class RuntimeProfile
      * Framework labels are what a warm category request actually executes,
      * recorded by benchmark/scripts/trace-request (see classify()). The
      * "components" list is asserted against that trace, so a label cannot
-     * drift away from the real request path.
+     * drift away from the real request path. No version numbers here: the
+     * versions a stack was built from are chosen per run (VersionSpec) and
+     * recorded from the container into every result (versions.php).
      *
      * @return array<string, array{label: string, framework: string, components: list<string>, port: int}>
      */
@@ -19,55 +21,55 @@ final class RuntimeProfile
         return [
             'evo-parser' => [
                 'label' => 'Evolution parser',
-                'framework' => 'Evolution CMS 3.5 core on Laravel (Illuminate) components (+ Symfony http-foundation/finder)',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components (+ Symfony http-foundation/finder)',
                 'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)'],
                 'port' => 8080,
             ],
             'evo-latte' => [
                 'label' => 'Evolution + Latte',
-                'framework' => 'Evolution CMS 3.5 core on Laravel (Illuminate) components + Latte (+ Symfony http-foundation/finder)',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components + Latte (+ Symfony http-foundation/finder)',
                 'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'Latte'],
                 'port' => 8081,
             ],
             'evo-latte-parser' => [
                 'label' => 'Evolution + Latte + EVO pass',
-                'framework' => 'Evolution CMS 3.5 core on Laravel (Illuminate) components + Latte, with the core tag pass over the view output (+ Symfony http-foundation/finder)',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components + Latte, with the core tag pass over the view output (+ Symfony http-foundation/finder)',
                 'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'Latte'],
                 'port' => 8085,
             ],
             'evo-phalcon' => [
                 'label' => 'Evolution + aPhalcon',
-                'framework' => 'Evolution CMS 3.5 core on Laravel (Illuminate) components + Phalcon DB adapter + Latte (+ Symfony http-foundation/finder)',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components + Phalcon DB adapter + Latte (+ Symfony http-foundation/finder)',
                 'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'Phalcon (extension)', 'Latte'],
                 'port' => 8082,
             ],
-            'drupal-11' => [
-                'label' => 'Drupal 11',
-                'framework' => 'Drupal 11 core on Symfony HttpKernel/Routing + Twig',
+            'drupal' => [
+                'label' => 'Drupal',
+                'framework' => 'Drupal core on Symfony HttpKernel/Routing + Twig',
                 'components' => ['Drupal core', 'Symfony', 'Twig'],
                 'port' => 8083,
             ],
             'typo3' => [
                 'label' => 'TYPO3',
-                'framework' => 'TYPO3 14 core on Doctrine DBAL + Fluid (Symfony DI/translation only)',
+                'framework' => 'TYPO3 core on Doctrine DBAL + Fluid (Symfony DI/translation only)',
                 'components' => ['TYPO3 core', 'Doctrine DBAL', 'Fluid', 'Symfony (minor)'],
                 'port' => 8084,
             ],
             'winter' => [
                 'label' => 'Winter CMS',
-                'framework' => 'Winter CMS 1.2 (Storm + CMS module) on Laravel 9 (Illuminate) + Twig (+ Symfony http-foundation/translation; PDO wrapped in the Doctrine DBAL PDOConnection)',
+                'framework' => 'Winter CMS (Storm + CMS module) on Laravel (Illuminate) + Twig (+ Symfony http-foundation/translation; PDO wrapped in the Doctrine DBAL PDOConnection)',
                 'components' => ['Winter core', 'Laravel/Illuminate', 'Symfony (minor)', 'Doctrine DBAL (minor)', 'Twig'],
                 'port' => 8086,
             ],
             'modx' => [
                 'label' => 'MODX Revolution',
-                'framework' => 'MODX Revolution 3.2 core (modRequest/modParser) on xPDO, its own ORM over PDO; no third-party framework on the request path',
+                'framework' => 'MODX Revolution core (modRequest/modParser) on xPDO, its own ORM over PDO; no third-party framework on the request path',
                 'components' => ['MODX core', 'xPDO'],
                 'port' => 8087,
             ],
             'wordpress-gantry' => [
                 'label' => 'WordPress + Gantry 5',
-                'framework' => 'WordPress 7.1 core (wpdb, WP_Rewrite, WP_Query) with the Gantry 5.6 framework plugin rendering the Hydrogen theme through Timber and Twig 2 (+ Symfony yaml/event-dispatcher for the outline); no other framework on the request path',
+                'framework' => 'WordPress core (wpdb, WP_Rewrite, WP_Query) with the Gantry 5 framework plugin rendering the Hydrogen theme through Timber and Twig 2 (+ Symfony yaml/event-dispatcher for the outline); no other framework on the request path',
                 'components' => ['WordPress core', 'Gantry 5', 'Timber', 'Symfony (minor)', 'Twig'],
                 'port' => 8088,
             ],

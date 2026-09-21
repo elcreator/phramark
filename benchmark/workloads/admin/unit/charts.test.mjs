@@ -90,8 +90,23 @@ const set = {
 
 test('adminActionRows carries wall, server and the wall-time spread of one action', () => {
   const rows = adminActionRows(set, 'login');
-  assert.deepEqual(rows[0], { stack: 'modx', jit: 'off', value: 700, server: 300, repeats: { n: 2, metrics: { value: { min: 690, max: 710, cv: 0.02 } } } });
+  assert.deepEqual(rows[0], { stack: 'modx', version: '', jit: 'off', value: 700, server: 300, repeats: { n: 2, metrics: { value: { min: 690, max: 710, cv: 0.02 } } } });
   assert.equal(adminActionRows(set, 'open-edit')[0].value, null);
+});
+
+test('barGroups and seriesPanels keep the builds of a version comparison apart', () => {
+  const rows = [
+    { stack: 'evo-latte', version: 'evo@3.5.8+latte@0.4.0', jit: 'off', v: 50 },
+    { stack: 'evo-latte', version: 'evo@3.5.x+latte@0.4.0', jit: 'off', v: 40 },
+    { stack: 'evo-latte', version: '', jit: 'off', v: 60 },
+    { stack: 'evo-latte', version: 'evo@3.5.8+latte@0.4.0', jit: 'tracing', v: 45 },
+  ];
+  const stacks = { 'evo-latte': { label: 'Evolution + Latte' } };
+  const groups = barGroups(rows, 'v', stacks);
+  assert.deepEqual(groups.map((group) => group.label), ['Evolution + Latte · evo@3.5.x+latte@0.4.0', 'Evolution + Latte · evo@3.5.8+latte@0.4.0', 'Evolution + Latte']);
+  assert.deepEqual(groups[1].bars.map((bar) => bar.jit), ['off', 'tracing']);
+  const panels = seriesPanels(rows, stacks, (row) => ({ points: [{ x: 0, y: row.v }] }));
+  assert.deepEqual(panels.map((panel) => [panel.label, panel.lines.length]), [['Evolution + Latte · evo@3.5.8+latte@0.4.0', 2], ['Evolution + Latte · evo@3.5.x+latte@0.4.0', 1], ['Evolution + Latte', 1]]);
 });
 
 test('seriesPanels builds one panel per stack with JIT lines in a fixed order', () => {

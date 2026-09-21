@@ -17,7 +17,7 @@ case "$port" in
   8080) php=phramark-php-parser-1; nginx=phramark-nginx-parser-1; stack=evo-parser ;;
   8081) php=phramark-php-latte-1; nginx=phramark-nginx-latte-1; stack=evo-latte ;;
   8082) php=phramark-php-phalcon-1; nginx=phramark-nginx-phalcon-1; stack=evo-phalcon ;;
-  8083) php=phramark-php-drupal-11-1; nginx=phramark-nginx-drupal-11-1; stack=drupal-11 ;;
+  8083) php=phramark-php-drupal-1; nginx=phramark-nginx-drupal-1; stack=drupal ;;
   8084) php=phramark-php-typo3-1; nginx=phramark-nginx-typo3-1; stack=typo3 ;;
   8085) php=phramark-php-latte-parser-1; nginx=phramark-nginx-latte-parser-1; stack=evo-latte-parser ;;
   8086) php=phramark-php-winter-1; nginx=phramark-nginx-winter-1; stack=winter ;;

@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ACTIONS, GUEST_COLUMNS, adminRows, compareValues, formatValue, guestRows, nextSort, sortRows, versionRows,
+  ACTIONS, GUEST_COLUMNS, adminRows, compareValues, componentsText, errorRows, formatValue, guestRows, nextSort, sortRows, versionRows,
 } from '../../../../docs/site.js';
+import { versionSuffix } from '../lib/report.mjs';
 
 const set = {
   generatedAt: '2026-09-20T13:00:00Z',
@@ -30,6 +31,34 @@ test('sortRows sorts numerically, keeps missing values last in both directions a
   assert.deepEqual(sortRows(rows, 'stack', 'asc').map((row) => [row.stack, row.jit]), [['modx', 'off'], ['typo3', 'off'], ['typo3', 'tracing']]);
   assert.deepEqual(sortRows(rows, 'stack', 'desc').map((row) => [row.stack, row.jit]), [['typo3', 'off'], ['typo3', 'tracing'], ['modx', 'off']]);
   assert.deepEqual(rows.map((row) => row.stack), ['modx', 'typo3', 'typo3'], 'sorting must not mutate the input');
+});
+
+test('rows carry the version label and the recorded components of a comparison run', () => {
+  const compared = {
+    stacks: { 'evo-latte': { label: 'Evolution + Latte' } },
+    guest: [
+      { stack: 'evo-latte', version: 'evo@3.5.8+latte@0.4.0', jit: 'off', rate: 30, p50Ms: 300, repeats: { n: 1, metrics: {} }, components: [{ name: 'PHP', version: '8.4.25' }, { name: 'Evolution CMS', version: '3.5.8 (tag 3.5.8@abc1234, 2026-08-01)' }] },
+      { stack: 'evo-latte', version: '', jit: 'off', rate: 30, p50Ms: 280 },
+    ],
+    admin: [
+      { stack: 'evo-latte', version: 'evo@3.5.8+latte@0.4.0', jit: 'off', totalWallMs: 5000, actions: { login: { ms: 500 } }, repeats: { n: 1, metrics: {} } },
+      { stack: 'evo-latte', version: '', jit: 'off', totalWallMs: 4000, actions: { login: { ms: 400 } } },
+    ],
+  };
+  assert.ok(GUEST_COLUMNS.some((column) => column.key === 'version'), 'the guest table needs a version column');
+  const guest = guestRows(compared);
+  assert.deepEqual(guest.map((row) => [row.label, row.version]), [['Evolution + Latte · evo@3.5.8+latte@0.4.0', 'evo@3.5.8+latte@0.4.0'], ['Evolution + Latte', '']]);
+  assert.equal(guest[0].componentsText, 'PHP 8.4.25, Evolution CMS 3.5.8 (tag 3.5.8@abc1234, 2026-08-01)');
+  assert.equal(componentsText(guest[1]), '');
+  assert.deepEqual(adminRows(compared, 'ms').map((row) => [row.version, row.login]), [['evo@3.5.8+latte@0.4.0', 500], ['', 400]]);
+  // The error table joins guest and admin per build, not per stack.
+  assert.deepEqual(errorRows(compared).map((row) => [row.version, row.adminRuns]), [['evo@3.5.8+latte@0.4.0', 1], ['', 1]]);
+});
+
+test('versionSuffix names result files after the stack with the label, as Phramark\\VersionSpec::fileTag does', () => {
+  assert.equal(versionSuffix(''), '');
+  assert.equal(versionSuffix('evo@3.5.x+latte@0.4.0'), '~evo@3.5.x+latte@0.4.0');
+  assert.equal(versionSuffix('evo@feature/x y'), '~evo@feature_x_y');
 });
 
 test('compareValues treats numbers as numbers, not as text', () => {

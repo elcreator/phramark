@@ -11,11 +11,19 @@ require dirname(__DIR__, 2) . '/src/RuntimeProfile.php';
 // files, WP-CLI, the PHP and MySQL binaries), so a result set names what it
 // measured rather than what the setup scripts asked for. Written to
 // benchmark/results/versions.json, which summary.php folds into the
-// Markdown tables and docs/results.json.
+// Markdown tables and docs/results.json; with --stack, the components of
+// one stack, which run/admin attach to every result file they write (a
+// version comparison keeps several builds of one stack side by side, so
+// the result itself must say what it measured).
 //
 // Usage: php benchmark/scripts/versions.php [OUTPUT]
+//        php benchmark/scripts/versions.php --stack=ID [--attach=RESULT] [--label=VERSION]
+//   --attach appends a "---- versions ----" section (the version label of
+//   the run, then one JSON line) to a guest .txt result or sets "components"
+//   in an admin .json report (which carries its own label).
 
 const SOURCES = [
+    'PHP' => 'https://github.com/php/php-src',
     'Evolution CMS' => 'https://github.com/evolution-cms/evolution',
     'elcreator/alattex' => 'https://github.com/elcreator/aLatteX',
     'elcreator/aphalcon' => 'https://github.com/elcreator/aPhalcon',
@@ -111,9 +119,23 @@ function components(array $versions): array
 $evolution = static function (string $stack, array $packages): array {
     $container = container($stack);
     $core = json_decode(inContainer($container, 'cat /var/www/html/core/composer.json'), true);
+    // The ref the site was built from (setup.php's marker: "evo=tag 3.5.7" or
+    // "evo=branch 3.5.x <commit>") and the commit that is actually checked out.
+    $ref = preg_replace('/^evo=(\S+) (\S+).*$/', '$1 $2', inContainer($container, 'sed -n "/^evo=/p" /var/www/html/.phramark-versions'));
     $commit = inContainer($container, 'cd /var/www/html && git config --global --add safe.directory /var/www/html >/dev/null 2>&1; git rev-parse --short HEAD && git log -1 --format=%cs');
-    $versions = ['Evolution CMS' => ($core['version'] ?? '?') . ($commit !== '' ? ' (3.5.x@' . str_replace("\n", ', ', $commit) . ')' : '')];
+    $versions = ['Evolution CMS' => ($core['version'] ?? '?') . ($commit !== '' ? ' (' . ($ref !== '' ? $ref . '@' : '') . str_replace("\n", ', ', $commit) . ')' : '')];
     $versions += composerVersions($container, 'core/vendor/composer/installed.json', $packages);
+    // An extension installed from a directory on the host ("dev-local") is
+    // named by that directory and the fingerprint of its files.
+    foreach (explode("
+", inContainer($container, 'sed -n "s/^\(latte\|phalcon\)=path /\1 /p" /var/www/html/.phramark-versions')) as $line) {
+        if (preg_match('/^(latte|phalcon) (\S+) (\S+)/', $line, $m) === 1) {
+            $package = $m[1] === 'latte' ? 'elcreator/alattex' : 'elcreator/aphalcon';
+            if (isset($versions[$package])) {
+                $versions[$package] .= ' (' . preg_replace('#^/host/#', '', $m[2]) . '@' . $m[3] . ')';
+            }
+        }
+    }
     if ($stack === 'evo-phalcon') {
         $versions['phalcon (extension)'] = inContainer($container, 'php -r "echo phpversion(\"phalcon\");"');
     }
@@ -121,18 +143,21 @@ $evolution = static function (string $stack, array $packages): array {
     return components($versions);
 };
 
-$stacks = [];
-foreach (array_keys(RuntimeProfile::adapters()) as $stack) {
+/** @return list<array{name: string, version: string, source?: string}>|null null when the stack's container is not running */
+function stackComponents(string $stack): ?array
+{
+    global $evolution;
     $container = container($stack);
     if (inContainer($container, 'echo up') !== 'up') {
-        fwrite(STDERR, "$stack: container $container not running, skipped\n");
-        continue;
+        return null;
     }
-    $stacks[$stack] = match ($stack) {
+    $php = components(['PHP' => inContainer($container, 'php -r "echo PHP_VERSION;"')]);
+
+    return array_merge($php, match ($stack) {
         'evo-parser' => $evolution($stack, ['illuminate/database']),
         'evo-latte', 'evo-latte-parser' => $evolution($stack, ['elcreator/alattex', 'latte/latte', 'illuminate/database']),
         'evo-phalcon' => $evolution($stack, ['elcreator/alattex', 'elcreator/aphalcon', 'latte/latte', 'illuminate/database']),
-        'drupal-11' => components(composerVersions($container, 'vendor/composer/installed.json', ['drupal/core', 'symfony/http-kernel', 'symfony/http-foundation', 'twig/twig', 'drush/drush'])),
+        'drupal' => components(composerVersions($container, 'vendor/composer/installed.json', ['drupal/core', 'symfony/http-kernel', 'symfony/http-foundation', 'twig/twig', 'drush/drush'])),
         'typo3' => components(composerVersions($container, 'vendor/composer/installed.json', ['typo3/cms-core', 'doctrine/dbal', 'typo3fluid/fluid', 'symfony/http-foundation'])),
         'winter' => components(composerVersions($container, 'vendor/composer/installed.json', ['winter/storm', 'winter/wn-cms-module', 'laravel/framework', 'twig/twig', 'doctrine/dbal', 'symfony/http-foundation'])),
         'modx' => components(
@@ -153,7 +178,41 @@ foreach (array_keys(RuntimeProfile::adapters()) as $stack) {
 
             return components($versions);
         })(),
-    };
+    });
+}
+
+$options = getopt('', ['stack:', 'attach:', 'label:']);
+if (isset($options['stack'])) {
+    $components = stackComponents((string) $options['stack']);
+    if ($components === null) {
+        fwrite(STDERR, $options['stack'] . ': container ' . container((string) $options['stack']) . " not running\n");
+        exit(1);
+    }
+    $json = json_encode($components, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+    if (isset($options['attach'])) {
+        $file = (string) $options['attach'];
+        if (str_ends_with($file, '.json')) {
+            $report = json_decode((string) file_get_contents($file), true);
+            $report['components'] = $components;
+            file_put_contents($file, json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
+        } else {
+            file_put_contents($file, "\n---- versions ----\nlabel: " . ($options['label'] ?? '') . "\n" . $json . "\n", FILE_APPEND);
+        }
+        echo 'Versions attached to ' . $file . "\n";
+    } else {
+        echo $json . "\n";
+    }
+    exit(0);
+}
+
+$stacks = [];
+foreach (array_keys(RuntimeProfile::adapters()) as $stack) {
+    $components = stackComponents($stack);
+    if ($components === null) {
+        fwrite(STDERR, "$stack: container " . container($stack) . " not running, skipped\n");
+        continue;
+    }
+    $stacks[$stack] = $components;
 }
 
 $anyContainer = container(array_key_first($stacks) ?? 'evo-parser');
@@ -168,7 +227,7 @@ $record = [
     'stacks' => $stacks,
 ];
 
-$output = $argv[1] ?? dirname(__DIR__) . '/results/versions.json';
+$output = array_values(array_filter(array_slice($argv, 1), static fn (string $a): bool => !str_starts_with($a, '--')))[0] ?? dirname(__DIR__) . '/results/versions.json';
 file_put_contents($output, json_encode($record, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
 echo "Versions written to $output\n";
 foreach ($stacks as $stack => $components) {

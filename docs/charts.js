@@ -60,13 +60,26 @@ export function linePath(points, x, y) {
   return points.map((point, index) => `${index === 0 ? 'M' : 'L'}${x(point).toFixed(1)},${y(point).toFixed(1)}`).join(' ');
 }
 
-// Rows for a grouped horizontal bar chart: one group per stack, one bar per
-// JIT mode present, sorted by the JIT-off value (falls back to tracing).
+// A row's cell identity and label: the stack, and the version label of a
+// comparison run when the stack was measured in several builds.
+export function cellId(row) {
+  return row.version ? `${row.stack}~${row.version}` : row.stack;
+}
+
+export function cellLabel(row, stacks) {
+  const label = stacks?.[row.stack]?.label ?? row.stack;
+  return row.version ? `${label} · ${row.version}` : label;
+}
+
+// Rows for a grouped horizontal bar chart: one group per stack (and
+// version), one bar per JIT mode present, sorted by the JIT-off value
+// (falls back to tracing).
 export function barGroups(rows, key, stacks) {
   const groups = new Map();
   for (const row of rows) {
-    if (!groups.has(row.stack)) groups.set(row.stack, { stack: row.stack, label: stacks?.[row.stack]?.label ?? row.stack, bars: [] });
-    groups.get(row.stack).bars.push({ jit: row.jit, value: row[key] ?? null, row });
+    const id = cellId(row);
+    if (!groups.has(id)) groups.set(id, { stack: row.stack, version: row.version ?? '', label: cellLabel(row, stacks), bars: [] });
+    groups.get(id).bars.push({ jit: row.jit, value: row[key] ?? null, row });
   }
   const sortValue = (group) => group.bars.find((bar) => bar.jit === 'off')?.value ?? group.bars[0]?.value ?? Infinity;
   return [...groups.values()]

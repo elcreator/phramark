@@ -11,18 +11,18 @@ The method, the fairness review and the per-stack details are in [benchmark/READ
 
 ## What is tested
 
-Every stack is a real CMS install serving the same page contract; the framework column is what a traced request actually executes. Exact versions are recorded from the running containers into [benchmark/results/versions.json](benchmark/results/versions.json) and listed in the results page and in the [benchmark README](benchmark/README.md#versions-tested).
+Every stack is a real CMS install serving the same page contract; the framework column is what a traced request actually executes. Stack ids carry no version: every part a stack is built from is the newest release by default and can be pinned per run (`--versions=evo@3.5.x,evo@3.5.8,latte@0.4.0`, see [Comparing versions](#comparing-versions)); the exact versions are recorded from the running containers into every result and into [benchmark/results/versions.json](benchmark/results/versions.json), and listed in the results page and in the [benchmark README](benchmark/README.md#versions-tested).
 
 | Stack | CMS | Extensions / components measured with it |
 | --- | --- | --- |
-| `evo-parser` | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5 | [Laravel Illuminate](https://github.com/illuminate/database) components (the core's own stack) |
-| `evo-latte`, `evo-latte-parser` | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5 | [aLatteX](https://github.com/elcreator/aLatteX) ([Latte](https://github.com/nette/latte) views), without and with the core's tag pass over the view output |
-| `evo-phalcon` | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5 | [aPhalcon](https://github.com/elcreator/aPhalcon) ([Phalcon](https://github.com/phalcon/cphalcon) DB adapter, extension) + [aLatteX](https://github.com/elcreator/aLatteX) |
-| `drupal-11` | [Drupal](https://github.com/drupal/core) 11 | [Symfony](https://github.com/symfony/http-kernel) HttpKernel/Routing + [Twig](https://github.com/twigphp/Twig); a small route-controller module ([benchmark/implementations/drupal-11](benchmark/implementations/drupal-11)) |
-| `typo3` | [TYPO3](https://github.com/TYPO3/typo3) 14 | [Doctrine DBAL](https://github.com/doctrine/dbal) + [Fluid](https://github.com/TYPO3/Fluid); a PSR-15 middleware extension ([benchmark/implementations/typo3](benchmark/implementations/typo3)) |
-| `winter` | [Winter CMS](https://github.com/wintercms/winter) 1.2 ([Storm](https://github.com/wintercms/storm)) | [Laravel](https://github.com/laravel/framework) 9 + [Twig](https://github.com/twigphp/Twig); a theme and a backend plugin ([benchmark/implementations/winter](benchmark/implementations/winter)) |
-| `modx` | [MODX Revolution](https://github.com/modxcms/revolution) 3.2 | [xPDO](https://github.com/modxcms/xpdo); a template, snippet, chunk and xPDO model ([benchmark/implementations/modx](benchmark/implementations/modx)) |
-| `wordpress-gantry` | [WordPress](https://github.com/WordPress/WordPress) 7.1 | [Gantry 5](https://github.com/gantry/gantry5) framework plugin with its Hydrogen theme ([Timber](https://github.com/timber/timber) + [Twig](https://github.com/twigphp/Twig) 2), [Classic Editor](https://github.com/WordPress/classic-editor) for the admin workload; a must-use plugin and a theme view override ([benchmark/implementations/wordpress-gantry](benchmark/implementations/wordpress-gantry)). One stack: WordPress is measured only through Gantry |
+| `evo-parser` | [Evolution CMS](https://github.com/evolution-cms/evolution) | [Laravel Illuminate](https://github.com/illuminate/database) components (the core's own stack) |
+| `evo-latte`, `evo-latte-parser` | [Evolution CMS](https://github.com/evolution-cms/evolution) | [aLatteX](https://github.com/elcreator/aLatteX) ([Latte](https://github.com/nette/latte) views), without and with the core's tag pass over the view output |
+| `evo-phalcon` | [Evolution CMS](https://github.com/evolution-cms/evolution) | [aPhalcon](https://github.com/elcreator/aPhalcon) ([Phalcon](https://github.com/phalcon/cphalcon) DB adapter, extension) + [aLatteX](https://github.com/elcreator/aLatteX) |
+| `drupal` | [Drupal](https://github.com/drupal/core) | [Symfony](https://github.com/symfony/http-kernel) HttpKernel/Routing + [Twig](https://github.com/twigphp/Twig); a small route-controller module ([benchmark/implementations/drupal](benchmark/implementations/drupal)) |
+| `typo3` | [TYPO3](https://github.com/TYPO3/typo3) | [Doctrine DBAL](https://github.com/doctrine/dbal) + [Fluid](https://github.com/TYPO3/Fluid); a PSR-15 middleware extension ([benchmark/implementations/typo3](benchmark/implementations/typo3)) |
+| `winter` | [Winter CMS](https://github.com/wintercms/winter) ([Storm](https://github.com/wintercms/storm)) | [Laravel](https://github.com/laravel/framework) + [Twig](https://github.com/twigphp/Twig); a theme and a backend plugin ([benchmark/implementations/winter](benchmark/implementations/winter)) |
+| `modx` | [MODX Revolution](https://github.com/modxcms/revolution) | [xPDO](https://github.com/modxcms/xpdo); a template, snippet, chunk and xPDO model ([benchmark/implementations/modx](benchmark/implementations/modx)) |
+| `wordpress-gantry` | [WordPress](https://github.com/WordPress/WordPress) | [Gantry 5](https://github.com/gantry/gantry5) framework plugin with its Hydrogen theme ([Timber](https://github.com/timber/timber) + [Twig](https://github.com/twigphp/Twig) 2), [Classic Editor](https://github.com/WordPress/classic-editor) for the admin workload; a must-use plugin and a theme view override ([benchmark/implementations/wordpress-gantry](benchmark/implementations/wordpress-gantry)). One stack: WordPress is measured only through Gantry |
 
 October CMS is not included (its Composer distribution needs a licence key); Winter CMS, its licence-free fork, stands in for that lineage.
 
@@ -34,7 +34,14 @@ October CMS is not included (its Composer distribution needs a licence key); Win
 docker compose -f benchmark/compose.yaml --profile cross-cms up --build   # all stacks on 127.0.0.1:8080–8088
 benchmark/scripts/matrix 30                                               # every stack × guest/admin × JIT off/tracing, then docs/results.json
 benchmark/scripts/matrix --solutions=evo-manticore                        # opt-in: the Manticore compile job (never in the default set)
+benchmark/scripts/matrix --versions=evo@3.5.x,evo@3.5.7,evo@3.5.8         # the Evolution stacks at each ref (tag if published, else branch)
 composer test && (cd benchmark/workloads/admin && npm test)               # PHP and Node unit tests
 ```
 
 See [benchmark/README.md](benchmark/README.md) for single cells (`benchmark/scripts/bench`), the fairness gate (`benchmark/scripts/verify`) and request tracing (`benchmark/scripts/trace-request`).
+
+## Comparing versions
+
+`--versions=PRODUCT@REF,…` pins the parts a stack is built from. A ref is a published tag of that name when one exists, otherwise the branch of that name; `latest` (the default of every part) is the newest stable tag; a ref that starts with `..` is a directory on the host, relative to this checkout (`latte@0.2.0,latte@../evo/aLatteX` compares the 0.2.0 release with the working copy next to the repository, reinstalled whenever its files change). Every stack runs once per combination of the refs given for the products it contains, so `--versions=evo@3.5.x,evo@3.5.8,latte@0.4.0` runs `evo-parser` at each Evolution ref and the Latte stacks at each Evolution ref paired with aLatteX 0.4.0; the stacks are reinstalled from those refs before their cells, and the results carry the label (`guest-evo-latte~evo@3.5.8+latte@0.4.0-…`, a *Version* column on the results page, the exact components of the container inside each result). Without `--solutions` only the stacks the named products are part of run.
+
+Not every part has a version to choose: the products are `php` (the image, rebuilt per version), `evo`, `latte` (aLatteX), `phalcon` (aPhalcon), `drupal`, `typo3`, `winter`, `modx`, `wordpress`, `gantry` and `classic-editor` (`Phramark\VersionSpec`); Illuminate, Symfony, Twig and the like come with whatever those pull in and are recorded, not chosen. A Gantry branch is not installable (its WordPress packages are assembled by Gantry's build); a MODX branch is built with the transport build. The same variables work for a plain `up` (`EVO_VERSION=3.5.x docker compose -f benchmark/compose.yaml up`): a setup run reinstalls exactly the sites whose resolved versions differ from what they were built from.

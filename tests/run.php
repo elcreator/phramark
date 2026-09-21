@@ -6,11 +6,13 @@ require dirname(__DIR__) . '/src/FixturePlan.php';
 require dirname(__DIR__) . '/src/RuntimeProfile.php';
 require dirname(__DIR__) . '/src/PageContract.php';
 require dirname(__DIR__) . '/src/ResultSet.php';
+require dirname(__DIR__) . '/src/VersionSpec.php';
 
 use Phramark\FixturePlan;
 use Phramark\PageContract;
 use Phramark\ResultSet;
 use Phramark\RuntimeProfile;
+use Phramark\VersionSpec;
 
 function expect(mixed $actual, mixed $expected, string $message): void
 {
@@ -62,10 +64,15 @@ expect(FixturePlan::adminPageContent(3), '<p>Admin workload page 3 body.</p>', '
 
 // Runtime profile: JIT modes, result names and the traced request path.
 expect(isset(RuntimeProfile::adapters()['october-4']), false, 'October CMS is out: its Composer distribution needs a licence key.');
+expect(isset(RuntimeProfile::adapters()['drupal-11']), false, 'The Drupal stack is "drupal": its version is chosen per run, not part of the id.');
+expect(RuntimeProfile::adapters()['drupal']['port'], 8083, 'Drupal keeps its port.');
+foreach (RuntimeProfile::adapters() as $id => $adapter) {
+    expect(preg_match('/\d+\.\d+/', $adapter['label'] . ' ' . $adapter['framework']), 0, sprintf('No version numbers in the label of %s: versions are recorded from the container, not hardcoded.', $id));
+}
 expect(RuntimeProfile::jitMode('off'), ['opcache_jit' => '0', 'jit_buffer_size' => '0'], 'JIT-off profile changed.');
 expect(RuntimeProfile::jitMode('tracing'), ['opcache_jit' => 'tracing', 'jit_buffer_size' => '128M'], 'JIT profile changed.');
 expect(RuntimeProfile::resultName('admin', 'evo-latte', 'tracing', '2026-01-01'), 'admin-evo-latte-jit-tracing-2026-01-01', 'Result names must carry workload, stack and JIT mode.');
-expect(RuntimeProfile::adapters()['drupal-11']['components'], ['Drupal core', 'Symfony', 'Twig'], 'Drupal must be classified by the components its request path executes.');
+expect(RuntimeProfile::adapters()['drupal']['components'], ['Drupal core', 'Symfony', 'Twig'], 'Drupal must be classified by the components its request path executes.');
 expect(in_array('Laravel/Illuminate', RuntimeProfile::adapters()['evo-parser']['components'], true), true, 'Evolution 3.5 runs on Illuminate components; the label must say so.');
 expect(in_array('Laravel/Illuminate', RuntimeProfile::adapters()['evo-phalcon']['components'], true), true, 'evo-phalcon still bootstraps Illuminate; it is not a pure Phalcon stack.');
 
@@ -101,7 +108,7 @@ expect(RuntimeProfile::traceMismatch('wordpress-gantry', ['packages' => ['site:w
 expect(RuntimeProfile::traceMismatch('wordpress-gantry', $wordpressTrace), ['missing' => [], 'unexpected' => []], 'The WordPress + Gantry label must match its traced request path.');
 expect(RuntimeProfile::traceMismatch('evo-phalcon', $phalconTrace), ['missing' => [], 'unexpected' => []], 'The evo-phalcon label must match its traced request path.');
 expect(RuntimeProfile::traceMismatch('evo-phalcon', $evolutionTrace), ['missing' => ['Phalcon (extension)', 'Latte'], 'unexpected' => []], 'A trace without Phalcon must be reported as a label mismatch.');
-foreach (['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'drupal-11', 'typo3', 'winter', 'modx', 'wordpress-gantry'] as $adapter) {
+foreach (['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'drupal', 'typo3', 'winter', 'modx', 'wordpress-gantry'] as $adapter) {
     $trace = dirname(__DIR__) . '/benchmark/results/trace-' . $adapter . '.json';
     if (is_file($trace)) {
         expect(RuntimeProfile::traceMismatch($adapter, json_decode((string) file_get_contents($trace), true)), ['missing' => [], 'unexpected' => []], sprintf('The recorded trace of %s no longer matches its framework label.', $adapter));
@@ -125,7 +132,7 @@ foreach ([
     'benchmark/implementations/evo-latte/views/benchmark-category.latte',
     'benchmark/implementations/evo-latte-parser/views/benchmark-category.latte',
     'benchmark/implementations/evo-phalcon/views/benchmark-category.latte',
-    'benchmark/implementations/drupal-11/modules/custom/phramark_benchmark/templates/category-page.html.twig',
+    'benchmark/implementations/drupal/modules/custom/phramark_benchmark/templates/category-page.html.twig',
     'benchmark/implementations/typo3/Resources/Private/Templates/Category.html',
     'benchmark/implementations/winter/themes/phramark/pages/category.htm',
     'benchmark/implementations/wordpress-gantry/theme-custom/views/phramark-category.html.twig',
@@ -139,7 +146,119 @@ expectTemplateContract($modxPage);
 unlink($modxPage);
 
 $setup = repositoryFile('benchmark/fixtures/setup.php');
-expect(str_contains($setup, "SHOW TABLES LIKE 'site_site_content'"), true, 'Fixture setup must be safely repeatable for each JIT run.');
+expect(str_contains($setup, "file_get_contents(\$marker) === \$wanted"), true, 'Fixture setup must be safely repeatable: a site is reinstalled only when its resolved versions changed.');
+expect(str_contains($setup, "['git', 'clone', '--depth=1', '--branch', \$ref"), true, 'Evolution is cloned from the resolved tag or branch, never a hardcoded one.');
+expect(preg_match("/--branch', '\\d/", $setup), 0, 'No hardcoded Evolution branch in the setup.');
+$cross = repositoryFile('benchmark/fixtures/setup-cross-cms.sh');
+foreach (['drupal', 'typo3', 'winter', 'modx', 'wordpress gantry classic-editor'] as $products) {
+    expect(str_contains($cross, 'wanted_versions ' . $products . ')'), true, sprintf('The cross-CMS setup must resolve the versions of "%s" before installing.', $products));
+}
+expect(preg_match('/_VERSION:-\d/', $cross), 0, 'No hardcoded default versions in the cross-CMS setup: "latest" resolves to the newest release.');
+expect(str_contains($cross, 'site_current "$site" "$wanted" && return'), true, 'A cross-CMS site is reinstalled only when its resolved versions changed.');
+expect(str_contains($setup, "getenv('PHRAMARK_STACKS')") && str_contains($setup, 'is required by this run and could not be installed'), true, 'Evolution sites install independently: a version that cannot be built fails only that site unless the run needs it.');
+expect(str_contains($cross, 'sh "$0" "install_') && str_contains($cross, 'is required by this run and could not be installed'), true, 'Cross-CMS sites install independently, each in its own process.');
+foreach (['benchmark/compose.yaml' => 'EVO_VERSION: ${EVO_VERSION:-latest}', 'benchmark/images/php/Dockerfile' => 'FROM php:${PHP_VERSION}-fpm-bookworm', 'benchmark/images/cms-php/Dockerfile' => 'FROM php:${PHP_VERSION}-fpm-bookworm'] as $file => $needle) {
+    expect(str_contains(repositoryFile($file), $needle), true, sprintf('%s must take the version from the environment (%s).', $file, $needle));
+}
+
+// Version specs: which parts can be pinned, how a ref resolves, and the plan.
+expect(array_keys(VersionSpec::products()), ['php', 'evo', 'latte', 'phalcon', 'drupal', 'typo3', 'winter', 'modx', 'wordpress', 'gantry', 'classic-editor'], 'The versionable parts of the stacks.');
+expect(VersionSpec::product('alattex'), 'latte', 'aLatteX is addressed as "latte" (or "alattex").');
+expect(VersionSpec::product('Evolution'), 'evo', 'Product names are case-insensitive aliases.');
+expect(VersionSpec::product('illuminate'), null, 'Not every part has a version to choose: Illuminate comes with Evolution.');
+expect(VersionSpec::parse('evo@3.5.x,evo@3.5.8,latte@0.4.0,evo@3.5.8'), [['product' => 'evo', 'ref' => '3.5.x'], ['product' => 'evo', 'ref' => '3.5.8'], ['product' => 'latte', 'ref' => '0.4.0']], 'Specs parse to product/ref pairs without duplicates.');
+foreach (['evo', 'evo@', 'illuminate@1.0', 'evo@3.5 x', 'evo@3.5.x;rm'] as $bad) {
+    try {
+        VersionSpec::parse($bad);
+        throw new RuntimeException('Spec "' . $bad . '" must be rejected.');
+    } catch (InvalidArgumentException) {
+    }
+}
+expect(VersionSpec::affectedStacks(VersionSpec::parse('latte@0.4.0')), ['evo-latte', 'evo-latte-parser', 'evo-phalcon'], 'Without --solutions a version selects the stacks its product is part of.');
+expect(VersionSpec::affectedStacks(VersionSpec::parse('php@8.3')), array_keys(RuntimeProfile::adapters()), 'PHP is part of every stack.');
+expect(VersionSpec::label(['latte' => '0.4.0', 'evo' => '3.5.8']), 'evo@3.5.8+latte@0.4.0', 'Labels list the products in a fixed order.');
+// A ref starting with .. is a directory on the host, relative to the repository root.
+expect(VersionSpec::parse('latte@0.2.0,latte@../evo/aLatteX'), [['product' => 'latte', 'ref' => '0.2.0'], ['product' => 'latte', 'ref' => '../evo/aLatteX']], 'A path ref is a version to compare like any other.');
+expect(VersionSpec::isPath('../evo/aLatteX'), true, 'Paths start with ../.');
+expect(VersionSpec::isPath('3.5.x'), false, 'A branch is not a path.');
+foreach (['latte@./x', 'latte@.../x', 'latte@../', 'latte@../a/../../etc'] as $bad) {
+    try {
+        VersionSpec::parse($bad);
+        throw new RuntimeException('Spec "' . $bad . '" must be rejected.');
+    } catch (InvalidArgumentException) {
+    }
+}
+expect(VersionSpec::acceptsPath('latte') && VersionSpec::acceptsPath('evo') && VersionSpec::acceptsPath('modx') && VersionSpec::acceptsPath('drupal'), true, 'Extensions, source trees and project directories can be installed from a path.');
+expect(VersionSpec::acceptsPath('php') || VersionSpec::acceptsPath('gantry'), false, 'The PHP image and Gantry (release archives only) cannot.');
+expect(VersionSpec::fileTag('latte@../evo/aLatteX'), 'latte@.._evo_aLatteX', 'A path label as a file name segment.');
+$rounds = VersionSpec::rounds(VersionSpec::parse('latte@0.2.0,latte@../evo/aLatteX'), ['evo-latte-parser']);
+expect(array_map(static fn (array $round): array => [$round['env'], array_column($round['stacks'], 'label')], $rounds), [[['ALATTEX_VERSION' => '0.2.0'], ['latte@0.2.0']], [['ALATTEX_VERSION' => '../evo/aLatteX'], ['latte@../evo/aLatteX']]], 'The release and the working copy are two builds of the stack.');
+$setup = repositoryFile('benchmark/fixtures/setup.php');
+expect(str_contains($setup, "'versions' => [\$package => 'dev-local']") && str_contains($setup, "'symlink' => false"), true, 'An extension from a directory is a copied Composer path repository pinned to dev-local, so Packagist can never satisfy it instead.');
+expect(str_contains(repositoryFile('benchmark/compose.yaml'), '${PHRAMARK_SOURCES:-../..}:/host:ro'), true, 'The setup containers see the checkout parent at /host for path versions.');
+expect(VersionSpec::fileTag('evo@feature/x y+latte@0.4.0'), 'evo@feature_x_y+latte@0.4.0', 'A label as a file name segment (the rule report.mjs mirrors).');
+
+// The user's example: aLatteX 0.4.0 paired with each Evolution ref on the
+// Latte stack, evo-parser at each Evolution ref alone, Drupal untouched;
+// compatible combinations share a provisioning round.
+$rounds = VersionSpec::rounds(VersionSpec::parse('evo@3.5.x,evo@3.5.8,latte@0.4.0'), ['evo-parser', 'evo-latte-parser', 'drupal']);
+expect(count($rounds), 2, 'One round per Evolution ref.');
+expect($rounds[0]['env'], ['EVO_VERSION' => '3.5.x', 'ALATTEX_VERSION' => '0.4.0'], 'The round provisions the union of its stacks\' versions.');
+expect($rounds[0]['stacks'], [['stack' => 'evo-parser', 'label' => 'evo@3.5.x'], ['stack' => 'evo-latte-parser', 'label' => 'evo@3.5.x+latte@0.4.0'], ['stack' => 'drupal', 'label' => '']], 'Every stack is labelled by the versions of its own parts; a stack without any runs once, unlabelled, in the first round.');
+expect($rounds[1]['env'], ['EVO_VERSION' => '3.5.8', 'ALATTEX_VERSION' => '0.4.0'], 'The second Evolution ref is its own round.');
+expect($rounds[1]['stacks'], [['stack' => 'evo-parser', 'label' => 'evo@3.5.8'], ['stack' => 'evo-latte-parser', 'label' => 'evo@3.5.8+latte@0.4.0']], 'Drupal is not run again.');
+$rounds = VersionSpec::rounds(VersionSpec::parse('latte@0.4.0,latte@0.5.0,phalcon@0.1.0'), ['evo-phalcon']);
+expect(array_map(static fn (array $round): array => array_column($round['stacks'], 'label'), $rounds), [['latte@0.4.0+phalcon@0.1.0'], ['latte@0.5.0+phalcon@0.1.0']], 'The plan is the cartesian product of the refs of the products a stack contains.');
+$rounds = VersionSpec::rounds(VersionSpec::parse('evo@3.5.8,evo@3.5.x,latte@0.4.0,latte@0.5.0'), ['evo-latte']);
+expect(array_map(static fn (array $round): array => array_column($round['stacks'], 'label'), $rounds), [['evo@3.5.8+latte@0.4.0'], ['evo@3.5.8+latte@0.5.0'], ['evo@3.5.x+latte@0.4.0'], ['evo@3.5.x+latte@0.5.0']], 'Two refs of two products give four builds.');
+
+// Ref resolution: a published tag first, else the branch of that name;
+// "latest" is the newest stable tag.
+$tags = ['3.5.7', '3.5.8', '3.5.10', '3.6.0-rc1', '2.0.15'];
+$heads = ['3.5.x' => '851c705abcdef0123456', 'develop' => 'deadbeefdeadbeef0000'];
+expect(VersionSpec::resolveGit('3.5.8', $tags, $heads), ['kind' => 'tag', 'name' => '3.5.8'], 'A published tag wins.');
+expect(VersionSpec::resolveGit('3.5.x', $tags, $heads), ['kind' => 'branch', 'name' => '3.5.x', 'commit' => '851c705abcde'], 'No tag of that name: the branch, with its head commit.');
+expect(VersionSpec::resolveGit('latest', $tags, $heads), ['kind' => 'tag', 'name' => '3.5.10'], '"latest" is the newest stable tag by version order, not by text order, and never a pre-release.');
+expect(VersionSpec::resolveGit('3.2.4', ['v3.2.4-pl', 'v3.2.3-pl', 'v3.2.4-rc1'], []), ['kind' => 'tag', 'name' => 'v3.2.4-pl'], 'MODX tags carry a v prefix and the -pl stable suffix.');
+expect(VersionSpec::latestTag(['v3.2.4-pl', 'v3.1.0-pl', 'v3.2.4-rc1', 'v3.10.0-pl', 'v3.10.1-beta1']), 'v3.10.0-pl', 'The newest stable MODX tag.');
+try {
+    VersionSpec::resolveGit('nope', $tags, $heads);
+    throw new RuntimeException('An unknown ref must be rejected.');
+} catch (RuntimeException $exception) {
+    expect(str_contains($exception->getMessage(), 'neither a published tag nor a branch'), true, 'The error says what was looked for.');
+}
+$available = ['11.2.0', 'v11.1.0', '11.x-dev', 'dev-main', '12.0.0-beta1', '10.5.1'];
+expect(VersionSpec::resolveComposer('11.2.0', $available), '11.2.0', 'A released Composer version.');
+expect(VersionSpec::resolveComposer('11.1.0', $available), 'v11.1.0', 'Composer versions may carry a v prefix.');
+expect(VersionSpec::resolveComposer('11.x', $available), '11.x-dev', 'A numeric branch is its -dev version.');
+expect(VersionSpec::resolveComposer('main', $available), 'dev-main', 'A named branch is its dev- version.');
+expect(VersionSpec::resolveComposer('latest', $available), '11.2.0', '"latest" is the newest stable release, not a dev branch or a beta.');
+
+// Results keep the builds of a version comparison apart and record what
+// each one measured.
+$dir = sys_get_temp_dir() . '/phramark-versions-' . getmypid();
+mkdir($dir);
+$wrk = "Requests/sec:     30.03\n    50.000%  300.00ms\n    99.000%  600.00ms\n\n---- memory ----\nPHP-FPM container peak RSS: 80.0 MiB (docker stats, 1 s samples)\n\n---- versions ----\nlabel: evo@3.5.8+latte@0.4.0\n" . json_encode([['name' => 'PHP', 'version' => '8.4.25'], ['name' => 'Evolution CMS', 'version' => '3.5.8 (tag 3.5.8@abc1234, 2026-08-01)', 'source' => 'https://github.com/evolution-cms/evolution']]) . "\n";
+file_put_contents($dir . '/guest-evo-latte~evo@3.5.8+latte@0.4.0-jit-off-rps-30-2026-09-21T10-00-00Z.txt', $wrk);
+file_put_contents($dir . '/guest-evo-latte-jit-off-rps-30-2026-09-21T10-05-00Z.txt', str_replace(['300.00ms', 'label: evo@3.5.8+latte@0.4.0'], ['280.00ms', 'label: '], $wrk));
+file_put_contents($dir . '/guest-evo-latte~latte@.._evo_aLatteX-jit-off-rps-30-2026-09-21T10-06-00Z.txt', str_replace('label: evo@3.5.8+latte@0.4.0', 'label: latte@../evo/aLatteX', $wrk));
+expect(ResultSet::guestRow($dir . '/guest-evo-latte~latte@.._evo_aLatteX-jit-off-rps-30-2026-09-21T10-06-00Z.txt')['version'], 'latte@../evo/aLatteX', 'The label line restores what the file name sanitised.');
+unlink($dir . '/guest-evo-latte~latte@.._evo_aLatteX-jit-off-rps-30-2026-09-21T10-06-00Z.txt');
+$row = ResultSet::guestRow($dir . '/guest-evo-latte~evo@3.5.8+latte@0.4.0-jit-off-rps-30-2026-09-21T10-00-00Z.txt');
+expect([$row['stack'], $row['version'], $row['jit'], $row['rate'], $row['p50Ms'], $row['recordedAt']], ['evo-latte', 'evo@3.5.8+latte@0.4.0', 'off', 30, 300.0, '2026-09-21T10:00:00Z'], 'A guest result name carries the stack and the version label.');
+expect($row['components'][1]['name'], 'Evolution CMS', 'The exact components the container reported are read from the result.');
+expect(ResultSet::guestRow($dir . '/guest-evo-latte-jit-off-rps-30-2026-09-21T10-05-00Z.txt')['version'], '', 'The default build has no version label.');
+$report = ['workload' => 'admin', 'stack' => 'evo-latte', 'version' => 'evo@3.5.8+latte@0.4.0', 'jit' => 'off', 'recordedAt' => '2026-09-21T10:10:00Z', 'summary' => ['ms' => ['login' => ['median' => 500]]], 'steps' => [['action' => 'login', 'label' => 'round 1', 'ms' => 500]], 'components' => [['name' => 'PHP', 'version' => '8.4.25']]];
+file_put_contents($dir . '/admin-evo-latte~evo@3.5.8+latte@0.4.0-jit-off-2026-09-21T10-10-00Z.json', json_encode($report));
+file_put_contents($dir . '/admin-evo-latte-jit-off-2026-09-21T10-15-00Z.json', json_encode(['version' => '', 'components' => null] + $report));
+$set = ResultSet::collect($dir);
+expect(array_map(static fn (array $r): array => [$r['stack'], $r['version'], $r['p50Ms']], $set['guest']), [['evo-latte', '', 280.0], ['evo-latte', 'evo@3.5.8+latte@0.4.0', 300.0]], 'Two builds of one stack are two rows, the default build first.');
+expect(array_map(static fn (array $r): array => [$r['version'], $r['components'][0]['version'] ?? null], $set['admin']), [['', null], ['evo@3.5.8+latte@0.4.0', '8.4.25']], 'Admin reports keep their version label and components.');
+expect(str_contains(ResultSet::markdown($set), '| evo-latte (evo@3.5.8+latte@0.4.0) | off |'), true, 'The Markdown tables name the build.');
+foreach (glob($dir . '/*') as $file) {
+    unlink($file);
+}
+rmdir($dir);
 expect(str_contains($setup, 'Phramark benchmark'), true, 'The parser workload must implement the shared visible page contract.');
 expect(str_contains($setup, 'site_tmplvar_templates'), true, 'TVs must be assigned to the benchmark template or Evolution renders empty cards.');
 expect(str_contains($setup, "'content' => '[[benchmarkCategory]]'"), true, 'The parser template must not wrap the page contract.');
@@ -149,7 +268,7 @@ expect(str_contains(repositoryFile('benchmark/implementations/evo-latte-parser/c
 expect(repositoryFile('benchmark/implementations/evo-latte-parser/views/benchmark-category.latte'), repositoryFile('benchmark/implementations/evo-latte/views/benchmark-category.latte'), 'Both Latte stacks must render the identical view; only the pass differs.');
 expect(RuntimeProfile::adapters()['evo-latte-parser']['port'], 8085, 'evo-latte-parser takes the port October used.');
 expect(str_contains(repositoryFile('benchmark/workloads/category.lua'), '"/articles/category-%03d"'), true, 'The load workload must use the canonical URL form.');
-expect(str_contains(repositoryFile('benchmark/implementations/drupal-11/modules/custom/phramark_benchmark/phramark_benchmark.routing.yml'), "path: '/articles/{category}'"), true, 'Drupal placeholders must span a whole path segment.');
+expect(str_contains(repositoryFile('benchmark/implementations/drupal/modules/custom/phramark_benchmark/phramark_benchmark.routing.yml'), "path: '/articles/{category}'"), true, 'Drupal placeholders must span a whole path segment.');
 expect(is_file(dirname(__DIR__) . '/benchmark/implementations/typo3/Configuration/Services.yaml'), true, 'The TYPO3 middleware needs a Services.yaml to be autowired.');
 expect(str_contains(repositoryFile('benchmark/config/php.ini'), 'opcache.max_accelerated_files'), true, 'OPcache must be sized for the largest CMS so no stack thrashes.');
 $spec = repositoryFile('benchmark/workloads/admin/tests/admin.spec.mjs');
@@ -175,7 +294,7 @@ expect(str_contains(repositoryFile('benchmark/scripts/run'), 'memory-summary.php
 expect(str_contains(repositoryFile('benchmark/scripts/admin'), 'merge-memory.mjs'), true, 'Admin results must merge the PHP memory summary.');
 $crossSetup = repositoryFile('benchmark/fixtures/setup-cross-cms.sh');
 expect(str_contains($crossSetup, 'drupal-admin-seed.php') && str_contains($crossSetup, 'typo3-admin-seed.php') && str_contains($crossSetup, 'winter-admin-seed.php'), true, 'Cross-CMS installs must seed the admin fixture.');
-expect(str_contains($crossSetup, 'composer create-project wintercms/winter'), true, 'Winter is installed from its licence-free Composer distribution.');
+expect(str_contains($crossSetup, 'composer create-project "wintercms/winter:$version"'), true, 'Winter is installed from its licence-free Composer distribution at the resolved version.');
 expect(str_contains($crossSetup, 'theme:use phramark'), true, 'The Winter stack must serve the benchmark theme.');
 expect(str_contains($crossSetup, 'modx.s3.amazonaws.com/releases/') && str_contains($crossSetup, 'setup/index.php --installmode=new'), true, 'MODX is installed from its release archive through the CLI installer.');
 expect(str_contains($crossSetup, 'modx-seed.php') && str_contains($crossSetup, 'modx-admin-seed.php'), true, 'The MODX install must seed the guest and admin fixtures.');
@@ -194,8 +313,10 @@ expect(str_contains(repositoryFile('benchmark/implementations/winter/plugins/phr
 expect(str_contains(repositoryFile('benchmark/implementations/winter/plugins/phramark/benchmark/models/page/fields.yaml'), 'type: textarea'), true, 'The Winter page body is a plain textarea like the Drupal and Evolution fixtures.');
 expect(str_contains(repositoryFile('benchmark/compose.yaml'), '8086:80') && str_contains(repositoryFile('benchmark/scripts/lib.sh'), '8086) stack=winter'), true, 'The Winter stack must be published and known to the scripts.');
 expect(str_contains($crossSetup, "trustedHostsPattern'] = '.*'"), true, 'TYPO3 must trust the compose-network host the load generator uses.');
-expect(str_contains($crossSetup, 'wordpress-pkg_gantry5_v$GANTRY_VERSION.zip') && str_contains($crossSetup, 'wordpress-tpl_g5_hydrogen_v$GANTRY_VERSION.zip'), true, 'WordPress is installed with the Gantry 5 plugin and a Gantry theme from the same release: the framework is only measured through its theme.');
-expect(str_contains($crossSetup, 'wp core download --version="$WORDPRESS_VERSION"') && str_contains($crossSetup, 'wp core install'), true, 'WordPress core is installed through WP-CLI at a pinned version.');
+expect(str_contains($crossSetup, 'wordpress-pkg_gantry5_v$gantry.zip') && str_contains($crossSetup, 'wordpress-tpl_g5_hydrogen_v$gantry.zip'), true, 'WordPress is installed with the Gantry 5 plugin and a Gantry theme from the same release: the framework is only measured through its theme.');
+expect(str_contains($crossSetup, 'wp core download --version="$(version_value "$wanted" wordpress)"') && str_contains($crossSetup, 'wp core install'), true, 'WordPress core is installed through WP-CLI at the resolved release (a branch is cloned instead).');
+expect(str_contains($crossSetup, 'git clone --depth=1 --branch "$(version_value "$wanted" wordpress)"'), true, 'A WordPress branch is installed from the build mirror.');
+expect(str_contains($crossSetup, 'php _build/transport.core.php'), true, 'A MODX branch is built with the transport build.');
 expect(str_contains($crossSetup, 'wordpress-seed.php') && str_contains($crossSetup, 'wordpress-admin-seed.php'), true, 'The WordPress install must seed the guest and admin fixtures.');
 expect(str_contains($crossSetup, "permalink_structure '/%postname%'"), true, 'WordPress must serve the canonical URL without a trailing-slash redirect.');
 expect(str_contains($crossSetup, "define('WP_HOME', 'http://' . (\$_SERVER['HTTP_HOST']"), true, 'The WordPress site URL must follow the Host header: the browser reaches the stack by its compose service name.');

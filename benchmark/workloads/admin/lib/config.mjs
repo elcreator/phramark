@@ -14,6 +14,9 @@ export const config = Object.freeze({
   baseUrl: (env.PHRAMARK_BASE_URL ?? 'http://127.0.0.1:8080').replace(/\/$/, ''),
   stack: env.PHRAMARK_STACK ?? 'evo-parser',
   jit: env.PHRAMARK_JIT ?? 'unknown',
+  // The version label of a comparison run ("evo@3.5.x+latte@0.4.0"), empty
+  // for the default build; benchmark/scripts/matrix --versions sets it.
+  version: env.PHRAMARK_VERSION ?? '',
   rounds: integer('PHRAMARK_ROUNDS', 1),
   // An untimed pass over every code path first, so a freshly restarted
   // PHP-FPM (cold OPcache) does not land in round 1.

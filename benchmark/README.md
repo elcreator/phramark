@@ -15,17 +15,19 @@ The framework column is not the marketing name: it is what a warm category reque
 
 | ID | Port | Request path (traced) | Notes |
 | --- | --- | --- | --- |
-| `evo-parser` | 8080 | Evolution 3.5 core on **Laravel/Illuminate** (≈97 Illuminate classes, 213 Illuminate files: database, view, routing, container) + Symfony http-foundation/finder | Normal Evolution frontend, snippet in the parser |
+| `evo-parser` | 8080 | Evolution core on **Laravel/Illuminate** (≈97 Illuminate classes, 213 Illuminate files: database, view, routing, container) + Symfony http-foundation/finder | Normal Evolution frontend, snippet in the parser |
 | `evo-latte` | 8081 | Same as above + Latte | aLatteX file view with `evo_tags=false`: the Latte output is final, the core's tag passes (`parseDocumentSource`, `[!…!]`, `cleanUpMODXTags`/`rewriteUrls`) are skipped |
 | `evo-latte-parser` | 8085 | Same as `evo-latte` | The identical Latte view with `evo_tags=true` (the aLatteX default): the core runs its tag passes over the rendered output. `evo-latte-parser` − `evo-latte` is the cost of that pass on a page without EVO tags |
 | `evo-phalcon` | 8082 | Same Illuminate bootstrap (≈86 classes) + **Phalcon** DB adapter (extension) + Latte | aPhalcon `frontend.takeover=true`. It is *not* a pure Phalcon stack: Evolution's Laravel-based core still boots, Phalcon replaces the data access |
-| `drupal-11` | 8083 | Drupal 11 core (511 core files) on **Symfony** HttpKernel/Routing/HttpFoundation + Twig | Route controller, Drupal DB API, Twig render array returned as a bare response |
-| `typo3` | 8084 | TYPO3 14 core on **Doctrine DBAL** + Fluid; Symfony only for DI/translation (12 classes) | PSR-15 middleware before site resolution, DBAL query builder, Fluid view |
-| `winter` | 8086 | Winter CMS 1.2 (Storm 194 classes + CMS module) on **Laravel 9/Illuminate** (177 classes, 308 files) + Twig; Symfony http-foundation/translation only (35 classes); PDO wrapped in Doctrine DBAL's `PDOConnection` (12 files) | Full CMS front controller: theme page `/articles/:slug` with a component that queries `phramark_article` through the Illuminate query builder, Twig page template without a layout |
-| `modx` | 8087 | [MODX Revolution](https://github.com/modxcms/revolution) 3.2 core (111 `MODX\Revolution` classes, 132 core files) on **xPDO** (20 classes, 23 files), its own ORM over PDO; no third-party framework on the request path (a few Symfony polyfill files, no Symfony classes) | Full CMS front controller: `modRequest` resolves `/articles/category-NNN` through the alias map (one resource per category), `modParser` renders the template with an uncached snippet that reads `phramark_article` through an xPDO model (`Phramark\Model\Article`) and renders one chunk per article |
-| `wordpress-gantry` | 8088 | [WordPress](https://wordpress.org) 7.1 core (481 `wp-includes` files; procedural plus global classes such as `WP_Query`, `wpdb`, `WP_Rewrite`) with the [Gantry 5](https://github.com/gantry/gantry5) 5.6 **theme framework** plugin (66 `Gantry` classes, 84 plugin files, 12 RocketTheme toolbox classes) rendering its Hydrogen theme through **Timber** (35 classes) and **Twig 2** (49 classes, 54 files); Symfony yaml/event-dispatcher only for the outline (2 classes) | Full CMS front controller: WordPress resolves `/articles/category-NNN` through its page hierarchy (one child page of "Articles" per category), a must-use plugin's `template_include` hands the page to a template that reads `phramark_article` through `$wpdb` and renders a Twig view (`custom/views` override of the theme) inside the Gantry outline: header, navigation, main, footer and off-canvas sections with their particles. One stack, not two: WordPress is measured only through Gantry, because the framework does nothing without a Gantry theme |
+| `drupal` | 8083 | Drupal core (511 core files) on **Symfony** HttpKernel/Routing/HttpFoundation + Twig | Route controller, Drupal DB API, Twig render array returned as a bare response |
+| `typo3` | 8084 | TYPO3 core on **Doctrine DBAL** + Fluid; Symfony only for DI/translation (12 classes) | PSR-15 middleware before site resolution, DBAL query builder, Fluid view |
+| `winter` | 8086 | Winter CMS (Storm 194 classes + CMS module) on **Laravel/Illuminate** (177 classes, 308 files) + Twig; Symfony http-foundation/translation only (35 classes); PDO wrapped in Doctrine DBAL's `PDOConnection` (12 files) | Full CMS front controller: theme page `/articles/:slug` with a component that queries `phramark_article` through the Illuminate query builder, Twig page template without a layout |
+| `modx` | 8087 | [MODX Revolution](https://github.com/modxcms/revolution) core (111 `MODX\Revolution` classes, 132 core files) on **xPDO** (20 classes, 23 files), its own ORM over PDO; no third-party framework on the request path (a few Symfony polyfill files, no Symfony classes) | Full CMS front controller: `modRequest` resolves `/articles/category-NNN` through the alias map (one resource per category), `modParser` renders the template with an uncached snippet that reads `phramark_article` through an xPDO model (`Phramark\Model\Article`) and renders one chunk per article |
+| `wordpress-gantry` | 8088 | [WordPress](https://wordpress.org) core (481 `wp-includes` files; procedural plus global classes such as `WP_Query`, `wpdb`, `WP_Rewrite`) with the [Gantry 5](https://github.com/gantry/gantry5) **theme framework** plugin (66 `Gantry` classes, 84 plugin files, 12 RocketTheme toolbox classes) rendering its Hydrogen theme through **Timber** (35 classes) and **Twig 2** (49 classes, 54 files); Symfony yaml/event-dispatcher only for the outline (2 classes) | Full CMS front controller: WordPress resolves `/articles/category-NNN` through its page hierarchy (one child page of "Articles" per category), a must-use plugin's `template_include` hands the page to a template that reads `phramark_article` through `$wpdb` and renders a Twig view (`custom/views` override of the theme) inside the Gantry outline: header, navigation, main, footer and off-canvas sections with their particles. One stack, not two: WordPress is measured only through Gantry, because the framework does nothing without a Gantry theme |
 
 October CMS is not part of the comparison: its Composer distribution requires a licence key, which the harness cannot depend on. Its licence-free fork [Winter CMS](https://github.com/wintercms/winter) stands in for that lineage (`winter`). WordPress is not measured on its own either: the `wordpress-gantry` stack answers the question "what does a Gantry 5 page cost", and the framework only renders through one of its themes, so plain WordPress would be a different request path (no Timber, no Twig, no outline) rather than a baseline of the same one.
+
+Stack ids carry no version number, and neither do the labels above: the versions a stack is built from are chosen per run (`--versions`, [Comparing versions](#comparing-versions)), the newest release of every part by default, and read back from the container into every result. The class and file counts are from the traces recorded in `benchmark/results/trace-*.json` at the versions listed under [Versions tested](#versions-tested).
 
 Every stack serves `/articles/category-042` (no trailing slash, HTTP 200, no redirect) with the same visible contract: 20 article cards with `hero_image`, `author` and `reading_time` values whose presence follows the fixture's deterministic TV distribution. `benchmark/scripts/verify` checks this contract on every reachable stack, from the host and (in `bench`) from inside the compose network, the way the load generator sees it.
 
@@ -61,7 +63,7 @@ Remaining, documented differences that are design choices rather than bugs:
 
 ```sh
 docker compose -f benchmark/compose.yaml up --build                        # evo-parser, evo-latte, evo-phalcon
-docker compose -f benchmark/compose.yaml --profile cross-cms up --build    # + drupal-11, typo3, winter, modx, wordpress-gantry
+docker compose -f benchmark/compose.yaml --profile cross-cms up --build    # + drupal, typo3, winter, modx, wordpress-gantry
 ```
 
 Then open http://127.0.0.1:8080/articles/category-042 (8081 … 8088 for the other stacks). Use `127.0.0.1`, not `localhost`: Chromium's dual-stack connect to Docker Desktop's port proxy can stall for 30 s per connection.
@@ -71,13 +73,13 @@ Admin panels (user `benchmark` everywhere):
 | Stack | Admin URL | Password | Admin fixture |
 | --- | --- | --- | --- |
 | evo-* | http://127.0.0.1:8080/manager/ (8081, 8082, 8085) | `benchmark-admin` | Folder "Admin workload" (id 10103) with pages 10104–10108 |
-| drupal-11 | http://127.0.0.1:8083/user/login | `benchmark-admin` | Content type "Basic page" with a plain-text body; the five lowest page nodes |
+| drupal | http://127.0.0.1:8083/user/login | `benchmark-admin` | Content type "Basic page" with a plain-text body; the five lowest page nodes |
 | typo3 | http://127.0.0.1:8084/typo3/ | `Benchmark1!` | Root page "Admin workload" (uid 10103) with pages 10104–10108, each with one text element of the same uid |
 | winter | http://127.0.0.1:8086/backend/ | `benchmark-admin` | "Benchmark pages" (plugin `Phramark.Benchmark`, table `phramark_benchmark_pages`) with pages 10104–10108 |
 | modx | http://127.0.0.1:8087/manager/ | `benchmark-admin` | Container "Admin workload" (id 10103) with resources 10104–10108 on the "Admin page" template |
 | wordpress-gantry | http://127.0.0.1:8088/wp-login.php | `benchmark-admin` | Page "Admin workload" (id 10103) with child pages 10104–10108, edited in the Classic Editor (Text tab) |
 
-Re-running `up` re-seeds the fixture and re-syncs adapter code into existing volumes. The setup containers restart nothing, so after a re-seed restart the FPM containers (`docker compose … up -d --force-recreate php-parser …`) or use `bench`, which does.
+Re-running `up` re-seeds the fixture and re-syncs adapter code into existing volumes; a site is reinstalled only when the versions it should be built from changed (its `.phramark-versions` marker, written by the setup from the resolved refs). The setup containers restart nothing, so after a re-seed restart the FPM containers (`docker compose … up -d --force-recreate php-parser …`) or use `bench`, which does.
 
 ## The matrix
 
@@ -99,10 +101,39 @@ benchmark/scripts/matrix --jit=off                                  # JIT off on
 benchmark/scripts/matrix --workload=guest --rate=50                 # guest cells only, at 50 rps
 benchmark/scripts/matrix --solutions=modx --jit=tracing --workload=admin
 benchmark/scripts/matrix --repeats=5 --solutions=typo3              # five runs per cell: the spread is the measuring error
-DURATION=120s ROUNDS=3 benchmark/scripts/matrix --solutions=drupal-11,typo3 --jit=off
+DURATION=120s ROUNDS=3 benchmark/scripts/matrix --solutions=drupal,typo3 --jit=off
 ```
 
 Ports work in place of stack ids (`benchmark/scripts/matrix 30 8082 8086`). A cell that fails is reported at the end and does not stop the others.
+
+### Comparing versions
+
+```sh
+benchmark/scripts/matrix --versions=evo@3.5.x,evo@3.5.7,evo@3.5.8            # the four Evolution stacks at each ref
+benchmark/scripts/matrix --versions=evo@3.5.x,evo@3.5.8,latte@0.4.0 --solutions=evo-latte-parser
+benchmark/scripts/matrix --versions=drupal@11.x,typo3@14.x --workload=guest   # branches: Composer dev versions
+benchmark/scripts/matrix --versions=php@8.3,php@8.4 --solutions=modx          # the PHP image, rebuilt per version
+benchmark/scripts/matrix --versions=latte@0.2.0,latte@../evo/aLatteX          # a release against the working copy next to this checkout
+EVO_VERSION=3.5.8 docker compose -f benchmark/compose.yaml up                 # the same pin for a plain up
+```
+
+`--versions=PRODUCT@REF,…` names the parts a stack is built from and the refs to compare. A ref resolves to the published tag of that name when one exists, otherwise to the branch of that name (`3.5.x`, `11.x` → `11.x-dev` for Composer packages, `main` → `dev-main`); `latest`, the default of every part, is the newest stable tag. A ref that starts with `..` is a directory on the host, relative to the repository root (`../evo/aLatteX` is the checkout next to this one): the setup containers see the repository's parent at `/host` (`PHRAMARK_SOURCES` to mount another directory, `PHRAMARK_DIR` when the checkout is not named `phramark`), copy the directory in — an extension as a Composer path repository pinned to `dev-local`, so no Packagist release can satisfy the requirement instead; a CMS as its source tree or project directory — and record a fingerprint of its files, so an edited working copy is reinstalled on the next run. `Phramark\VersionSpec` lists the products and their stacks:
+
+| Product | Part | Stacks | Installed from |
+| --- | --- | --- | --- |
+| `php` | the PHP image (`php:<ref>-fpm-bookworm`, `PHP_VERSION` build argument) | all | image rebuild; no path |
+| `evo` | Evolution CMS | `evo-*` | git clone of the tag or branch; a path is copied as the site tree |
+| `latte` (`alattex`) | aLatteX | `evo-latte`, `evo-latte-parser`, `evo-phalcon` | Composer version or dev branch; a path as a path repository |
+| `phalcon` (`aphalcon`) | aPhalcon | `evo-phalcon` | Composer version or dev branch; a path as a path repository |
+| `drupal`, `typo3`, `winter` | `drupal/recommended-project`, `typo3/cms-base-distribution`, `wintercms/winter` | the stack | `composer create-project` at the version or dev branch; a path is a project directory, copied (`composer install` when it has no vendor) |
+| `modx` | MODX Revolution | `modx` | release archive of the tag; a branch (or a path) is the source tree, built with `_build/transport.core.php` |
+| `wordpress` | WordPress core | `wordpress-gantry` | `wp core download` at the tag; a branch is cloned from the WordPress/WordPress build mirror; a path is copied |
+| `gantry` | Gantry 5 plugin and Hydrogen theme | `wordpress-gantry` | release archives of the tag (a branch or path is not installable: the packages are assembled by Gantry's build) |
+| `classic-editor` | Classic Editor plugin | `wordpress-gantry` | wordpress.org release at the version; a branch is cloned from its repository; a path is copied |
+
+Not every part can be pinned: Illuminate, Symfony, Twig, Doctrine, Latte, Timber and the extensions' own dependencies come with whatever the products above pull in, and are recorded from the container into every result rather than chosen.
+
+The plan is a cartesian product per stack: every stack runs once per combination of the refs of the products it contains, so `evo@3.5.x,evo@3.5.8,latte@0.4.0` runs `evo-parser` at each Evolution ref and the Latte stacks at each Evolution ref paired with aLatteX 0.4.0 (`php benchmark/scripts/version-rounds.php SPEC [STACK...]` prints the plan). Combinations that do not conflict share one provisioning round: the matrix exports the round's `<PRODUCT>_VERSION` variables, runs the setup containers, which reinstall exactly the sites whose resolved versions differ from what they were built from (`.phramark-versions`), rebuilds the images first when the PHP version is one of them, and then runs the cells; `bench` recreates the FPM container for each cell as before, so it serves the new tree. Without `--solutions` only the stacks the named products are part of run. Results carry the label of their build after the stack id (`guest-evo-latte~evo@3.5.8+latte@0.4.0-jit-off-rps-30-<timestamp>.txt`, `admin-evo-latte~evo@3.5.8+latte@0.4.0-jit-off-<timestamp>.json`; the default build has no label), the exact components the container reported inside the file (`---- versions ----` section, `components` in the admin report) and a *Version* column on the results page and in the tables below, so builds of one stack never collapse into one row. The containers stay at the last round's versions afterwards; a plain `up` without the variables takes every part back to `latest`.
 
 Keep `PHP_FPM_PM_MAX_CHILDREN` (default 8), `DURATION` (default 60s), `CONNECTIONS` (32) and `ROUNDS` identical across the cells you compare. Results:
 
@@ -137,7 +168,7 @@ Every step also records memory on both sides:
 
 The guest result files carry the same PHP-side numbers for the whole run (per-request peak percentiles and container peak RSS) in a `---- memory ----` section.
 
-The browser runs in a container on the compose network (`mcr.microsoft.com/playwright`), an untimed warm-up pass precedes the recorded rounds, and `benchmark/scripts/admin-reset PORT` restores the seeded pages and removes created ones before and after the run (Evolution: SQL restore; Drupal: drush script; TYPO3, Winter, MODX and WordPress: re-seed; the WordPress reset also drops the revisions and auto-drafts the editor produced). `ROUNDS=5 benchmark/scripts/admin 8083` repeats the session. To run it from the host instead: `cd benchmark/workloads/admin && npm install && PHRAMARK_BASE_URL=http://127.0.0.1:8083 PHRAMARK_STACK=drupal-11 npx playwright test` (Drupal from the host needs `PHRAMARK_DRUPAL_NIDS=16,17,18,19,20` when the page nodes are not 1–5; the `admin` script looks them up).
+The browser runs in a container on the compose network (`mcr.microsoft.com/playwright`), an untimed warm-up pass precedes the recorded rounds, and `benchmark/scripts/admin-reset PORT` restores the seeded pages and removes created ones before and after the run (Evolution: SQL restore; Drupal: drush script; TYPO3, Winter, MODX and WordPress: re-seed; the WordPress reset also drops the revisions and auto-drafts the editor produced). `ROUNDS=5 benchmark/scripts/admin 8083` repeats the session. To run it from the host instead: `cd benchmark/workloads/admin && npm install && PHRAMARK_BASE_URL=http://127.0.0.1:8083 PHRAMARK_STACK=drupal npx playwright test` (Drupal from the host needs `PHRAMARK_DRUPAL_NIDS=16,17,18,19,20` when the page nodes are not 1–5; the `admin` script looks them up).
 
 ## Tracing the request path
 
@@ -170,7 +201,7 @@ Every run keeps its memory series, and the results site draws them as small mult
 
 ## Results site and exact versions
 
-`benchmark/scripts/matrix` ends by recording the exact versions the containers run (`php benchmark/scripts/versions.php`, read from Composer's `installed.json`, the CMS version files and WP-CLI into `benchmark/results/versions.json`) and by writing `docs/results.json` (`php benchmark/scripts/summary.php --json`): the same collector (`Phramark\ResultSet`) that renders the Markdown tables below. `docs/` is a static site (`index.html`, `site.js`, `CNAME`) published at **https://phramark.artur.work**, where every table is sortable by any column. To refresh it by hand:
+`benchmark/scripts/matrix` ends by recording the exact versions the containers run (`php benchmark/scripts/versions.php`, read from Composer's `installed.json`, the CMS version files and WP-CLI into `benchmark/results/versions.json`; `--stack=ID --attach=RESULT` writes one stack's components into a result file, which `run` and `admin` do for every result they produce) and by writing `docs/results.json` (`php benchmark/scripts/summary.php --json`): the same collector (`Phramark\ResultSet`) that renders the Markdown tables below. `docs/` is a static site (`index.html`, `site.js`, `CNAME`) published at **https://phramark.artur.work**, where every table is sortable by any column. To refresh it by hand:
 
 ```sh
 php benchmark/scripts/versions.php                        # benchmark/results/versions.json
@@ -259,7 +290,7 @@ Recorded from the running containers on 2026-09-20T14:43:04Z: PHP 8.4.25, MySQL 
 | evo-latte | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (3.5.x@851c705, 2026-09-10), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [illuminate/database](https://github.com/illuminate/database) v12.69.2, [latte/latte](https://github.com/nette/latte) v3.1.6 |
 | evo-latte-parser | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (3.5.x@851c705, 2026-09-10), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [illuminate/database](https://github.com/illuminate/database) v12.69.2, [latte/latte](https://github.com/nette/latte) v3.1.6 |
 | evo-phalcon | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (3.5.x@851c705, 2026-09-10), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [elcreator/aphalcon](https://github.com/elcreator/aPhalcon) 0.1.0, [illuminate/database](https://github.com/illuminate/database) v12.69.2, [latte/latte](https://github.com/nette/latte) v3.1.6, [phalcon (extension)](https://github.com/phalcon/cphalcon) 5.9.3 |
-| drupal-11 | [drupal/core](https://github.com/drupal/core) 11.4.7, [drush/drush](https://github.com/drush-ops/drush) 13.8.0, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.19, [symfony/http-kernel](https://github.com/symfony/http-kernel) v7.4.19, [twig/twig](https://github.com/twigphp/Twig) v3.28.0 |
+| drupal | [drupal/core](https://github.com/drupal/core) 11.4.7, [drush/drush](https://github.com/drush-ops/drush) 13.8.0, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.19, [symfony/http-kernel](https://github.com/symfony/http-kernel) v7.4.19, [twig/twig](https://github.com/twigphp/Twig) v3.28.0 |
 | typo3 | [doctrine/dbal](https://github.com/doctrine/dbal) 4.4.4, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.19, [typo3/cms-core](https://github.com/TYPO3/typo3) v14.3.7, [typo3fluid/fluid](https://github.com/TYPO3/Fluid) 5.3.2 |
 | winter | [doctrine/dbal](https://github.com/doctrine/dbal) 2.13.9, [laravel/framework](https://github.com/laravel/framework) v9.52.22, [symfony/http-foundation](https://github.com/symfony/http-foundation) v6.4.46, [twig/twig](https://github.com/twigphp/Twig) v3.29.0, [winter/storm](https://github.com/wintercms/storm) v1.2.14, [winter/wn-cms-module](https://github.com/wintercms/wn-cms-module) v1.2.14 |
 | modx | [MODX Revolution](https://github.com/modxcms/revolution) 3.2.4-pl, [xpdo/xpdo](https://github.com/modxcms/xpdo) v3.1.7 |
@@ -277,8 +308,8 @@ Recorded from the running containers on 2026-09-20T14:43:04Z: PHP 8.4.25, MySQL 
 | evo-latte-parser | tracing | 30 | 30.07 | 333.05ms | 573.95ms | 0 | 1.9 MiB | 4.0 MiB | 93.6 MiB |
 | evo-phalcon | off | 30 | 30.37 | 50.88ms | 169.73ms | 0 | 1.0 MiB | 2.0 MiB | 74.8 MiB |
 | evo-phalcon | tracing | 30 | 30.38 | 48.74ms | 246.40ms | 0 | 1.0 MiB | 2.0 MiB | 83.3 MiB |
-| drupal-11 | off | 30 | 30.37 | 79.68ms | 145.66ms | 0 | 2.1 MiB | 4.0 MiB | 71.2 MiB |
-| drupal-11 | tracing | 30 | 30.37 | 81.73ms | 166.53ms | 0 | 2.1 MiB | 4.0 MiB | 72.7 MiB |
+| drupal | off | 30 | 30.37 | 79.68ms | 145.66ms | 0 | 2.1 MiB | 4.0 MiB | 71.2 MiB |
+| drupal | tracing | 30 | 30.37 | 81.73ms | 166.53ms | 0 | 2.1 MiB | 4.0 MiB | 72.7 MiB |
 | typo3 | off | 30 | 30.38 | 46.43ms | 100.86ms | 0 | 3.1 MiB | 4.0 MiB | 81.8 MiB |
 | typo3 | tracing | 30 | 30.38 | 49.82ms | 110.78ms | 0 | 3.1 MiB | 4.0 MiB | 90.0 MiB |
 | winter | off | 30 | 30.38 | 90.05ms | 197.38ms | 0 | 1.4 MiB | 2.0 MiB | 82.1 MiB |
@@ -300,8 +331,8 @@ Recorded from the running containers on 2026-09-20T14:43:04Z: PHP 8.4.25, MySQL 
 | evo-latte-parser | tracing | 1830.28 / 290.46 ms | 213.61 / 136.35 ms | 902.91 / 565.11 ms | 187.24 / 122.36 ms | 996.67 / 654.97 ms | 204.87 / 153.18 ms | 13523 ms |
 | evo-phalcon | off | 1828.4 / 254.03 ms | 191.26 / 111.62 ms | 822.23 / 472.78 ms | 145.68 / 88.5 ms | 872.71 / 529.98 ms | 181.32 / 131.11 ms | 12256 ms |
 | evo-phalcon | tracing | 1827.44 / 280.16 ms | 204.76 / 135.79 ms | 899.38 / 567.5 ms | 173.66 / 118.76 ms | 971.41 / 643.73 ms | 223.49 / 174.25 ms | 13393 ms |
-| drupal-11 | off | 438.04 / 323.07 ms | 184.56 / 123.62 ms | 408.37 / 350.09 ms | 95.76 / 51.34 ms | 377.69 / 312.74 ms | 228.35 / 112.08 ms | 6048 ms |
-| drupal-11 | tracing | 393.18 / 283.32 ms | 168.08 / 120.09 ms | 366.58 / 304.22 ms | 90.22 / 45.64 ms | 361.35 / 302.04 ms | 240.87 / 114.47 ms | 5516 ms |
+| drupal | off | 438.04 / 323.07 ms | 184.56 / 123.62 ms | 408.37 / 350.09 ms | 95.76 / 51.34 ms | 377.69 / 312.74 ms | 228.35 / 112.08 ms | 6048 ms |
+| drupal | tracing | 393.18 / 283.32 ms | 168.08 / 120.09 ms | 366.58 / 304.22 ms | 90.22 / 45.64 ms | 361.35 / 302.04 ms | 240.87 / 114.47 ms | 5516 ms |
 | typo3 | off | 1540.28 / 1046.71 ms | 470.23 / 155.25 ms | 780.94 / 399.2 ms | 282.51 / 110.61 ms | 1766.2 / 762.9 ms | 192.55 / 106.57 ms | 18461 ms |
 | typo3 | tracing | 1532.43 / 1048.91 ms | 492.05 / 151.92 ms | 832.47 / 386 ms | 329.31 / 124.17 ms | 2016.74 / 1207.93 ms | 373.2 / 328.92 ms | 20554 ms |
 | winter | off | 1266.67 / 205.39 ms | 140.25 / 35.36 ms | 134.34 / 42.68 ms | 133.91 / 36.25 ms | 228.5 / 75.64 ms | 144.38 / 79.2 ms | 4742 ms |
@@ -339,12 +370,12 @@ Recorded from the running containers on 2026-09-20T14:43:04Z: PHP 8.4.25, MySQL 
 | evo-phalcon | tracing | PHP peak (script) | 2.6 MiB | 1.59 MiB | 11.52 MiB | 1.39 MiB | 11.51 MiB | 2.26 MiB | 92.8 MiB |
 | evo-phalcon | tracing | Frontend JS heap | 14 MiB | 15.07 MiB | 15.52 MiB | 9.86 MiB | 9.31 MiB | 12.22 MiB |  |
 | evo-phalcon | tracing | Frontend DOM nodes | 27309 | 15207 | 13890 | 4521 | 3732 | 7828 |  |
-| drupal-11 | off | PHP peak (script) | 3.11 MiB | 4.82 MiB | 4.23 MiB | 4.69 MiB | 4.23 MiB | 2.83 MiB | 87.2 MiB |
-| drupal-11 | off | Frontend JS heap | 11.9 MiB | 19.73 MiB | 20.89 MiB | 34.96 MiB | 36.06 MiB | 43.86 MiB |  |
-| drupal-11 | off | Frontend DOM nodes | 2498 | 4805 | 5021 | 8862 | 9078 | 11093 |  |
-| drupal-11 | tracing | PHP peak (script) | 3.11 MiB | 4.89 MiB | 4.23 MiB | 4.69 MiB | 4.23 MiB | 2.83 MiB | 82.1 MiB |
-| drupal-11 | tracing | Frontend JS heap | 11.87 MiB | 20.16 MiB | 20.94 MiB | 35.05 MiB | 36.15 MiB | 43.91 MiB |  |
-| drupal-11 | tracing | Frontend DOM nodes | 2498 | 4802 | 5021 | 8865 | 9084 | 11102 |  |
+| drupal | off | PHP peak (script) | 3.11 MiB | 4.82 MiB | 4.23 MiB | 4.69 MiB | 4.23 MiB | 2.83 MiB | 87.2 MiB |
+| drupal | off | Frontend JS heap | 11.9 MiB | 19.73 MiB | 20.89 MiB | 34.96 MiB | 36.06 MiB | 43.86 MiB |  |
+| drupal | off | Frontend DOM nodes | 2498 | 4805 | 5021 | 8862 | 9078 | 11093 |  |
+| drupal | tracing | PHP peak (script) | 3.11 MiB | 4.89 MiB | 4.23 MiB | 4.69 MiB | 4.23 MiB | 2.83 MiB | 82.1 MiB |
+| drupal | tracing | Frontend JS heap | 11.87 MiB | 20.16 MiB | 20.94 MiB | 35.05 MiB | 36.15 MiB | 43.91 MiB |  |
+| drupal | tracing | Frontend DOM nodes | 2498 | 4802 | 5021 | 8865 | 9084 | 11102 |  |
 | typo3 | off | PHP peak (script) | 6.27 MiB | 7.28 MiB | 7.34 MiB | 6.53 MiB | 6.93 MiB | 4.5 MiB | 32.8 MiB |
 | typo3 | off | Frontend JS heap | 34.23 MiB | 43.26 MiB | 36.46 MiB | 41.58 MiB | 36.68 MiB | 41.31 MiB |  |
 | typo3 | off | Frontend DOM nodes | 34035 | 38306 | 38673 | 30690 | 25474 | 19852 |  |

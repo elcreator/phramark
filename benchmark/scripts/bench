@@ -28,7 +28,7 @@ nginx_service=${nginx#phramark-}; nginx_service=${nginx_service%-1}
 
 profile=
 case "$stack" in
-  drupal-11|typo3|winter|modx|wordpress-gantry) profile="--profile cross-cms" ;;
+  drupal|typo3|winter|modx|wordpress-gantry) profile="--profile cross-cms" ;;
 esac
 
 # Recreate only this stack's FPM (the JIT mode is applied at container start)

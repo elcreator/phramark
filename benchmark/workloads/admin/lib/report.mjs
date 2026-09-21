@@ -11,6 +11,7 @@ export function buildReport(config, steps, extra = {}) {
   return {
     workload: 'admin',
     stack: config.stack,
+    version: config.version ?? '',
     jit: config.jit,
     baseUrl: config.baseUrl,
     rounds: config.rounds,
@@ -22,9 +23,15 @@ export function buildReport(config, steps, extra = {}) {
   };
 }
 
+// A version label as a file name segment after the stack id (the rule of
+// Phramark\VersionSpec::fileTag and benchmark/scripts/lib.sh version_suffix).
+export function versionSuffix(version) {
+  return version ? `~${version.replace(/[^A-Za-z0-9@.+_-]/g, '_')}` : '';
+}
+
 export function reportBase(config) {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  return path.join(config.resultsDir, `admin-${config.stack}-jit-${config.jit}-${stamp}`);
+  return path.join(config.resultsDir, `admin-${config.stack}${versionSuffix(config.version)}-jit-${config.jit}-${stamp}`);
 }
 
 export function writeReport(config, steps, extra = {}) {

@@ -5,12 +5,17 @@
 //
 // A CMS whose editor saves through its own AJAX framework instead of a form
 // post (Winter: every handler request carries X-Winter-Request-Handler;
-// MODX: every manager processor call goes to /connectors/index.php) does
-// the same server work in an XHR; those requests count as well, so a save
-// step is measured alike whether the CMS posts a form or an XHR.
+// MODX: every manager processor call goes to /connectors/index.php;
+// Evolution: manager actions are XHRs to /manager/index.php?a=N, a numeric
+// action id, unlike the MODX lexicon and asset helpers on the same path) does the
+// same server work in an XHR; those requests count as well, so a save step
+// is measured alike whether the CMS posts a form or an XHR.
 
 const AJAX_HANDLER_HEADERS = ['x-winter-request-handler'];
-const AJAX_ENDPOINTS = [/\/connectors\/index\.php(\?|$)/];
+const AJAX_ENDPOINTS = [
+  /\/connectors\/index\.php(\?|$)/,
+  /\/manager\/index\.php\?(.*&)?a=\d+(&|$)/,
+];
 
 export function isServerWork(request) {
   if (request.resourceType() === 'document') return true;

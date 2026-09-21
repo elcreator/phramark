@@ -33,4 +33,4 @@ $created = array_filter(
     static fn ($node): bool => !in_array((int) $node->id(), $seeded, true),
 );
 $storage->delete($created);
-printf("drupal-11: restored %d admin pages, removed %d created nodes.\n", count($seeded), count($created));
+printf("drupal: restored %d admin pages, removed %d created nodes.\n", count($seeded), count($created));

@@ -3,7 +3,7 @@
 // Markdown tables) as sortable tables. The helpers are pure so
 // benchmark/workloads/admin/unit/site.test.mjs can cover them without a DOM.
 
-import { renderBars, renderSmallMultiples, trendOf } from './charts.js';
+import { cellId, cellLabel, renderBars, renderSmallMultiples, trendOf } from './charts.js';
 
 export const ACTIONS = ['login', 'open-edit', 'save-edit', 'open-create', 'save-create', 'logout'];
 
@@ -12,6 +12,7 @@ const mib = { unit: 'MiB', decimals: 1 };
 
 export const GUEST_COLUMNS = [
   { key: 'stack', label: 'Stack' },
+  { key: 'version', label: 'Version' },
   { key: 'jit', label: 'JIT' },
   { key: 'rate', label: 'Offered rps', numeric: true },
   { key: 'rps', label: 'Achieved rps', numeric: true, decimals: 2 },
@@ -25,6 +26,7 @@ export const GUEST_COLUMNS = [
 
 export const ADMIN_COLUMNS = [
   { key: 'stack', label: 'Stack' },
+  { key: 'version', label: 'Version' },
   { key: 'jit', label: 'JIT' },
   ...ACTIONS.map((action) => ({ key: action, label: action, numeric: true, ...ms })),
   { key: 'totalWallMs', label: 'Total wall', numeric: true, unit: 'ms', decimals: 0 },
@@ -39,8 +41,16 @@ export const ADMIN_METRICS = [
   { key: 'domNodes', title: 'Admin workload: DOM nodes after the action (median)', unit: '', decimals: 0 },
 ];
 
+// The exact components a row's container reported (versions.php --attach),
+// shown as the Version cell's tooltip; "the default build" when a result
+// predates the recording.
+export function componentsText(row) {
+  if (!Array.isArray(row.components) || row.components.length === 0) return '';
+  return row.components.map((component) => `${component.name} ${component.version}`).join(', ');
+}
+
 export function guestRows(set) {
-  return (set.guest ?? []).map((row) => ({ ...row, label: set.stacks?.[row.stack]?.label ?? row.stack }));
+  return (set.guest ?? []).map((row) => ({ ...row, version: row.version ?? '', label: cellLabel(row, set.stacks), componentsText: componentsText(row) }));
 }
 
 // Flattens the per-action medians of one metric into columns so a table
@@ -49,7 +59,9 @@ export function adminRows(set, metric) {
   return (set.admin ?? []).map((row) => {
     const flat = {
       stack: row.stack,
-      label: set.stacks?.[row.stack]?.label ?? row.stack,
+      version: row.version ?? '',
+      label: cellLabel(row, set.stacks),
+      componentsText: componentsText(row),
       jit: row.jit,
       recordedAt: row.recordedAt,
       totalWallMs: metric === 'ms' ? row.totalWallMs : null,
@@ -148,6 +160,7 @@ export function renderTable(root, { title, columns, rows, note }) {
       for (const cell of columns) {
         const attributes = { class: cell.numeric ? 'numeric' : '' };
         if (cell.key === 'stack') attributes.title = row.label ?? '';
+        if (cell.key === 'version') attributes.title = row.componentsText ?? '';
         tr.append(element('td', { ...attributes, text: formatValue(row[cell.key], cell) }));
       }
       body.append(tr);
@@ -225,6 +238,7 @@ export function renderVersions(root, versions) {
 export function adminActionRows(set, action) {
   return (set.admin ?? []).map((row) => ({
     stack: row.stack,
+    version: row.version ?? '',
     jit: row.jit,
     value: row.actions?.[action]?.ms ?? null,
     server: row.actions?.[action]?.serverMs ?? null,
@@ -232,14 +246,16 @@ export function adminActionRows(set, action) {
   }));
 }
 
-// One panel per stack with one line per JIT mode from a series picker.
+// One panel per stack (and version) with one line per JIT mode from a
+// series picker.
 export function seriesPanels(rows, stacks, pick) {
   const panels = new Map();
   for (const row of rows) {
     const line = pick(row);
     if (!line) continue;
-    if (!panels.has(row.stack)) panels.set(row.stack, { stack: row.stack, label: stacks?.[row.stack]?.label ?? row.stack, lines: [] });
-    panels.get(row.stack).lines.push({ jit: row.jit, ...line });
+    const id = cellId(row);
+    if (!panels.has(id)) panels.set(id, { stack: row.stack, version: row.version ?? '', label: cellLabel(row, stacks), lines: [] });
+    panels.get(id).lines.push({ jit: row.jit, ...line });
   }
   return [...panels.values()].map((panel) => ({ ...panel, lines: panel.lines.sort((a, b) => a.jit.localeCompare(b.jit)) }));
 }
@@ -252,12 +268,13 @@ export function errorRows(set) {
     const stats = repeats?.metrics?.[metric];
     return stats && stats.cv !== null && stats.cv !== undefined ? Math.round(stats.cv * 1000) / 10 : null;
   };
-  const admin = new Map((set.admin ?? []).map((row) => [`${row.stack}|${row.jit}`, row]));
+  const admin = new Map((set.admin ?? []).map((row) => [`${cellId(row)}|${row.jit}`, row]));
   return (set.guest ?? []).map((row) => {
-    const adminRow = admin.get(`${row.stack}|${row.jit}`);
+    const adminRow = admin.get(`${cellId(row)}|${row.jit}`);
     return {
       stack: row.stack,
-      label: set.stacks?.[row.stack]?.label ?? row.stack,
+      version: row.version ?? '',
+      label: cellLabel(row, set.stacks),
       jit: row.jit,
       guestRuns: row.repeats?.n ?? 1,
       p50Cv: cv(row.repeats, 'p50Ms'),
@@ -331,6 +348,7 @@ export function renderErrors(root, set) {
     note: "CV is the coefficient of variation (standard deviation / mean, in %) of the cell's metric across its repetitions; it needs at least two runs (REPEATS=N benchmark/scripts/matrix). A difference between two stacks smaller than about twice their CV is noise on this host. Within one run, wrk2 gives the full latency histogram and the admin report the p95/min/max of each action's five repetitions.",
     columns: [
       { key: 'stack', label: 'Stack' },
+      { key: 'version', label: 'Version' },
       { key: 'jit', label: 'JIT' },
       { key: 'guestRuns', label: 'Guest runs', numeric: true },
       { key: 'p50Cv', label: 'p50 CV %', numeric: true, decimals: 1 },
@@ -357,7 +375,7 @@ export function render(set, root) {
   renderStacks(root, set.stacks);
   renderTable(root, {
     title: 'Guest workload (wrk2, constant offered rate)',
-    note: 'Latest run per stack, JIT mode and offered rate. wrk2 reports coordinated-omission-corrected latency, so an offered rate above capacity shows queueing time. Memory: PHP script peak per request (median), allocator peak (p95), FPM container peak RSS.',
+    note: 'Latest run per stack, version, JIT mode and offered rate. Version is the label of a comparison run (benchmark/scripts/matrix --versions=evo@3.5.x,evo@3.5.8,latte@0.4.0: a tag when published, else the branch of that name); hover it for the exact components the container reported. Empty: the default build, the newest release of every part. wrk2 reports coordinated-omission-corrected latency, so an offered rate above capacity shows queueing time. Memory: PHP script peak per request (median), allocator peak (p95), FPM container peak RSS.',
     columns: GUEST_COLUMNS,
     rows: guestRows(set),
   });

@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 # Guest workload: wrk2 holds a constant offered rate against the category
 # pages of one stack. Results land in benchmark/results as
-# guest-<stack>-jit-<mode>-rps-<rate>-<timestamp>.txt, with a memory section:
+# guest-<stack>[~<version>]-jit-<mode>-rps-<rate>-<timestamp>.txt, with a
+# versions section (the exact components of the container) and a memory section:
 # PHP peak memory per request (memory-prepend.php) and the FPM container's
 # peak RSS. The per-request log (.memory.log) and the 1 s RSS samples
 # (.rss.log) are kept next to it: they are the memory-over-time series of the
@@ -26,7 +27,7 @@ threads=${THREADS:-4}
 stack_for_port "$port"
 jit=$(jit_for_container "$php")
 stamp=$(date -u +%Y-%m-%dT%H-%M-%SZ)
-output=${OUTPUT:-benchmark/results/guest-${stack}-jit-${jit}-rps-${rate}-${stamp}.txt}
+output=${OUTPUT:-benchmark/results/guest-${stack}$(version_suffix)-jit-${jit}-rps-${rate}-${stamp}.txt}
 base=${output%.txt}
 
 mkdir -p benchmark/results
@@ -46,5 +47,6 @@ memory_log_fetch "$php" "$base.memory.log"
   php benchmark/scripts/memory-summary.php "$base.memory.log"
   echo "PHP-FPM container peak RSS: $(memory_sampler_peak_mib "$base.rss.log") MiB (docker stats, 1 s samples)"
 } >>"$output"
+attach_versions "$stack" "$output"
 grep -E 'Requests/sec|Non-2xx|Socket errors|^ *(50|99)\.000%|^PHP' "$output" || true
 echo "Results: $output"

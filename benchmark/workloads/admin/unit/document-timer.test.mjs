@@ -20,6 +20,19 @@ test('isServerWork counts documents and Winter AJAX handler requests, not assets
   assert.equal(isServerWork(request('stylesheet')), false);
 });
 
+test('isServerWork counts Evolution manager action XHRs, not the manager assets or theme helpers', () => {
+  const at = (resourceType, url) => ({ ...request(resourceType, { 'x-requested-with': 'XMLHttpRequest' }), url: () => url });
+  assert.equal(isServerWork(at('xhr', 'http://nginx-parser/manager/index.php?a=5')), true);
+  assert.equal(isServerWork(at('xhr', 'http://nginx-parser/manager/index.php?id=10104&a=5')), true);
+  // the top-level form post itself is a document request and counted as such
+  assert.equal(isServerWork(at('xhr', 'http://nginx-parser/manager/index.php')), false);
+  assert.equal(isServerWork(at('xhr', 'http://nginx-parser/manager/index.php?a=lexicon')), false);
+  assert.equal(isServerWork(at('fetch', 'http://nginx-parser/manager/index.php?a=27&id=10104')), true);
+  assert.equal(isServerWork(at('xhr', 'http://nginx-parser/manager/media/style/default/ajax.php')), false);
+  assert.equal(isServerWork(at('script', 'http://nginx-parser/manager/media/style/default/js/evo.js')), false);
+  assert.equal(isServerWork(at('xhr', 'http://nginx-parser/index.php?id=1')), false);
+});
+
 test('DocumentTimer sums server time of the counted requests between marks', async () => {
   const listeners = {};
   const page = {

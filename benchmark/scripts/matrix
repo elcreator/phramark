@@ -8,6 +8,19 @@
 #   --solutions=evo-phalcon,winter   stacks by id (default: all; PORT... also works)
 #                    evo-manticore is never in the default set: name it here to
 #                    run the Manticore compile job (no port, no guest/admin cells)
+#   --versions=evo@3.5.x,evo@3.5.8,latte@0.4.0
+#                    compare versions of the parts a stack is built from: a
+#                    published tag of that name, else the branch of that name
+#                    ("latest" = newest stable tag, the default). Every stack
+#                    runs once per combination of the refs of the products it
+#                    contains (here: evo-parser at each Evolution ref, the Latte
+#                    stacks at each Evolution ref paired with aLatteX 0.4.0);
+#                    the stacks are reinstalled from those refs before their
+#                    cells and results carry the label (guest-evo-latte~evo@3.5.8+latte@0.4.0-…).
+#                    Without --solutions only the stacks the products are part
+#                    of run. Products: php, evo, latte, phalcon, drupal, typo3,
+#                    winter, modx, wordpress, gantry, classic-editor
+#                    (Phramark\VersionSpec; php rebuilds the images).
 #   --jit=off | --jit=tracing | --jit=off,tracing   JIT modes (default: both)
 #   --workload=guest | --workload=admin | --workload=guest,admin   (default: both)
 #   --rate=30        offered rps for the guest workload (default 30)
@@ -24,10 +37,12 @@ set -u
 
 rate=
 ports=
+versions=
 manticore=0
 jits="off tracing"
 workloads="guest admin"
 repeats=${REPEATS:-1}
+compose="docker compose -f benchmark/compose.yaml"
 for argument in "$@"; do
   case "$argument" in
     --solutions=*|--stacks=*)
@@ -35,6 +50,7 @@ for argument in "$@"; do
         if [ "$stack" = evo-manticore ]; then manticore=1; continue; fi
         ports="$ports $(port_for_stack "$stack")" || exit 2
       done ;;
+    --versions=*) versions=${argument#*=} ;;
     --jit=*) jits=$(echo "${argument#*=}" | tr ',' ' ') ;;
     --workload=*|--workloads=*) workloads=$(echo "${argument#*=}" | tr ',' ' ') ;;
     --rate=*) rate=${argument#*=} ;;
@@ -44,12 +60,54 @@ for argument in "$@"; do
   esac
 done
 rate=${rate:-30}
-if [ -z "$ports" ] && [ "$manticore" = 0 ]; then ports="8080 8081 8082 8083 8084 8085 8086 8087 8088"; fi
+if [ -z "$ports" ] && [ "$manticore" = 0 ] && [ -z "$versions" ]; then ports="8080 8081 8082 8083 8084 8085 8086 8087 8088"; fi
 for jit in $jits; do case "$jit" in off|tracing) ;; *) echo "--jit must be off, tracing or off,tracing" >&2; exit 2 ;; esac; done
 for workload in $workloads; do case "$workload" in guest|admin) ;; *) echo "--workload must be guest, admin or guest,admin" >&2; exit 2 ;; esac; done
 failed=
 
-for port in $ports; do
+# The plan: rounds of "round K=V …" (the setup environment to provision)
+# followed by "stack ID LABEL" lines. Without --versions it is one round of
+# the selected ports with no provisioning and no label.
+if [ -n "$versions" ]; then
+  stacks=
+  for port in $ports; do stack_for_port "$port"; stacks="$stacks $stack"; done
+  plan=$(php benchmark/scripts/version-rounds.php "$versions" $stacks) || exit 2
+else
+  plan="round"
+  for port in $ports; do stack_for_port "$port"; plan="$plan
+stack $stack"; done
+fi
+
+# Reinstalls the stacks of a round whose resolved versions changed: the
+# setup containers compare the requested refs with what each site was built
+# from (.phramark-versions) and rebuild only the sites that differ. A PHP
+# version rebuilds the images first. The FPM containers pick the new trees
+# and images up when bench recreates them for the cell.
+provision() {
+  eval "export $1"
+  PHRAMARK_STACKS=$2
+  export PHRAMARK_STACKS
+  if [ -n "${PHP_VERSION:-}" ]; then
+    echo "===== building the images with PHP $PHP_VERSION ====="
+    $compose --profile cross-cms build || { echo "image build with PHP $PHP_VERSION failed" >&2; return 1; }
+  fi
+  evo=0; cross=0
+  for stack in $2; do case "$stack" in evo-*) evo=1 ;; *) cross=1 ;; esac; done
+  if [ "$evo" = 1 ]; then
+    echo "===== provisioning the Evolution stacks: $1 ====="
+    $compose run --rm -T setup || return 1
+  fi
+  if [ "$cross" = 1 ]; then
+    echo "===== provisioning the cross-CMS stacks: $1 ====="
+    $compose --profile cross-cms run --rm -T setup-cross-cms || return 1
+  fi
+}
+
+# Every selected cell of one stack, under the given version label.
+run_cells() {
+  port=$1
+  PHRAMARK_VERSION=$2
+  export PHRAMARK_VERSION
   # A stack whose containers were just (re)created may need a moment.
   reachable=0
   for attempt in 1 2 3 4 5; do
@@ -58,22 +116,51 @@ for port in $ports; do
   done
   if [ "$reachable" = 0 ]; then
     echo "port $port: not reachable, skipped"
-    continue
+    failed="$failed $port${2:+~$2}:unreachable"
+    return
   fi
   for jit in $jits; do
     for workload in $workloads; do
       echo
       repeat=1
       while [ "$repeat" -le "$repeats" ]; do
-        echo "===== $workload / JIT $jit / port $port (run $repeat of $repeats) ====="
+        echo "===== $workload / JIT $jit / port $port${2:+ / $2} (run $repeat of $repeats) ====="
         if ! benchmark/scripts/bench "$workload" "$jit" "$port" "$rate"; then
-          failed="$failed $workload:$jit:$port:$repeat"
+          failed="$failed $workload:$jit:$port${2:+~$2}:$repeat"
         fi
         repeat=$((repeat + 1))
       done
     done
   done
+}
+
+# Round by round: provision (with --versions), then every stack's cells.
+plan_file=$(mktemp)
+printf '%s\n' "$plan" > "$plan_file"
+rounds=$(grep -c '^round' "$plan_file")
+i=1
+while [ "$i" -le "$rounds" ]; do
+  round_env=$(awk -v n="$i" '/^round/ { r++ } r == n && /^round/ { sub(/^round ?/, ""); print }' "$plan_file")
+  round_stacks=$(awk -v n="$i" '/^round/ { r++; next } r == n && /^stack/ { sub(/^stack /, ""); print }' "$plan_file")
+  i=$((i + 1))
+  [ -n "$round_stacks" ] || continue
+  if [ -n "$versions" ] && ! provision "$round_env" "$(echo "$round_stacks" | cut -d' ' -f1 | tr '\n' ' ')"; then
+    echo "provisioning failed for: $round_env" >&2
+    failed="$failed provision:$(echo "$round_env" | tr ' ' ',')"
+    continue
+  fi
+  members=$(echo "$round_stacks" | grep -c .)
+  j=1
+  while [ "$j" -le "$members" ]; do
+    line=$(echo "$round_stacks" | sed -n "${j}p")
+    j=$((j + 1))
+    stack=${line%% *}
+    label=${line#"$stack"}
+    label=${label# }
+    run_cells "$(port_for_stack "$stack")" "$label"
+  done
 done
+rm -f "$plan_file"
 
 if [ "$manticore" = 1 ]; then
   echo

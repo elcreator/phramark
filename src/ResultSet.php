@@ -6,8 +6,12 @@ namespace Phramark;
 
 /**
  * Collects every recorded result in benchmark/results into one structure:
- * the latest guest run per stack × JIT × offered rate and the latest admin
- * run per stack × JIT, with the PHP-side and frontend-side memory figures.
+ * the latest guest run per stack × version × JIT × offered rate and the
+ * latest admin run per stack × version × JIT, with the PHP-side and
+ * frontend-side memory figures. The version is the label of a comparison
+ * run (matrix --versions: "evo@3.5.8+latte@0.4.0", empty for the default
+ * build); every row also carries the exact components its container
+ * reported (versions.php --attach), so builds of one stack stay apart.
  * The same structure feeds the Markdown tables of the README (summary.php)
  * and the JSON the static results site sorts in the browser (docs/).
  */
@@ -33,7 +37,7 @@ final class ResultSet
             if ($row === null) {
                 continue;
             }
-            $runs[$row['stack'] . '|' . $row['jit'] . '|' . $row['rate']][] = $row;
+            $runs[$row['stack'] . '|' . $row['version'] . '|' . $row['jit'] . '|' . $row['rate']][] = $row;
         }
         $guest = [];
         foreach ($runs as $key => $rows) {
@@ -47,7 +51,7 @@ final class ResultSet
             ];
             $guest[$key] = $latest;
         }
-        uasort($guest, static fn (array $a, array $b): int => [$a['rate'], $order($a['stack']), $a['jit']] <=> [$b['rate'], $order($b['stack']), $b['jit']]);
+        uasort($guest, static fn (array $a, array $b): int => [$a['rate'], $order($a['stack']), strnatcmp($a['version'], $b['version']), $a['jit']] <=> [$b['rate'], $order($b['stack']), 0, $b['jit']]);
 
         $runs = [];
         foreach (glob($dir . '/admin-*.json') ?: [] as $file) {
@@ -58,7 +62,7 @@ final class ResultSet
             if ($row === null) {
                 continue;
             }
-            $runs[$row['stack'] . '|' . $row['jit']][] = $row;
+            $runs[$row['stack'] . '|' . $row['version'] . '|' . $row['jit']][] = $row;
         }
         $admin = [];
         foreach ($runs as $key => $rows) {
@@ -76,7 +80,7 @@ final class ResultSet
             unset($latest['steps']);
             $admin[$key] = $latest;
         }
-        uasort($admin, static fn (array $a, array $b): int => [$order($a['stack']), $a['jit']] <=> [$order($b['stack']), $b['jit']]);
+        uasort($admin, static fn (array $a, array $b): int => [$order($a['stack']), strnatcmp($a['version'], $b['version']), $a['jit']] <=> [$order($b['stack']), 0, $b['jit']]);
 
         // The exact versions the containers reported (benchmark/scripts/versions.php).
         $versions = is_file($dir . '/versions.json') ? json_decode((string) file_get_contents($dir . '/versions.json'), true) : null;
@@ -91,16 +95,26 @@ final class ResultSet
     }
 
     /**
-     * One wrk2 result file (raw output plus the ---- memory ---- section).
+     * One wrk2 result file (raw output plus the ---- memory ---- and
+     * ---- versions ---- sections). The name is
+     * guest-<stack>[~<version tag>]-jit-<mode>-rps-<rate>[-<timestamp>].txt.
      *
      * @return array<string, mixed>|null
      */
     public static function guestRow(string $file): ?array
     {
-        if (preg_match('#guest-(.+)-jit-(off|tracing)-rps-(\d+)(?:-(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z))?\.txt$#', $file, $m) !== 1) {
+        if (preg_match('#guest-([a-z0-9-]+?)(?:~([^/\\\\]+?))?-jit-(off|tracing)-rps-(\d+)(?:-(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z))?\.txt$#', $file, $m) !== 1) {
             return null;
         }
+        [, $stack, $version, $jit, $rate] = $m;
+        $stamp = $m[5] ?? '';
         $text = (string) file_get_contents($file);
+        // The label line carries the version as given (the file name holds a
+        // sanitised form: "latte@../evo/aLatteX" becomes "latte@.._evo_aLatteX").
+        preg_match('#^---- versions ----\n(?:label: (.*)\n)?(\[.*\])$#m', $text, $versions);
+        if (isset($versions[1]) && $versions[1] !== '') {
+            $version = $versions[1];
+        }
         preg_match('#^\s*50\.000%\s+(\S+)#m', $text, $p50);
         preg_match('#^\s*99\.000%\s+(\S+)#m', $text, $p99);
         preg_match('#Requests/sec:\s+([\d.]+)#', $text, $rps);
@@ -109,12 +123,14 @@ final class ResultSet
         preg_match('#container peak RSS: ([\d.]+) MiB#', $text, $rss);
 
         return [
-            'stack' => $m[1],
-            'jit' => $m[2],
-            'rate' => (int) $m[3],
+            'stack' => $stack,
+            'version' => $version,
+            'jit' => $jit,
+            'rate' => (int) $rate,
             // Timestamped names carry the run time; older names fall back to mtime.
-            'recordedAt' => isset($m[4]) ? preg_replace('/T(\d{2})-(\d{2})-(\d{2})Z$/', 'T$1:$2:$3Z', $m[4]) : gmdate('Y-m-d\TH:i:s\Z', (int) filemtime($file)),
+            'recordedAt' => $stamp !== '' ? preg_replace('/T(\d{2})-(\d{2})-(\d{2})Z$/', 'T$1:$2:$3Z', $stamp) : gmdate('Y-m-d\TH:i:s\Z', (int) filemtime($file)),
             'file' => basename($file),
+            'components' => isset($versions[2]) ? json_decode($versions[2], true) : null,
             'rps' => isset($rps[1]) ? (float) $rps[1] : null,
             'p50Ms' => isset($p50[1]) ? self::parseLatencyMs($p50[1]) : null,
             'p99Ms' => isset($p99[1]) ? self::parseLatencyMs($p99[1]) : null,
@@ -148,7 +164,9 @@ final class ResultSet
 
         return [
             'stack' => $report['stack'],
+            'version' => (string) ($report['version'] ?? ''),
             'jit' => $report['jit'],
+            'components' => isset($report['components']) && is_array($report['components']) ? $report['components'] : null,
             'rounds' => (int) ($report['rounds'] ?? 1),
             'pages' => (int) ($report['pages'] ?? 0),
             'recordedAt' => (string) ($report['recordedAt'] ?? ''),
@@ -363,11 +381,12 @@ final class ResultSet
             }
             $out .= "\n";
         }
+        $name = static fn (array $row): string => $row['stack'] . ($row['version'] !== '' ? ' (' . $row['version'] . ')' : '');
         $out .= "## Guest workload (wrk2, constant offered rate)\n\n";
         $out .= "| Stack | JIT | Offered | Achieved rps | p50 | p99 | Non-2xx | PHP peak/request (script median) | PHP alloc peak p95 | FPM container peak RSS |\n";
         $out .= "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n";
         foreach ($set['guest'] as $row) {
-            $out .= sprintf("| %s | %s | %d | %s | %s | %s | %d | %s | %s | %s |\n", $row['stack'], $row['jit'], $row['rate'], $number($row['rps']), $ms($row['p50Ms']), $ms($row['p99Ms']), $row['errors'], $mib($row['phpScriptMedianMb']), $mib($row['phpAllocP95Mb']), $mib($row['containerPeakMb']));
+            $out .= sprintf("| %s | %s | %d | %s | %s | %s | %d | %s | %s | %s |\n", $name($row), $row['jit'], $row['rate'], $number($row['rps']), $ms($row['p50Ms']), $ms($row['p99Ms']), $row['errors'], $mib($row['phpScriptMedianMb']), $mib($row['phpAllocP95Mb']), $mib($row['containerPeakMb']));
         }
 
         $out .= "\n## Admin workload (Playwright; medians per action, wall / server)\n\n";
@@ -378,7 +397,7 @@ final class ResultSet
             foreach (self::ACTIONS as $action) {
                 $cells[] = $number($row['actions'][$action]['ms']) . ' / ' . $number($row['actions'][$action]['serverMs']) . ' ms';
             }
-            $out .= sprintf("| %s | %s | %s | %d ms |\n", $row['stack'], $row['jit'], implode(' | ', $cells), $row['totalWallMs']);
+            $out .= sprintf("| %s | %s | %s | %d ms |\n", $name($row), $row['jit'], implode(' | ', $cells), $row['totalWallMs']);
         }
 
         $out .= "\n## Admin workload memory (medians per action)\n\n";
@@ -392,7 +411,7 @@ final class ResultSet
                     $cells[] = $value === null ? '-' : $value . ($unit === '' ? '' : ' ' . $unit);
                 }
                 $peak = $metric === 'phpPeakMb' && $row['containerPeakMb'] !== null ? $row['containerPeakMb'] . ' MiB' : '';
-                $out .= sprintf("| %s | %s | %s | %s | %s |\n", $row['stack'], $row['jit'], $side, implode(' | ', $cells), $peak);
+                $out .= sprintf("| %s | %s | %s | %s | %s |\n", $name($row), $row['jit'], $side, implode(' | ', $cells), $peak);
             }
         }
 

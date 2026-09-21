@@ -10,7 +10,7 @@ stack_for_port() {
     8080) stack=evo-parser; php=phramark-php-parser-1; nginx=phramark-nginx-parser-1; target=nginx-parser ;;
     8081) stack=evo-latte; php=phramark-php-latte-1; nginx=phramark-nginx-latte-1; target=nginx-latte ;;
     8082) stack=evo-phalcon; php=phramark-php-phalcon-1; nginx=phramark-nginx-phalcon-1; target=nginx-phalcon ;;
-    8083) stack=drupal-11; php=phramark-php-drupal-11-1; nginx=phramark-nginx-drupal-11-1; target=nginx-drupal-11 ;;
+    8083) stack=drupal; php=phramark-php-drupal-1; nginx=phramark-nginx-drupal-1; target=nginx-drupal ;;
     8084) stack=typo3; php=phramark-php-typo3-1; nginx=phramark-nginx-typo3-1; target=nginx-typo3 ;;
     8085) stack=evo-latte-parser; php=phramark-php-latte-parser-1; nginx=phramark-nginx-latte-parser-1; target=nginx-latte-parser ;;
     8086) stack=winter; php=phramark-php-winter-1; nginx=phramark-nginx-winter-1; target=nginx-winter ;;
@@ -26,14 +26,29 @@ port_for_stack() {
     evo-parser) echo 8080 ;;
     evo-latte) echo 8081 ;;
     evo-phalcon) echo 8082 ;;
-    drupal-11) echo 8083 ;;
+    drupal) echo 8083 ;;
     typo3) echo 8084 ;;
     evo-latte-parser) echo 8085 ;;
     winter) echo 8086 ;;
     modx) echo 8087 ;;
     wordpress-gantry) echo 8088 ;;
-    *) echo "unknown stack '$1' (evo-parser, evo-latte, evo-latte-parser, evo-phalcon, drupal-11, typo3, winter, modx, wordpress-gantry; evo-manticore is a job without a port)" >&2; return 2 ;;
+    *) echo "unknown stack '$1' (evo-parser, evo-latte, evo-latte-parser, evo-phalcon, drupal, typo3, winter, modx, wordpress-gantry; evo-manticore is a job without a port)" >&2; return 2 ;;
   esac
+}
+
+# The version label of the current run (PHRAMARK_VERSION, e.g.
+# "evo@3.5.x+latte@0.4.0", set per stack by matrix --versions) as a result
+# file name segment after the stack id: guest-evo-latte~evo@3.5.x-jit-off-….
+# Empty without a label. The same rule is in Phramark\VersionSpec::fileTag
+# and benchmark/workloads/admin/lib/report.mjs.
+version_suffix() {
+  [ -z "${PHRAMARK_VERSION:-}" ] || printf '~%s' "$(printf '%s' "$PHRAMARK_VERSION" | sed 's/[^A-Za-z0-9@.+_-]/_/g')"
+}
+
+# Records the exact component versions of the stack's container into a
+# result file (versions.php --attach), so a result says what it measured.
+attach_versions() {
+  php benchmark/scripts/versions.php --stack="$1" --attach="$2" --label="${PHRAMARK_VERSION:-}" >/dev/null || echo "versions of $1 not recorded in $2" >&2
 }
 
 # Reads the JIT mode the running FPM container was started with, so a result

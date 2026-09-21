@@ -1,4 +1,8 @@
-FROM php:8.4-fpm-bookworm
+# The PHP version is a versionable part too (PHP_VERSION build arg,
+# `--versions=php@8.3` in benchmark/scripts/matrix); every stack is built
+# from the same tag.
+ARG PHP_VERSION=8.4
+FROM php:${PHP_VERSION}-fpm-bookworm
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git default-mysql-client libzip-dev unzip \

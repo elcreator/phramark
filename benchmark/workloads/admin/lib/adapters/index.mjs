@@ -13,7 +13,7 @@ const adapters = [EvolutionAdapter, DrupalAdapter, Typo3Adapter, WinterAdapter, 
 export function adapterFor(stack, page, config, timer) {
   const Adapter = adapters.find((candidate) => candidate.supports(stack));
   if (!Adapter) {
-    throw new Error(`No admin workload adapter for stack "${stack}". Available: evo-* (Evolution CMS), drupal-11, typo3, winter, modx, wordpress-gantry.`);
+    throw new Error(`No admin workload adapter for stack "${stack}". Available: evo-* (Evolution CMS), drupal, typo3, winter, modx, wordpress-gantry.`);
   }
   return new Adapter(page, config, timer);
 }

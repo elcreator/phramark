@@ -6,7 +6,7 @@
 
 export class DrupalAdapter {
   static supports(stack) {
-    return stack === 'drupal-11';
+    return stack === 'drupal';
   }
 
   constructor(page, config, timer) {

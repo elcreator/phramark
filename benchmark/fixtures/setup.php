@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use Phramark\FixturePlan;
+use Phramark\VersionSpec;
 
 require '/opt/phramark/src/FixturePlan.php';
+require '/opt/phramark/src/VersionSpec.php';
+require '/opt/phramark/benchmark/fixtures/resolve-version.php';
 
 const PREFIX = 'site_';
 const ROOT = '/sites';
@@ -31,34 +34,121 @@ function rootPdo(?string $database = null): PDO
     );
 }
 
+/**
+ * The parts of an Evolution site the harness chooses a version for
+ * (Phramark\VersionSpec): the core, and per site the extensions it adds.
+ *
+ * @return array<string, list<string>> site => products
+ */
+function siteProducts(): array
+{
+    return [
+        'canonical' => ['evo'],
+        'evo-parser' => ['evo'],
+        'evo-latte' => ['evo', 'latte'],
+        'evo-latte-parser' => ['evo', 'latte'],
+        'evo-phalcon' => ['evo', 'latte', 'phalcon'],
+    ];
+}
+
+/**
+ * What a site should be built from, resolved once per setup run: one line
+ * per product as resolve-version.php prints it. The same text is the site's
+ * .phramark-versions marker, so a site is reinstalled exactly when the
+ * resolved versions differ from the ones it was built from (a new ref, a
+ * moved branch, a new "latest").
+ *
+ * @param list<string> $products
+ */
+function wantedVersions(array $products): string
+{
+    static $resolved = [];
+    $lines = '';
+    foreach ($products as $product) {
+        $resolved[$product] ??= resolveVersion($product);
+        $lines .= $product . '=' . $resolved[$product] . PHP_EOL;
+    }
+
+    return $lines;
+}
+
 function install(string $name): void
 {
     $path = ROOT . '/' . $name;
     $database = 'benchmark_' . str_replace('-', '_', $name);
+    $wanted = wantedVersions(siteProducts()[$name]);
+    $marker = $path . '/.phramark-versions';
 
-    $schema = rootPdo($database);
-    $existing = $schema->query("SHOW TABLES LIKE 'site_site_content'")->fetchColumn();
-    if ($existing !== false || is_file($path . '/.phramark-installed')) {
+    if (is_file($marker) && file_get_contents($marker) === $wanted) {
         return;
     }
+    // A site built from other versions (or a failed attempt) is removed
+    // with its database and installed again from the resolved refs.
+    if (is_dir($path)) {
+        printf('%s: versions changed, reinstalling' . PHP_EOL, $name);
+        run(['sh', '-c', 'rm -rf "$1"/* "$1"/.[!.]* 2>/dev/null; true', 'sh', $path]);
+    }
+    $pdo = rootPdo();
+    $pdo->exec(sprintf('DROP DATABASE IF EXISTS `%s`', $database));
+    $pdo->exec(sprintf('CREATE DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci', $database));
+    $pdo->exec(sprintf("GRANT ALL PRIVILEGES ON `%s`.* TO 'benchmark'@'%%'", $database));
 
-    // Evolution keeps the core vendor tree in its source distribution. Cloning
-    // the supported 3.5 branch avoids Composer's post-create script relocating
-    // that tree before the CLI installer runs.
-    run(['git', 'clone', '--depth=1', '--branch', '3.5.x', 'https://github.com/evolution-cms/evolution.git', $path]);
+    // Evolution keeps the core vendor tree in its source distribution.
+    // Cloning the resolved tag or branch avoids Composer's post-create script
+    // relocating that tree before the CLI installer runs; a path is a
+    // working copy on the host, copied as it is.
+    preg_match('/^evo=(tag|branch|path) (\S+)/m', $wanted, $m);
+    [, $kind, $ref] = $m;
+    printf('%s: Evolution CMS %s %s' . PHP_EOL, $name, $kind, $ref);
+    if ($kind === 'path') {
+        run(['cp', '-R', $ref . '/.', $path]);
+    } else {
+        run(['git', 'clone', '--depth=1', '--branch', $ref, 'https://github.com/evolution-cms/evolution.git', $path]);
+    }
     run([
         'php', 'cli-install.php', '--typeInstall=1', '--databaseType=mysql', '--databaseServer=' . getenv('DB_HOST'),
         '--database=' . $database, '--databaseUser=' . getenv('DB_USER'), '--databasePassword=' . getenv('DB_PASSWORD'),
         '--tablePrefix=' . PREFIX, '--cmsAdmin=benchmark', '--cmsAdminEmail=benchmark@example.test',
         '--cmsPassword=' . getenv('EVO_ADMIN_PASSWORD'), '--language=en', '--removeInstall=y',
     ], $path . '/install');
-    touch($path . '/.phramark-installed');
+    foreach (siteProducts()[$name] as $product) {
+        if ($product !== 'evo') {
+            installPackage($name, $product, $wanted);
+        }
+    }
+    file_put_contents($marker, $wanted);
 }
 
-function installPackage(string $site, string $package): void
+/**
+ * An extension at its resolved Composer version, or from a directory on
+ * the host: the directory is copied into the site (the FPM containers do
+ * not mount /host, and Evolution's merge plugin resolves repository paths
+ * relative to core/custom) and required as a Composer path repository whose
+ * package is given the version "dev-local", so that the requirement can only
+ * be met from that copy and never by a Packagist release, aliased to the
+ * newest release so that dependants' constraints still resolve.
+ */
+function installPackage(string $site, string $product, string $wanted): void
 {
     $path = ROOT . '/' . $site;
-    run(['php', 'artisan', 'package:installrequire', $package, '*'], $path . '/core');
+    $package = VersionSpec::products()[$product]['package'];
+    preg_match('/^' . preg_quote($product, '/') . '=(composer|path) (\S+)(?: \S+ (\S+))?/m', $wanted, $m);
+    $constraint = $m[2] ?? '*';
+    if (($m[1] ?? '') === 'path') {
+        $source = $path . '/core/custom/phramark-sources/' . $product;
+        run(['rm', '-rf', $source]);
+        run(['mkdir', '-p', $source]);
+        run(['sh', '-c', 'cp -R "$1"/. "$2"/ && rm -rf "$2"/vendor "$2"/.git', 'sh', $m[2], $source]);
+        $custom = $path . '/core/custom/composer.json';
+        $json = is_file($custom) ? json_decode((string) file_get_contents($custom), true) : ['name' => 'evolutioncms/custom', 'require' => [], 'autoload' => ['psr-4' => []]];
+        $json['repositories']['phramark-' . $product] = ['type' => 'path', 'url' => 'phramark-sources/' . $product, 'options' => ['symlink' => false, 'versions' => [$package => 'dev-local']]];
+        file_put_contents($custom, json_encode($json, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        // "dev-local as 0.5.0": the copy also satisfies what other packages
+        // require of the newest release (aPhalcon needs aLatteX ^0.5).
+        $constraint = 'dev-local' . (isset($m[3]) ? ' as ' . $m[3] : '');
+    }
+    printf('%s: %s %s' . PHP_EOL, $site, $package, $constraint);
+    run(['php', 'artisan', 'package:installrequire', $package, $constraint], $path . '/core');
 }
 
 function createDatabases(): void
@@ -226,31 +316,44 @@ PHP;
     }
 }
 
+// Every site is installed on its own: a version that cannot be built (an
+// extension whose constraints the requested core does not meet) fails that
+// site, not the others. PHRAMARK_STACKS (set per round by
+// benchmark/scripts/matrix) names the stacks a run needs: only those are
+// installed, and a failed one fails the run. Without the variable every site
+// is installed and a failure is only reported.
 try {
     createDatabases();
-    foreach (['canonical', 'evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon'] as $site) {
-        install($site);
+    install('canonical');
+    $all = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon'];
+    $required = array_values(array_intersect($all, array_filter(explode(' ', (string) getenv('PHRAMARK_STACKS')))));
+    $sites = $required ?: $all;
+    $failed = [];
+    foreach ($sites as $site) {
+        try {
+            install($site);
+        } catch (Throwable $exception) {
+            $failed[$site] = $exception->getMessage();
+            fwrite(STDERR, sprintf("%s: not installed: %s\n", $site, $exception->getMessage()));
+        }
     }
-    installPackage('evo-latte', 'elcreator/alattex');
-    installPackage('evo-latte-parser', 'elcreator/alattex');
-    installPackage('evo-phalcon', 'elcreator/alattex');
-    installPackage('evo-phalcon', 'elcreator/aphalcon');
+    $installed = array_values(array_diff($sites, array_keys($failed)));
     seedCanonical();
-    foreach (['evo_parser', 'evo_latte', 'evo_latte_parser', 'evo_phalcon'] as $target) {
-        cloneCanonical($target);
-    }
-    copyTree('/opt/phramark/benchmark/implementations/evo-latte', ROOT . '/evo-latte');
-    copyTree('/opt/phramark/benchmark/implementations/evo-latte-parser', ROOT . '/evo-latte-parser');
-    copyTree('/opt/phramark/benchmark/implementations/evo-phalcon', ROOT . '/evo-phalcon');
-    writeSettings('benchmark_evo_parser', true);
-    writeSettings('benchmark_evo_latte', false);
-    writeSettings('benchmark_evo_latte_parser', false);
-    writeSettings('benchmark_evo_phalcon', false);
-    foreach (['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon'] as $site) {
+    foreach ($installed as $site) {
+        cloneCanonical(str_replace('-', '_', $site));
+        if ($site !== 'evo-parser') {
+            copyTree('/opt/phramark/benchmark/implementations/' . $site, ROOT . '/' . $site);
+        }
+        writeSettings('benchmark_' . str_replace('-', '_', $site), $site === 'evo-parser');
         run(['php', 'artisan', 'cache:clear-full'], ROOT . '/' . $site . '/core');
         run(['chown', '-R', 'www-data:www-data', ROOT . '/' . $site]);
     }
     file_put_contents('/sites/.complete', "complete\n");
+    foreach ($failed as $site => $message) {
+        if (in_array($site, $required, true)) {
+            throw new RuntimeException(sprintf('%s is required by this run and could not be installed: %s', $site, $message));
+        }
+    }
 } catch (Throwable $exception) {
     fwrite(STDERR, $exception->getMessage() . "\n");
     exit(1);
