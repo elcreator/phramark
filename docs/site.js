@@ -394,7 +394,7 @@ export function render(set, root) {
   renderStacks(root, set.stacks);
   renderTable(root, {
     title: 'Guest workload (wrk2, constant offered rate)',
-    note: 'Latest run per stack, version, JIT mode and offered rate. Version is the label of a comparison run (benchmark/scripts/matrix --versions=evo@3.5.x,evo@3.5.8,latte@0.4.0: a tag when published, else the branch of that name); hover it for the exact components the container reported. Empty: the default build, the newest release of every part. wrk2 reports coordinated-omission-corrected latency, so an offered rate above capacity shows queueing time. Memory: PHP script peak per request (median), allocator peak (p95), FPM container peak RSS.',
+    note: 'Latest run per stack, version, JIT mode and offered rate. Version is what the stack was built from, read from the components its container reported: the CMS release (3.5.8, 11.4.7), a working copy as directory@commit (3.5.9 ../evolution@3f9ea9220), a branch as branch@commit, and the extensions the harness adds (aLatteX, aPhalcon, Gantry); a run pinned with benchmark/scripts/matrix --versions=evo@3.5.8 and a default build of the same release are one cell. Hover the version for the exact components. wrk2 reports coordinated-omission-corrected latency, so an offered rate above capacity shows queueing time. Memory: PHP script peak per request (median), allocator peak (p95), FPM container peak RSS.',
     columns: GUEST_COLUMNS,
     rows: guestRows(set),
   });

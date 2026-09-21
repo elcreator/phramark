@@ -295,8 +295,23 @@ $report = ['workload' => 'admin', 'stack' => 'evo-latte', 'version' => 'evo@3.5.
 file_put_contents($dir . '/admin-evo-latte~evo@3.5.8+latte@0.4.0-jit-off-2026-09-21T10-10-00Z.json', json_encode($report));
 file_put_contents($dir . '/admin-evo-latte-jit-off-2026-09-21T10-15-00Z.json', json_encode(['version' => '', 'components' => null] + $report));
 $set = ResultSet::collect($dir);
-expect(array_map(static fn (array $r): array => [$r['stack'], $r['version'], $r['p50Ms']], $set['guest']), [['evo-latte', '', 280.0], ['evo-latte', 'evo@3.5.8+latte@0.4.0', 300.0]], 'Two builds of one stack are two rows, the default build first.');
-expect(array_map(static fn (array $r): array => [$r['version'], $r['components'][0]['version'] ?? null], $set['admin']), [['', null], ['evo@3.5.8+latte@0.4.0', '8.4.25']], 'Admin reports keep their version label and components.');
+// Both runs report the same build (Evolution 3.5.8), so they are one cell
+// shown under the resolved version, whatever the label said: the latest run
+// is the row and both count as repetitions.
+expect(array_map(static fn (array $r): array => [$r['stack'], $r['version'], $r['ref'], $r['p50Ms'], $r['repeats']['n']], $set['guest']), [['evo-latte', '3.5.8', '', 280.0, 2]], 'A default build and a run pinned to the same release merge into one cell named by the resolved version.');
+expect(array_map(static fn (array $r): array => [$r['version'], $r['components'][0]['version'] ?? null], $set['admin']), [['', null], ['evo@3.5.8+latte@0.4.0', '8.4.25']], 'A report whose components do not name the CMS keeps its label; one without components and without a snapshot stays the default build.');
+expect(ResultSet::shortVersion('3.5.8 (tag 3.5.8@374e110, 2026-09-10)'), '3.5.8', 'A tag build is its version.');
+expect(ResultSet::shortVersion('3.5.9 (path /host/evolution@3f9ea9220 2026-09-21, files 82685d73f20be0b3)'), '3.5.9 ../evolution@3f9ea9220', 'A working-copy build names the directory and commit.');
+expect(ResultSet::shortVersion('3.5.9 (branch 3.5.x@abc1234, 2026-09-21)'), '3.5.9 3.5.x@abc1234', 'A branch build names the branch and commit.');
+expect(ResultSet::shortVersion('v12.69.2'), '12.69.2', 'A Composer "v" prefix is dropped.');
+expect(ResultSet::shortVersion('dev-local (evo/aLatteX@3cd59aae7232ddf7)'), '../evo/aLatteX@3cd59aae', 'An extension from a host directory names the directory and a short fingerprint.');
+expect(ResultSet::buildVersion('evo-phalcon', [['name' => 'Evolution CMS', 'version' => '3.5.8 (tag 3.5.8@1, 2026-09-10)'], ['name' => 'elcreator/alattex', 'version' => '0.5.0'], ['name' => 'elcreator/aphalcon', 'version' => '0.1.0']]), '3.5.8 · aLatteX 0.5.0 · aPhalcon 0.1.0', 'A stack with extensions names them after the CMS.');
+expect(ResultSet::buildVersion('wordpress-gantry', [['name' => 'WordPress', 'version' => '7.1.1'], ['name' => 'gantry5', 'version' => '5.6.4']]), '7.1.1 · Gantry 5.6.4', 'WordPress + Gantry names both.');
+expect(ResultSet::buildVersion('drupal', [['name' => 'PHP', 'version' => '8.4.25']]), null, 'Components without the CMS name no build.');
+$snapshot = ['stacks' => ['drupal' => [['name' => 'drupal/core', 'version' => '11.4.7']], 'evo-parser' => [['name' => 'Evolution CMS', 'version' => '3.5.9 (path /host/evolution@3f9ea9220 2026-09-21, files x)']]]];
+expect(ResultSet::withResolvedVersion(['stack' => 'drupal', 'version' => '', 'components' => null], $snapshot)['version'], '11.4.7', 'A run recorded before components were attached takes the snapshot of a release build.');
+expect(ResultSet::withResolvedVersion(['stack' => 'evo-parser', 'version' => '', 'components' => null], $snapshot)['version'], '', 'A snapshot of a working-copy build says nothing about an old run.');
+expect(ResultSet::withResolvedVersion(['stack' => 'drupal', 'version' => 'drupal@11.4.7', 'components' => null], $snapshot)['version'], 'drupal@11.4.7', 'A labelled run without components keeps its label.');
 expect(str_contains(ResultSet::markdown($set), '| evo-latte (evo@3.5.8+latte@0.4.0) | off |'), true, 'The Markdown tables name the build.');
 foreach (glob($dir . '/*') as $file) {
     unlink($file);
@@ -430,10 +445,10 @@ expect($adminRow['series']['phpPeak'], null, 'An admin run without a memory log 
 expect(isset($adminRow['steps']), false, 'Steps live under series only.');
 expect($resultSet['versions']['stacks']['modx'][0]['version'], '3.2.4-pl', 'The tested versions are part of the result set.');
 $markdown = ResultSet::markdown($resultSet);
-expect(str_contains($markdown, '| modx | off | 30 | 29.9 | 100.00ms | 200.00ms | 0 | - | - | - |'), true, 'The guest Markdown row keeps the README format and shows the latest repetition.');
-expect(str_contains($markdown, '| modx | tracing | 30 | - | - | - | 0 | - | - | - |'), true, 'A guest run without numbers renders dashes.');
-expect(str_contains($markdown, '| modx | off | 700.5 / 300.25 ms | - / - ms | - / - ms | - / - ms | - / - ms | - / - ms | 901 ms |'), true, 'The admin Markdown row keeps the README format.');
-expect(str_contains($markdown, '| modx | off | PHP peak (script) | 4.5 MiB | - | - | - | - | - | 90.5 MiB |'), true, 'The admin memory Markdown row keeps the README format.');
+expect(str_contains($markdown, '| modx (3.2.4-pl) | off | 30 | 29.9 | 100.00ms | 200.00ms | 0 | - | - | - |'), true, 'The guest Markdown row keeps the README format, names the build from the versions snapshot and shows the latest repetition.');
+expect(str_contains($markdown, '| modx (3.2.4-pl) | tracing | 30 | - | - | - | 0 | - | - | - |'), true, 'A guest run without numbers renders dashes.');
+expect(str_contains($markdown, '| modx (3.2.4-pl) | off | 700.5 / 300.25 ms | - / - ms | - / - ms | - / - ms | - / - ms | - / - ms | 901 ms |'), true, 'The admin Markdown row keeps the README format.');
+expect(str_contains($markdown, '| modx (3.2.4-pl) | off | PHP peak (script) | 4.5 MiB | - | - | - | - | - | 90.5 MiB |'), true, 'The admin memory Markdown row keeps the README format.');
 expect(str_contains($markdown, '## Versions tested') && str_contains($markdown, '[MODX Revolution](https://github.com/modxcms/revolution) 3.2.4-pl, xpdo/xpdo v3.1.7'), true, 'The Markdown must name the exact versions tested, linked to their repositories.');
 expect(json_decode(json_encode($resultSet, JSON_THROW_ON_ERROR), true)['guest'][0]['repeats']['metrics']['p50Ms']['max'], 120.5, 'The result set must round-trip through JSON for the site.');
 array_map('unlink', glob($resultsDir . '/*') ?: []);

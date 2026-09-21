@@ -8,10 +8,12 @@ namespace Phramark;
  * Collects every recorded result in benchmark/results into one structure:
  * the latest guest run per stack × version × JIT × offered rate and the
  * latest admin run per stack × version × JIT, with the PHP-side and
- * frontend-side memory figures. The version is the label of a comparison
- * run (matrix --versions: "evo@3.5.8+latte@0.4.0", empty for the default
- * build); every row also carries the exact components its container
- * reported (versions.php --attach), so builds of one stack stay apart.
+ * frontend-side memory figures. The version of a row is what the stack
+ * was actually built from, read from the components its container reported
+ * (versions.php --attach): "3.5.8", "3.5.9 ../evolution@3f9ea9220",
+ * "3.5.8 · aLatteX 0.5.0", "11.4.7". A default build and a run pinned to
+ * the same release (matrix --versions=evo@3.5.8) therefore land in one
+ * cell; the ref as the user gave it stays in "ref".
  * The same structure feeds the Markdown tables of the README (summary.php)
  * and the JSON the static results site sorts in the browser (docs/).
  */
@@ -31,12 +33,17 @@ final class ResultSet
         // Every repetition of a cell is kept; the row is the latest run, with the
         // spread across repetitions (the measuring error) and the memory series
         // of the latest run attached.
+        // The exact versions the containers reported (benchmark/scripts/versions.php).
+        $versions = is_file($dir . '/versions.json') ? json_decode((string) file_get_contents($dir . '/versions.json'), true) : null;
+        $versions = is_array($versions) ? $versions : null;
+
         $runs = [];
         foreach (glob($dir . '/guest-*-rps-*.txt') ?: [] as $file) {
             $row = self::guestRow($file);
             if ($row === null) {
                 continue;
             }
+            $row = self::withResolvedVersion($row, $versions);
             $runs[$row['stack'] . '|' . $row['version'] . '|' . $row['jit'] . '|' . $row['rate']][] = $row;
         }
         $guest = [];
@@ -62,6 +69,7 @@ final class ResultSet
             if ($row === null) {
                 continue;
             }
+            $row = self::withResolvedVersion($row, $versions);
             $runs[$row['stack'] . '|' . $row['version'] . '|' . $row['jit']][] = $row;
         }
         $admin = [];
@@ -82,13 +90,10 @@ final class ResultSet
         }
         uasort($admin, static fn (array $a, array $b): int => [$order($a['stack']), strnatcmp($a['version'], $b['version']), $a['jit']] <=> [$order($b['stack']), 0, $b['jit']]);
 
-        // The exact versions the containers reported (benchmark/scripts/versions.php).
-        $versions = is_file($dir . '/versions.json') ? json_decode((string) file_get_contents($dir . '/versions.json'), true) : null;
-
         return [
             'generatedAt' => gmdate('Y-m-d\TH:i:s\Z'),
             'stacks' => RuntimeProfile::adapters(),
-            'versions' => is_array($versions) ? $versions : null,
+            'versions' => $versions,
             'guest' => array_values($guest),
             'admin' => array_values($admin),
         ];
@@ -185,6 +190,100 @@ final class ResultSet
                 'domNodes' => $step['domNodes'] ?? null,
             ], $report['steps'], array_keys($report['steps']))),
         ];
+    }
+
+    /**
+     * The components that name a stack's build, in the order they are shown:
+     * the CMS first (bare version), then the extensions the harness adds.
+     */
+    private const BUILD_COMPONENTS = [
+        'evo-parser' => ['Evolution CMS' => ''],
+        'evo-latte' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX'],
+        'evo-latte-parser' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX'],
+        'evo-phalcon' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX', 'elcreator/aphalcon' => 'aPhalcon'],
+        'drupal' => ['drupal/core' => ''],
+        'typo3' => ['typo3/cms-core' => ''],
+        'winter' => ['winter/wn-cms-module' => ''],
+        'modx' => ['MODX Revolution' => ''],
+        'wordpress-gantry' => ['WordPress' => '', 'gantry5' => 'Gantry'],
+    ];
+
+    /**
+     * The version a row is shown and grouped under: the build its components
+     * describe (buildVersion), or, for a run recorded before components were
+     * attached, the versions.json snapshot of that stack when that is a
+     * release build (a path or branch build there says nothing about an old
+     * run). Otherwise the label as given. The given label is kept as "ref".
+     *
+     * @param array<string, mixed> $row
+     * @param array<string, mixed>|null $versions
+     * @return array<string, mixed>
+     */
+    public static function withResolvedVersion(array $row, ?array $versions): array
+    {
+        $row['ref'] = $row['version'];
+        $resolved = is_array($row['components'] ?? null) ? self::buildVersion($row['stack'], $row['components']) : null;
+        if ($resolved === null && $row['version'] === '' && is_array($versions['stacks'][$row['stack']] ?? null)) {
+            $snapshot = self::buildVersion($row['stack'], $versions['stacks'][$row['stack']]);
+            if ($snapshot !== null && !str_contains($snapshot, '@')) {
+                $resolved = $snapshot;
+            }
+        }
+        if ($resolved !== null) {
+            $row['version'] = $resolved;
+        }
+
+        return $row;
+    }
+
+    /**
+     * "3.5.8", "3.5.9 ../evolution@3f9ea9220", "3.5.x@1a2b3c4" (a branch),
+     * "3.5.8 · aLatteX 0.5.0", "7.1.1 · Gantry 5.6.4"; null when the
+     * components do not name the stack's CMS.
+     *
+     * @param list<array{name: string, version: string}> $components
+     */
+    public static function buildVersion(string $stack, array $components): ?string
+    {
+        $byName = array_column($components, 'version', 'name');
+        $parts = [];
+        foreach (self::BUILD_COMPONENTS[$stack] ?? [] as $name => $label) {
+            if (!isset($byName[$name])) {
+                if ($label === '') {
+                    return null;
+                }
+                continue;
+            }
+            $version = self::shortVersion((string) $byName[$name]);
+            $parts[] = $label === '' ? $version : $label . ' ' . $version;
+        }
+
+        return $parts === [] ? null : implode(' · ', $parts);
+    }
+
+    /**
+     * A component version as versions.php records it, shortened: a leading
+     * "v" dropped; Evolution's "(tag X@sha, date)" dropped (the version says
+     * it), "(branch X@sha, date)" kept as "X@sha", "(path /host/dir@sha …)"
+     * as "../dir@sha"; an extension's "dev-local (dir@fingerprint)" as
+     * "../dir@fingerprint" (eight characters of it).
+     */
+    public static function shortVersion(string $version): string
+    {
+        $version = preg_replace('/^v(?=\d)/', '', trim($version)) ?? $version;
+        // An extension from a host directory: "dev-local (evo/aLatteX@<fingerprint>)".
+        if (preg_match('/^dev-local \((\S+)@([0-9a-f]+)\)$/', $version, $m) === 1) {
+            return '../' . $m[1] . '@' . substr($m[2], 0, 8);
+        }
+        if (preg_match('/^(\S+) \((tag|branch|path) (\S+?)(?:@([0-9a-f]+))?(?:[ ,)].*)?$/', $version, $m) === 1) {
+            return match ($m[2]) {
+                'tag' => $m[1],
+                'branch' => $m[1] . ' ' . $m[3] . (isset($m[4]) ? '@' . $m[4] : ''),
+                'path' => $m[1] . ' ' . preg_replace('#^/host/#', '../', $m[3]) . (isset($m[4]) ? '@' . $m[4] : ''),
+            };
+        }
+
+        return $version;
     }
 
     /**
