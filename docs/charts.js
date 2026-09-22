@@ -129,7 +129,9 @@ export function barGroups(rows, key, stacks, order = DEFAULT_ORDER) {
     if (!groups.has(id)) groups.set(id, { stack: row.stack, version: row.version ?? '', label: cellLabel(row, stacks), bars: [] });
     groups.get(id).bars.push({ jit: row.jit, value: row[key] ?? null, row });
   }
-  const sortValue = (group) => group.bars.find((bar) => bar.jit === 'off')?.value ?? group.bars[0]?.value ?? Infinity;
+  // A cell is ranked by its best JIT mode, not by JIT off: a stack that only
+  // gets fast with the JIT is as fast as that bar says.
+  const sortValue = (group) => bestValue(group.bars.map((bar) => bar.value));
   return orderGroups(
     [...groups.values()].map((group) => ({ ...group, bars: [...group.bars].sort((a, b) => (a.jit === 'off' ? -1 : 1) - (b.jit === 'off' ? -1 : 1)) })),
     sortValue,
@@ -137,13 +139,22 @@ export function barGroups(rows, key, stacks, order = DEFAULT_ORDER) {
   );
 }
 
-// A memory panel's rank: where its series ends (the JIT-off line when it has
-// one), which is the figure the panel is read for.
-export function panelValue(panel) {
-  const line = panel.lines?.find((candidate) => candidate.jit === 'off') ?? panel.lines?.[0];
-  const points = line?.points ?? [];
+// The best of a cell's values (lower is better in every charted metric);
+// Infinity when it has none, which sorts it last.
+export function bestValue(values) {
+  const usable = values.filter((value) => typeof value === 'number' && Number.isFinite(value));
 
-  return points.length === 0 ? Infinity : points[points.length - 1].y;
+  return usable.length === 0 ? Infinity : Math.min(...usable);
+}
+
+// A memory panel's rank: the lowest end of its series across the JIT modes,
+// the figure the panel is read for.
+export function panelValue(panel) {
+  return bestValue((panel.lines ?? []).map((line) => {
+    const points = line.points ?? [];
+
+    return points.length === 0 ? null : points[points.length - 1].y;
+  }));
 }
 
 // Human summary of a memory trend: growth of the last quarter over the first.

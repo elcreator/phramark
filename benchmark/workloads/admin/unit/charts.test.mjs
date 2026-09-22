@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  barGroups, describeSpread, describeTrend, groupLabelLines, labelGutter, linePath, orderGroups, panelValue, twoLineGutter, linearScale, niceTicks, panelRange, rangeTicks, trendOf, DEFAULT_ORDER, ORDERS,
+  barGroups, bestValue, describeSpread, describeTrend, groupLabelLines, labelGutter, linePath, orderGroups, panelValue, twoLineGutter, linearScale, niceTicks, panelRange, rangeTicks, trendOf, DEFAULT_ORDER, ORDERS,
 } from '../../../../docs/charts.js';
 import { adminActionRows, errorRows, readOrder, seriesPanels, writeOrder } from '../../../../docs/site.js';
 
@@ -40,7 +40,7 @@ test('linePath emits a move then lines', () => {
   assert.equal(path, 'M0.0,10.0 L10.0,20.0');
 });
 
-test('barGroups groups by stack, orders JIT off first and sorts by the JIT-off value', () => {
+test('barGroups groups by stack, orders JIT off first and ranks by the best JIT mode', () => {
   const rows = [
     { stack: 'b', jit: 'tracing', v: 5 },
     { stack: 'b', jit: 'off', v: 9 },
@@ -168,10 +168,32 @@ test('orderGroups puts a group without a value last in both orders', () => {
   assert.deepEqual(orderGroups(groups, valueOf, 'stack').map((group) => group.stack), ['b', 'a']);
 });
 
-test('panelValue ranks a memory panel by where its JIT-off series ends', () => {
+test('panelValue ranks a memory panel by the lowest end of its series', () => {
   const panel = { lines: [{ jit: 'tracing', points: [{ x: 0, y: 9 }] }, { jit: 'off', points: [{ x: 0, y: 1 }, { x: 1, y: 4 }] }] };
-  assert.equal(panelValue(panel), 4);
+  assert.equal(panelValue(panel), 4, 'the JIT-off series ends lower than the tracing one');
+  const tracingWins = { lines: [{ jit: 'tracing', points: [{ x: 0, y: 2 }] }, { jit: 'off', points: [{ x: 0, y: 7 }] }] };
+  assert.equal(panelValue(tracingWins), 2, 'the better mode decides, whichever it is');
   assert.equal(panelValue({ lines: [] }), Infinity, 'a panel without a series sorts last');
+});
+
+test('a cell is ranked by its best JIT mode, not by JIT off', () => {
+  const rows = [
+    // Fast without the JIT, slower with it.
+    { stack: 'steady', jit: 'off', v: 100 },
+    { stack: 'steady', jit: 'tracing', v: 120 },
+    // Slower without the JIT than "steady", but the fastest cell on the page.
+    { stack: 'jit-friendly', jit: 'off', v: 110 },
+    { stack: 'jit-friendly', jit: 'tracing', v: 40 },
+  ];
+  assert.deepEqual(barGroups(rows, 'v', {}, 'best').map((group) => group.stack), ['jit-friendly', 'steady']);
+  assert.deepEqual(barGroups(rows, 'v', {}, 'stack').map((group) => group.stack), ['jit-friendly', 'steady']);
+});
+
+test('bestValue takes the lowest usable number and sorts an empty cell last', () => {
+  assert.equal(bestValue([5, 2, 9]), 2);
+  assert.equal(bestValue([null, 7, undefined]), 7);
+  assert.equal(bestValue([null, undefined]), Infinity);
+  assert.equal(bestValue([Number.NaN, 3]), 3, 'a missing measurement never wins the ranking');
 });
 
 test('the chart order is remembered per viewer and survives unusable storage', () => {
