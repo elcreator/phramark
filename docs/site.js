@@ -3,7 +3,7 @@
 // Markdown tables) as sortable tables. The helpers are pure so
 // benchmark/workloads/admin/unit/site.test.mjs can cover them without a DOM.
 
-import { cellId, cellLabel, renderBars, renderSmallMultiples, trendOf } from './charts.js?v=20260921T221231Z';
+import { cellId, cellLabel, renderBars, renderSmallMultiples, trendOf } from './charts.js?v=20260922T125338Z';
 
 export const ACTIONS = ['login', 'open-edit', 'save-edit', 'open-create', 'save-create', 'logout'];
 

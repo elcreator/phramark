@@ -148,6 +148,7 @@ unlink($modxPage);
 $setup = repositoryFile('benchmark/fixtures/setup.php');
 expect(str_contains($setup, "file_get_contents(\$marker) === \$wanted"), true, 'Fixture setup must be safely repeatable: a site is reinstalled only when its resolved versions changed.');
 expect(str_contains($setup, "['git', 'clone', '--depth=1', '--branch', \$ref"), true, 'Evolution is cloned from the resolved tag or branch, never a hardcoded one.');
+expect(str_contains($setup, "/core/storage/bootstrap/services.php'"), true, 'The service cache written during a package install is dropped, so every installed provider boots (aPhalcon without its provider answers 500).');
 expect(preg_match("/--branch', '\\d/", $setup), 0, 'No hardcoded Evolution branch in the setup.');
 $cross = repositoryFile('benchmark/fixtures/setup-cross-cms.sh');
 foreach (['drupal', 'typo3', 'winter', 'modx', 'wordpress gantry classic-editor'] as $products) {

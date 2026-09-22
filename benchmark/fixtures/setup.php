@@ -386,6 +386,11 @@ try {
         }
         writeSettings('benchmark_' . str_replace('-', '_', $site), $site === 'evo-parser');
         writeDefines($site);
+        // The service cache is written while a package is still being installed,
+        // so it can miss the provider of the package that very command installs
+        // (aPhalcon booted without its Latte function: "Call to undefined
+        // function phalcon()"). Drop it and let the next boot discover them all.
+        run(['rm', '-f', ROOT . '/' . $site . '/core/storage/bootstrap/services.php']);
         run(['php', 'artisan', 'cache:clear-full'], ROOT . '/' . $site . '/core');
         run(['chown', '-R', 'www-data:www-data', ROOT . '/' . $site]);
     }
