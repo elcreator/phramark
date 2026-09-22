@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import {
-  ACTIONS, ACTION_DESCRIPTIONS, GUEST_COLUMNS, actionsNote, adminRows, compareValues, componentsText, errorRows, formatValue, guestRows, nextSort, sortRows, versionRows,
+  ACTIONS, ACTION_DESCRIPTIONS, GUEST_COLUMNS, actionNote, actionsNote, adminRows, compareValues, componentsText, errorRows, formatValue, guestRows, nextSort, sortRows, versionRows,
 } from '../../../../docs/site.js';
 import { versionSuffix } from '../lib/report.mjs';
 
@@ -120,6 +120,26 @@ test('every admin action is explained on the results page', () => {
     assert.ok(actionsNote().includes(`${action} — `), `${action} is in the note under the admin table`);
   }
   assert.ok(actionsNote().startsWith('Wall is what the browser experienced'), 'the note says what wall and server mean');
+});
+
+test('every admin action chart explains the step it charts', () => {
+  for (const action of ACTIONS) {
+    const note = actionNote(action);
+    assert.ok(note.startsWith(ACTION_DESCRIPTIONS[action]), `the ${action} chart opens with what the step is`);
+    assert.match(note, /wall time .*inner bar is the server time/s, `the ${action} chart says what its two bars are`);
+  }
+});
+
+test('no chart is rendered without an explanation under its title', () => {
+  const source = readFileSync(new URL('../../../../docs/site.js', import.meta.url), 'utf8');
+  // Every renderBars/renderSmallMultiples call takes a note: either a literal
+  // or a call that builds one. A new chart without one fails here.
+  const calls = source.match(/render(?:Bars|SmallMultiples)\(section, \{[^]*?\n\s*\}\)/g) ?? [];
+  assert.ok(calls.length >= 9, `found ${calls.length} chart calls`);
+  for (const call of calls) {
+    const title = call.match(/title: (.*)/)?.[1] ?? call.slice(0, 60);
+    assert.match(call, /\n\s*note: \S/, `the chart titled ${title} has no note`);
+  }
 });
 
 test('the memory bar charts appear only for figures some run recorded', () => {

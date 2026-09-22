@@ -3,7 +3,7 @@
 // Markdown tables) as sortable tables. The helpers are pure so
 // benchmark/workloads/admin/unit/site.test.mjs can cover them without a DOM.
 
-import { cellId, cellLabel, DEFAULT_ORDER, ORDERS, renderBars, renderSmallMultiples, trendOf } from './charts.js?v=20260922T145629Z';
+import { cellId, cellLabel, DEFAULT_ORDER, ORDERS, renderBars, renderSmallMultiples, trendOf } from './charts.js?v=20260922T150209Z';
 
 export const ACTIONS = ['login', 'open-edit', 'save-edit', 'open-create', 'save-create', 'logout'];
 
@@ -19,6 +19,13 @@ export const ACTION_DESCRIPTIONS = {
   'save-create': 'Fill in title and content, submit, and wait for the confirmation: the write path plus creating the row, alias/URL and tree placement. The created pages are removed afterwards, so every run starts from the same state.',
   logout: 'End the session and return to the login page.',
 };
+
+// The explanation under one action's chart: what the step is, then what its
+// two bars mean. The charts carry it the way the memory charts do, so a chart
+// read on its own says what it measures.
+export function actionNote(action) {
+  return `${ACTION_DESCRIPTIONS[action]} The bar is the wall time the browser experienced end to end (network, rendering, JS); the inner bar is the server time, the PHP time of the step's main request(s) and the figure to compare between builds.`;
+}
 
 export function actionsNote() {
   return 'Wall is what the browser experienced end to end (network, rendering, JS); server is the PHP time of the main request(s) of the step, the number to compare between versions. Actions: '
@@ -389,6 +396,7 @@ export function renderCharts(root, set) {
   for (const action of ACTIONS) {
     renderBars(section, {
       title: `Admin ${action}: wall time (bar) and server time (inner bar), median per session`,
+      note: actionNote(action),
       rows: adminActionRows(set, action), key: 'value', inner: 'server', spreadMetric: 'value', stacks: set.stacks, unit: 'ms', order: chartOrder,
     });
   }
@@ -402,11 +410,13 @@ export function renderDynamics(root, set) {
   const guest = guestRows(set);
   renderSmallMultiples(section, {
     title: 'Guest: PHP peak memory per request over the run',
+    note: 'What one request costs at its peak (the median of each time slice of the wrk2 run), so a line that climbs says requests grew more expensive as the run went on. Growth of the process itself is the next chart, not this one.',
     panels: seriesPanels(guest, set.stacks, (row) => row.series?.phpPeak && { points: row.series.phpPeak.points.map((p) => ({ x: p.t, y: p.medianMb, note: `${p.requests} requests, max ${p.maxMb}` })), trend: row.series.phpPeak.trend }),
     unit: 'MiB', xLabel: 's', order: chartOrder,
   });
   renderSmallMultiples(section, {
     title: 'Guest: PHP-FPM RSS over the run (cgroup anon)',
+    note: 'The memory of the FPM processes themselves, sampled every second. At a constant offered rate it should settle: a line that keeps climbing and never falls back is what a leak looks like from the outside.',
     panels: seriesPanels(guest, set.stacks, (row) => row.series?.containerRss && { points: row.series.containerRss.points.map((p) => ({ x: p.t, y: p.mb })), trend: row.series.containerRss.trend }),
     unit: 'MiB', xLabel: 's', order: chartOrder,
   });
@@ -418,15 +428,22 @@ export function renderDynamics(root, set) {
   });
   const admin = set.admin ?? [];
   const stepPoints = (row, key) => (row.series?.steps ?? []).map((step) => ({ x: step.index, y: step[key], note: `${step.action} ${step.label}` })).filter((p) => p.y !== null && p.y !== undefined);
+  const stepNotes = {
+    jsHeapUsedMb: 'The browser heap after each step of the session. The steps repeat the same edit and create cycles, so a heap that never comes back down across them is the manager leaking in the browser, not in PHP.',
+    domNodes: 'The nodes in the page after each step. Repeated edits that keep adding nodes without releasing them are a front-end leak, and they slow the manager down long before PHP notices.',
+    phpPeakMb: 'The PHP peak of the heaviest request inside each step, so an editor page that costs more than the rest of the session shows up here.',
+  };
   for (const [key, title, unit, decimals] of [['jsHeapUsedMb', 'Admin: browser JS heap after each step', 'MiB', 1], ['domNodes', 'Admin: DOM nodes after each step', 'nodes', 0], ['phpPeakMb', 'Admin: PHP peak of the largest request in each step', 'MiB', 2]]) {
     renderSmallMultiples(section, {
       title,
+      note: stepNotes[key],
       panels: seriesPanels(admin, set.stacks, (row) => { const points = stepPoints(row, key); return points.length > 1 ? { points, trend: trendOf(points) } : null; }),
       unit, xLabel: 'step', decimals, slopeUnit: `${unit}/step`, order: chartOrder,
     });
   }
   renderSmallMultiples(section, {
     title: 'Admin: PHP peak memory per request over the session',
+    note: 'The PHP peak per request through the whole editorial session, in time rather than per step: the manager pages are the heaviest requests a CMS serves, and this is where they sit.',
     panels: seriesPanels(admin, set.stacks, (row) => row.series?.phpPeak && { points: row.series.phpPeak.points.map((p) => ({ x: p.t, y: p.medianMb, note: `${p.requests} requests, max ${p.maxMb}` })), trend: row.series.phpPeak.trend }),
     unit: 'MiB', xLabel: 's', decimals: 2, order: chartOrder,
   });
