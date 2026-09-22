@@ -3,7 +3,7 @@
 // Markdown tables) as sortable tables. The helpers are pure so
 // benchmark/workloads/admin/unit/site.test.mjs can cover them without a DOM.
 
-import { cellId, cellLabel, renderBars, renderSmallMultiples, trendOf } from './charts.js?v=20260922T140233Z';
+import { cellId, cellLabel, DEFAULT_ORDER, ORDERS, renderBars, renderSmallMultiples, trendOf } from './charts.js?v=20260922T140545Z';
 
 export const ACTIONS = ['login', 'open-edit', 'save-edit', 'open-create', 'save-create', 'logout'];
 
@@ -310,13 +310,66 @@ export function errorRows(set) {
   });
 }
 
+// The chart order is a per-viewer preference: it changes nothing about the
+// data, so it lives in this browser and survives a reload. Storage can throw
+// (private window, blocked site data), and the page must render either way.
+const ORDER_KEY = 'phramark.chartOrder';
+
+export function readOrder(storage) {
+  try {
+    const stored = storage?.getItem(ORDER_KEY);
+    return stored && stored in ORDERS ? stored : DEFAULT_ORDER;
+  } catch {
+    return DEFAULT_ORDER;
+  }
+}
+
+export function writeOrder(order, storage) {
+  try {
+    storage?.setItem(ORDER_KEY, order);
+  } catch {
+    // A viewer who cannot store it simply gets the default next time.
+  }
+}
+
+let chartOrder = DEFAULT_ORDER;
+let currentSet = null;
+let currentRoot = null;
+
+// The control that picks it, next to the Charts heading.
+function orderControl() {
+  const wrapper = element('div', { class: 'chart-order' });
+  const select = document.createElement('select');
+  select.id = 'chart-order';
+  for (const [value, label] of Object.entries(ORDERS)) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    if (value === chartOrder) option.selected = true;
+    select.append(option);
+  }
+  select.addEventListener('change', () => {
+    chartOrder = select.value in ORDERS ? select.value : DEFAULT_ORDER;
+    writeOrder(chartOrder, globalThis.localStorage);
+    if (currentSet && currentRoot) render(currentSet, currentRoot);
+  });
+  const label = document.createElement('label');
+  label.setAttribute('for', 'chart-order');
+  label.textContent = 'Order';
+  wrapper.append(label, select);
+
+  return wrapper;
+}
+
 export function renderCharts(root, set) {
   const section = element('section', { class: 'charts' });
-  section.append(element('h2', { text: 'Charts' }));
+  const heading = element('div', { class: 'section-head' });
+  heading.append(element('h2', { text: 'Charts' }), orderControl());
+  section.append(heading);
   renderBars(section, {
     title: 'Guest latency at the offered rate: p50 (bar) and p99 (tick), lower is better',
     note: 'Whiskers are the min–max of p50 across repetitions of the cell where more than one run exists; without them the cell was run once and its error is unknown.',
-    rows: guestRows(set), key: 'p50Ms', range: 'p99Ms', spreadMetric: 'p50Ms', stacks: set.stacks, unit: 'ms',
+    rows: guestRows(set), key: 'p50Ms', range: 'p99Ms', spreadMetric: 'p50Ms', stacks: set.stacks, unit: 'ms', order: chartOrder,
   });
   // Either memory chart appears only when some run recorded that figure:
   // runs from before the split have only the docker footprint.
@@ -324,19 +377,19 @@ export function renderCharts(root, set) {
   if (recorded('containerPeakMb')) renderBars(section, {
     title: 'Guest PHP-FPM peak RSS during the run',
     note: 'The anonymous memory of the FPM container\'s cgroup: the heaps of PHP-FPM and its workers, what a leak would grow. Files the container writes during the run (session files, compiled templates, logs) are not in it.',
-    rows: guestRows(set), key: 'containerPeakMb', spreadMetric: 'containerPeakMb', stacks: set.stacks, unit: 'MiB', decimals: 1,
+    rows: guestRows(set), key: 'containerPeakMb', spreadMetric: 'containerPeakMb', stacks: set.stacks, unit: 'MiB', decimals: 1, order: chartOrder,
   });
   if (recorded('containerFootprintMb')) {
     renderBars(section, {
       title: 'Guest PHP-FPM container footprint during the run (with page cache)',
       note: 'Docker\'s memory figure for the container: the RSS plus the page cache of what the container read and wrote, so it grows with every file a request leaves behind. Recorded with matrix --footprint.',
-      rows: guestRows(set), key: 'containerFootprintMb', spreadMetric: 'containerFootprintMb', stacks: set.stacks, unit: 'MiB', decimals: 1,
+      rows: guestRows(set), key: 'containerFootprintMb', spreadMetric: 'containerFootprintMb', stacks: set.stacks, unit: 'MiB', decimals: 1, order: chartOrder,
     });
   }
   for (const action of ACTIONS) {
     renderBars(section, {
       title: `Admin ${action}: wall time (bar) and server time (inner bar), median per session`,
-      rows: adminActionRows(set, action), key: 'value', inner: 'server', spreadMetric: 'value', stacks: set.stacks, unit: 'ms',
+      rows: adminActionRows(set, action), key: 'value', inner: 'server', spreadMetric: 'value', stacks: set.stacks, unit: 'ms', order: chartOrder,
     });
   }
   root.append(section);
@@ -350,18 +403,18 @@ export function renderDynamics(root, set) {
   renderSmallMultiples(section, {
     title: 'Guest: PHP peak memory per request over the run',
     panels: seriesPanels(guest, set.stacks, (row) => row.series?.phpPeak && { points: row.series.phpPeak.points.map((p) => ({ x: p.t, y: p.medianMb, note: `${p.requests} requests, max ${p.maxMb}` })), trend: row.series.phpPeak.trend }),
-    unit: 'MiB', xLabel: 's',
+    unit: 'MiB', xLabel: 's', order: chartOrder,
   });
   renderSmallMultiples(section, {
     title: 'Guest: PHP-FPM RSS over the run (cgroup anon)',
     panels: seriesPanels(guest, set.stacks, (row) => row.series?.containerRss && { points: row.series.containerRss.points.map((p) => ({ x: p.t, y: p.mb })), trend: row.series.containerRss.trend }),
-    unit: 'MiB', xLabel: 's',
+    unit: 'MiB', xLabel: 's', order: chartOrder,
   });
   renderSmallMultiples(section, {
     title: 'Guest: PHP-FPM container footprint over the run (with page cache)',
     note: 'Grows with the files a request leaves behind (a session file per visitor, compiled templates, logs), not only with the process. Recorded with matrix --footprint; older runs recorded only this figure.',
     panels: seriesPanels(guest, set.stacks, (row) => row.series?.containerFootprint && { points: row.series.containerFootprint.points.map((p) => ({ x: p.t, y: p.mb })), trend: row.series.containerFootprint.trend }),
-    unit: 'MiB', xLabel: 's',
+    unit: 'MiB', xLabel: 's', order: chartOrder,
   });
   const admin = set.admin ?? [];
   const stepPoints = (row, key) => (row.series?.steps ?? []).map((step) => ({ x: step.index, y: step[key], note: `${step.action} ${step.label}` })).filter((p) => p.y !== null && p.y !== undefined);
@@ -369,13 +422,13 @@ export function renderDynamics(root, set) {
     renderSmallMultiples(section, {
       title,
       panels: seriesPanels(admin, set.stacks, (row) => { const points = stepPoints(row, key); return points.length > 1 ? { points, trend: trendOf(points) } : null; }),
-      unit, xLabel: 'step', decimals, slopeUnit: `${unit}/step`,
+      unit, xLabel: 'step', decimals, slopeUnit: `${unit}/step`, order: chartOrder,
     });
   }
   renderSmallMultiples(section, {
     title: 'Admin: PHP peak memory per request over the session',
     panels: seriesPanels(admin, set.stacks, (row) => row.series?.phpPeak && { points: row.series.phpPeak.points.map((p) => ({ x: p.t, y: p.medianMb, note: `${p.requests} requests, max ${p.maxMb}` })), trend: row.series.phpPeak.trend }),
-    unit: 'MiB', xLabel: 's', decimals: 2,
+    unit: 'MiB', xLabel: 's', decimals: 2, order: chartOrder,
   });
   root.append(section);
 }
@@ -403,6 +456,8 @@ export function renderErrors(root, set) {
 }
 
 export function render(set, root) {
+  currentSet = set;
+  currentRoot = root;
   root.replaceChildren();
   const generated = document.querySelector('[data-generated]');
   if (generated) generated.textContent = set.generatedAt ?? '';
@@ -434,6 +489,7 @@ export function render(set, root) {
 export async function boot() {
   const root = document.querySelector('#results');
   try {
+    chartOrder = readOrder(globalThis.localStorage);
     const response = await fetch('results.json', { cache: 'no-cache' });
     if (!response.ok) throw new Error(`results.json answered HTTP ${response.status}`);
     render(await response.json(), root);

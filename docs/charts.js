@@ -98,7 +98,31 @@ export function twoLineGutter(groups, stacks) {
   );
 }
 
-export function barGroups(rows, key, stacks) {
+// How a chart orders its groups. "best" ranks every build against every
+// other, so the fastest cell is on top whatever it was built from; "stack"
+// keeps the builds of one stack together (a version comparison reads as a
+// block), with the stacks themselves ranked by their best build. Lower is
+// better in every metric the page charts (ms, MiB).
+export const ORDERS = {
+  best: 'Best result first',
+  stack: 'Grouped by stack, best first',
+};
+export const DEFAULT_ORDER = 'best';
+
+export function orderGroups(groups, valueOf, order = DEFAULT_ORDER) {
+  const value = (group) => valueOf(group) ?? Infinity;
+  const ordered = [...groups].sort((a, b) => value(a) - value(b));
+  if (order !== 'stack') return ordered;
+  const best = new Map();
+  for (const group of ordered) {
+    const current = best.get(group.stack);
+    if (current === undefined || value(group) < current) best.set(group.stack, value(group));
+  }
+  // Stable within a stack: the groups are already in value order.
+  return ordered.sort((a, b) => (best.get(a.stack) ?? Infinity) - (best.get(b.stack) ?? Infinity));
+}
+
+export function barGroups(rows, key, stacks, order = DEFAULT_ORDER) {
   const groups = new Map();
   for (const row of rows) {
     const id = cellId(row);
@@ -106,9 +130,20 @@ export function barGroups(rows, key, stacks) {
     groups.get(id).bars.push({ jit: row.jit, value: row[key] ?? null, row });
   }
   const sortValue = (group) => group.bars.find((bar) => bar.jit === 'off')?.value ?? group.bars[0]?.value ?? Infinity;
-  return [...groups.values()]
-    .map((group) => ({ ...group, bars: [...group.bars].sort((a, b) => (a.jit === 'off' ? -1 : 1) - (b.jit === 'off' ? -1 : 1)) }))
-    .sort((a, b) => (sortValue(a) ?? Infinity) - (sortValue(b) ?? Infinity));
+  return orderGroups(
+    [...groups.values()].map((group) => ({ ...group, bars: [...group.bars].sort((a, b) => (a.jit === 'off' ? -1 : 1) - (b.jit === 'off' ? -1 : 1)) })),
+    sortValue,
+    order,
+  );
+}
+
+// A memory panel's rank: where its series ends (the JIT-off line when it has
+// one), which is the figure the panel is read for.
+export function panelValue(panel) {
+  const line = panel.lines?.find((candidate) => candidate.jit === 'off') ?? panel.lines?.[0];
+  const points = line?.points ?? [];
+
+  return points.length === 0 ? Infinity : points[points.length - 1].y;
 }
 
 // Human summary of a memory trend: growth of the last quarter over the first.
@@ -172,8 +207,8 @@ function legend(series) {
 // Grouped horizontal bars (stack groups × JIT) with an optional range mark
 // (e.g. p99 to the right of p50, or the server share inside the wall bar)
 // and a min–max whisker across repetitions.
-export function renderBars(container, { title, note, rows, key, stacks, unit, decimals = 0, range, spreadMetric, inner }) {
-  const groups = barGroups(rows, key, stacks);
+export function renderBars(container, { title, note, rows, key, stacks, unit, decimals = 0, range, spreadMetric, inner, order = DEFAULT_ORDER }) {
+  const groups = barGroups(rows, key, stacks, order);
   if (groups.length === 0) return;
   const figure = html('figure', { class: 'chart' });
   figure.append(html('figcaption', {}, title));
@@ -250,8 +285,8 @@ export function renderBars(container, { title, note, rows, key, stacks, unit, de
 
 // Small multiples of lines over time: one panel per stack, one line per JIT
 // mode, a shared y scale so panels compare, and the trend under each title.
-export function renderSmallMultiples(container, { title, note, panels, unit, xLabel, decimals = 1, slopeUnit = `${unit}/min` }) {
-  const usable = panels.filter((panel) => panel.lines.some((line) => line.points.length > 1));
+export function renderSmallMultiples(container, { title, note, panels, unit, xLabel, decimals = 1, slopeUnit = `${unit}/min`, order = DEFAULT_ORDER }) {
+  const usable = orderGroups(panels.filter((panel) => panel.lines.some((line) => line.points.length > 1)), panelValue, order);
   if (usable.length === 0) return;
   const figure = html('figure', { class: 'chart multiples' });
   figure.append(html('figcaption', {}, title));

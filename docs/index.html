@@ -66,6 +66,13 @@
     :root { --series-off: #2a78d6; --series-tracing: #eb6834; --grid: #e3e6eb; --whisker: #1c1f26; }
     @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --series-off: #3987e5; --series-tracing: #d95926; --grid: #2a2e37; --whisker: #e6e8ec; } }
     :root[data-theme="dark"] { --series-off: #3987e5; --series-tracing: #d95926; --grid: #2a2e37; --whisker: #e6e8ec; }
+    .section-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
+    .section-head h2 { margin-right: auto; }
+    .chart-order { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; color: var(--muted); }
+    .chart-order select {
+      font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line);
+      border-radius: 6px; padding: 3px 6px;
+    }
     figure.chart { margin: 20px 0 28px; position: relative; }
     figure.chart figcaption { font-weight: 600; margin-bottom: 4px; }
     figure.chart svg { width: 100%; max-width: 900px; height: auto; display: block; }
@@ -110,6 +117,6 @@
   <footer>
     Local smoke numbers from one machine (load generator, MySQL, PHP-FPM and nginx on the same host, 8 FPM workers, single rounds): treat differences below ~20 % as noise. wrk2 reports coordinated-omission-corrected latency, so an offered rate above a stack's capacity shows queueing time, not request time.
   </footer>
-  <script type="module" src="site.js?v=20260922T140233Z"></script>
+  <script type="module" src="site.js?v=20260922T140545Z"></script>
 </body>
 </html>

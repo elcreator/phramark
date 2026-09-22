@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  barGroups, describeSpread, describeTrend, groupLabelLines, labelGutter, linePath, twoLineGutter, linearScale, niceTicks, panelRange, rangeTicks, trendOf,
+  barGroups, describeSpread, describeTrend, groupLabelLines, labelGutter, linePath, orderGroups, panelValue, twoLineGutter, linearScale, niceTicks, panelRange, rangeTicks, trendOf, DEFAULT_ORDER, ORDERS,
 } from '../../../../docs/charts.js';
-import { adminActionRows, errorRows, seriesPanels } from '../../../../docs/site.js';
+import { adminActionRows, errorRows, readOrder, seriesPanels, writeOrder } from '../../../../docs/site.js';
 
 test('linearScale maps the domain onto the range', () => {
   const x = linearScale([0, 100], [10, 210]);
@@ -139,4 +139,56 @@ test('bar groups are labelled on two lines, stack over build, and the gutter fit
   const gutter = twoLineGutter([group], stacks);
   assert.ok(gutter >= 57 * 5.4 && gutter <= 380, `the gutter fits the 57-character build line (${gutter})`);
   assert.equal(twoLineGutter([{ stack: 'modx', version: '', label: 'MODX' }], {}), 150);
+});
+
+test('barGroups ranks every build against every other by default', () => {
+  const rows = [
+    { stack: 'modx', version: '', jit: 'off', v: 30 },
+    { stack: 'evo-parser', version: '3.5.8', jit: 'off', v: 50 },
+    { stack: 'evo-parser', version: '3.5.x', jit: 'off', v: 10 },
+  ];
+  const groups = barGroups(rows, 'v', {}, DEFAULT_ORDER);
+  assert.deepEqual(groups.map((group) => group.version), ['3.5.x', '', '3.5.8'], 'the fastest cell is first whatever it was built from');
+});
+
+test('the stack order keeps the builds of one stack together, stacks ranked by their best build', () => {
+  const rows = [
+    { stack: 'modx', version: '', jit: 'off', v: 30 },
+    { stack: 'evo-parser', version: '3.5.8', jit: 'off', v: 50 },
+    { stack: 'evo-parser', version: '3.5.x', jit: 'off', v: 10 },
+  ];
+  const groups = barGroups(rows, 'v', {}, 'stack');
+  assert.deepEqual(groups.map((group) => [group.stack, group.version]), [['evo-parser', '3.5.x'], ['evo-parser', '3.5.8'], ['modx', '']]);
+});
+
+test('orderGroups puts a group without a value last in both orders', () => {
+  const groups = [{ stack: 'a', v: null }, { stack: 'b', v: 2 }];
+  const valueOf = (group) => group.v;
+  assert.deepEqual(orderGroups(groups, valueOf, 'best').map((group) => group.stack), ['b', 'a']);
+  assert.deepEqual(orderGroups(groups, valueOf, 'stack').map((group) => group.stack), ['b', 'a']);
+});
+
+test('panelValue ranks a memory panel by where its JIT-off series ends', () => {
+  const panel = { lines: [{ jit: 'tracing', points: [{ x: 0, y: 9 }] }, { jit: 'off', points: [{ x: 0, y: 1 }, { x: 1, y: 4 }] }] };
+  assert.equal(panelValue(panel), 4);
+  assert.equal(panelValue({ lines: [] }), Infinity, 'a panel without a series sorts last');
+});
+
+test('the chart order is remembered per viewer and survives unusable storage', () => {
+  const store = new Map();
+  const storage = { getItem: (key) => store.get(key) ?? null, setItem: (key, value) => store.set(key, value) };
+  assert.equal(readOrder(storage), DEFAULT_ORDER);
+  writeOrder('stack', storage);
+  assert.equal(readOrder(storage), 'stack');
+  writeOrder('nonsense', storage);
+  assert.equal(readOrder(storage), DEFAULT_ORDER, 'an unknown order falls back to the default');
+  const blocked = { getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); } };
+  assert.equal(readOrder(blocked), DEFAULT_ORDER);
+  writeOrder('stack', blocked);
+  assert.equal(readOrder(undefined), DEFAULT_ORDER, 'no storage at all still renders');
+});
+
+test('every order the control offers is one the charts implement', () => {
+  assert.deepEqual(Object.keys(ORDERS), ['best', 'stack']);
+  assert.ok(DEFAULT_ORDER in ORDERS);
 });
