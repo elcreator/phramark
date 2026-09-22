@@ -180,6 +180,17 @@ php benchmark/scripts/trace-summary.php benchmark/results/trace-evo-phalcon.json
 
 The summary exits non-zero when the traced components disagree with the stack's `RuntimeProfile` claim; `composer test` also checks any recorded trace against the claims.
 
+## Profiling a request
+
+```sh
+benchmark/scripts/profile 8080 on                       # installs xhprof into the running evo-parser container
+curl -H 'X-Phramark-Profile: home' http://127.0.0.1:8080/  # only requests with this header are profiled
+benchmark/scripts/profile 8080 report home --top=30     # inclusive wall time; --excl for self time, --callees=Fn::name to drill down
+benchmark/scripts/profile 8080 off
+```
+
+xhprof stays inert without the header, so an armed container still produces valid runs. The script's header comment shows how to drive a manager page with a login cookie jar. The reports live in the container's `/tmp/xhprof` until `off` or a rebuild.
+
 ## Measuring error
 
 A single cell is one number with no error bar. The error of this harness is measured, not assumed:

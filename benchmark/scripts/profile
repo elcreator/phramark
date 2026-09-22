@@ -1,0 +1,69 @@
+#!/usr/bin/env sh
+# Function-level wall-time profile of one request against a running stack,
+# through xhprof (pecl) installed into that stack's PHP-FPM container.
+#
+#   benchmark/scripts/profile PORT on            # install/enable the profiler in the container
+#   benchmark/scripts/profile PORT off           # remove it again (a rebuild also removes it)
+#   benchmark/scripts/profile PORT report [LABEL] [--excl] [--top=N] [--callees=Fn::name]
+#
+# With the profiler on, only a request that carries an `X-Phramark-Profile: LABEL`
+# header is profiled (the timed workloads never send it, so an enabled profiler
+# does not distort a run). Each such request leaves /tmp/xhprof/LABEL-<ms>.xhprof
+# in the container; `report` ranks the newest file for LABEL by inclusive wall
+# time (or exclusive with --excl, or one function's callees with --callees).
+# Manager pages need a session, so drive them with curl and a cookie jar:
+#
+#   curl -c cj -b cj -d 'username=benchmark&password=benchmark-admin&ajax=0' \
+#        -H 'Accept-Language: en' -e http://127.0.0.1:8080/manager/index.php \
+#        http://127.0.0.1:8080/manager/index.php?a=0
+#   curl -b cj -H 'Accept-Language: en' -e http://127.0.0.1:8080/manager/index.php \
+#        -H 'X-Phramark-Profile: editor' 'http://127.0.0.1:8080/manager/index.php?a=27&id=10104'
+#   benchmark/scripts/profile 8080 report editor --top=30
+set -eu
+
+port=${1:?Usage: profile PORT on|off|report [LABEL] [report options]}
+mode=${2:?Usage: profile PORT on|off|report [LABEL] [report options]}
+shift 2
+
+case "$port" in
+  8080) php=phramark-php-parser-1 ;;
+  8081) php=phramark-php-latte-1 ;;
+  8082) php=phramark-php-phalcon-1 ;;
+  8083) php=phramark-php-drupal-1 ;;
+  8084) php=phramark-php-typo3-1 ;;
+  8085) php=phramark-php-latte-parser-1 ;;
+  8086) php=phramark-php-winter-1 ;;
+  8087) php=phramark-php-modx-1 ;;
+  8088) php=phramark-php-wordpress-gantry-1 ;;
+  *) echo "PORT must be 8080 through 8088" >&2; exit 2 ;;
+esac
+
+export MSYS_NO_PATHCONV=1
+ini=/usr/local/etc/php/conf.d/zz-phramark-profile.ini
+dir=/opt/phramark/benchmark/profiling
+
+case "$mode" in
+  on)
+    if ! docker exec "$php" php -m | grep -qi '^xhprof$'; then
+      docker exec "$php" sh -c 'pecl install xhprof >/dev/null && docker-php-ext-enable xhprof'
+    fi
+    docker exec "$php" mkdir -p "$dir"
+    docker cp benchmark/profiling/xhprof-prepend.php "$php:$dir/xhprof-prepend.php"
+    docker cp benchmark/profiling/xhprof-report.php "$php:$dir/xhprof-report.php"
+    docker exec "$php" sh -c "printf 'auto_prepend_file=$dir/xhprof-prepend.php\n' > $ini && kill -USR2 1"
+    echo "xhprof armed in $php: send X-Phramark-Profile: LABEL with a request, then '$0 $port report LABEL'"
+    ;;
+  off)
+    docker exec "$php" sh -c "rm -f $ini; rm -rf /tmp/xhprof; kill -USR2 1"
+    echo "profiler prepend removed from $php"
+    ;;
+  report)
+    label=${1:?report needs a LABEL}
+    shift
+    # every report option is passed through single-quoted, so backslashes and pipes survive
+    opts=''
+    for arg in "$@"; do opts="$opts '$(printf %s "$arg" | sed "s/'/'\\''/g")'"; done
+    docker exec "$php" sh -c "f=\$(ls -t /tmp/xhprof/$label-*.xhprof 2>/dev/null | head -1); [ -n \"\$f\" ] || { echo 'no profile for label $label' >&2; exit 1; }; echo \"\$f\"; php $dir/xhprof-report.php \"\$f\" $opts"
+    ;;
+  *) echo "mode must be on, off or report" >&2; exit 2 ;;
+esac
