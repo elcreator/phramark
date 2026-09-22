@@ -152,6 +152,13 @@ function resolveVersion(string $product, ?string $ref = null): string
         return 'image ' . ($ref === null || $ref === VersionSpec::LATEST ? $definition['default'] : $ref);
     }
     $ref = $ref ?? (getenv($definition['env']) ?: null) ?? VersionSpec::LATEST;
+    // A product whose newest release cannot be installed here names its own
+    // default instead: the released aPhalcon 0.1.0 requires Evolution ^3.5.9,
+    // so it cannot be installed on the 3.5.8 release, while the working copy
+    // next to this checkout requires ^3.5.8 and runs on both.
+    if ($ref === VersionSpec::LATEST && isset($definition['default'])) {
+        $ref = $definition['default'];
+    }
     if (VersionSpec::isPath($ref)) {
         if (!VersionSpec::acceptsPath($id)) {
             throw new RuntimeException(sprintf('%s cannot be installed from a directory.', $id));

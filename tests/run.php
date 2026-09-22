@@ -224,6 +224,12 @@ expect(VersionSpec::label(['latte' => '0.4.0', 'evo' => '3.5.8']), 'evo@3.5.8+la
 // A ref starting with .. is a directory on the host, relative to the repository root.
 expect(VersionSpec::parse('latte@0.2.0,latte@../evo/aLatteX'), [['product' => 'latte', 'ref' => '0.2.0'], ['product' => 'latte', 'ref' => '../evo/aLatteX']], 'A path ref is a version to compare like any other.');
 expect(VersionSpec::isPath('../evo/aLatteX'), true, 'Paths start with ../.');
+// The released aPhalcon 0.1.0 requires Evolution ^3.5.9 and cannot be installed
+// on the 3.5.8 release; the working copy requires ^3.5.8 and runs on both.
+$phalconDefault = VersionSpec::products()['phalcon']['default'] ?? '';
+expect(VersionSpec::isPath($phalconDefault), true, 'aPhalcon defaults to the working copy next to this checkout, which installs on every Evolution ref the matrix runs.');
+expect(VersionSpec::acceptsPath('phalcon'), true, 'aPhalcon must be installable from a directory for that default to work.');
+expect(str_contains(repositoryFile('benchmark/fixtures/resolve-version.php'), "if (\$ref === VersionSpec::LATEST && isset(\$definition['default']))"), true, 'The resolver must take a product default in place of "latest".');
 expect(VersionSpec::isPath('3.5.x'), false, 'A branch is not a path.');
 foreach (['latte@./x', 'latte@.../x', 'latte@../', 'latte@../a/../../etc'] as $bad) {
     try {

@@ -114,10 +114,16 @@ benchmark/scripts/matrix --versions=evo@3.5.x,evo@3.5.8,latte@0.4.0 --solutions=
 benchmark/scripts/matrix --versions=drupal@11.x,typo3@14.x --workload=guest   # branches: Composer dev versions
 benchmark/scripts/matrix --versions=php@8.3,php@8.4 --solutions=modx          # the PHP image, rebuilt per version
 benchmark/scripts/matrix --versions=latte@0.2.0,latte@../evo/aLatteX          # a release against the working copy next to this checkout
+```
+
+`aPhalcon` is the one part whose default is not its newest release: 0.1.0 on Packagist requires Evolution `^3.5.9`, so it cannot be installed on the 3.5.8 release, while the working copy at `../evo/aPhalcon` requires `^3.5.8` and installs on every Evolution ref the matrix runs. `evo-phalcon` therefore builds from that directory unless `--versions=phalcon@…` names something else (`VersionSpec::products()['phalcon']['default']`), and a checkout without that directory next to it can only run the stack by naming a published version:
+
+```sh
+benchmark/scripts/matrix --solutions=evo-phalcon --versions=phalcon@0.1.0,evo@3.5.x
 EVO_VERSION=3.5.8 docker compose -f benchmark/compose.yaml up                 # the same pin for a plain up
 ```
 
-`--versions=PRODUCT@REF,…` names the parts a stack is built from and the refs to compare. A ref resolves to the published tag of that name when one exists, otherwise to the branch of that name (`3.5.x`, `11.x` → `11.x-dev` for Composer packages, `main` → `dev-main`); `latest`, the default of every part, is the newest stable tag. A ref that starts with `..` is a directory on the host, relative to the repository root (`../evo/aLatteX` is the checkout next to this one): the setup containers see the repository's parent at `/host` (`PHRAMARK_SOURCES` to mount another directory, `PHRAMARK_DIR` when the checkout is not named `phramark`), copy the directory in — an extension as a Composer path repository pinned to `dev-local`, so no Packagist release can satisfy the requirement instead; a CMS as its source tree or project directory — and record a fingerprint of its files, so an edited working copy is reinstalled on the next run. `Phramark\VersionSpec` lists the products and their stacks:
+`--versions=PRODUCT@REF,…` names the parts a stack is built from and the refs to compare. A ref resolves to the published tag of that name when one exists, otherwise to the branch of that name (`3.5.x`, `11.x` → `11.x-dev` for Composer packages, `main` → `dev-main`); `latest`, the default of every part but aPhalcon (above), is the newest stable tag. A ref that starts with `..` is a directory on the host, relative to the repository root (`../evo/aLatteX` is the checkout next to this one): the setup containers see the repository's parent at `/host` (`PHRAMARK_SOURCES` to mount another directory, `PHRAMARK_DIR` when the checkout is not named `phramark`), copy the directory in — an extension as a Composer path repository pinned to `dev-local`, so no Packagist release can satisfy the requirement instead; a CMS as its source tree or project directory — and record a fingerprint of its files, so an edited working copy is reinstalled on the next run. `Phramark\VersionSpec` lists the products and their stacks:
 
 | Product | Part | Stacks | Installed from |
 | --- | --- | --- | --- |
