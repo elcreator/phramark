@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-09-22T15:13:11Z",
+    "generatedAt": "2026-09-23T00:33:57Z",
     "stacks": {
         "evo-parser": {
             "label": "Evolution parser",
@@ -44,6 +44,17 @@
                 "Latte"
             ],
             "port": 8082
+        },
+        "evo-sarticles": {
+            "label": "Evolution + sArticles",
+            "framework": "Evolution CMS core on Laravel (Illuminate) components + the sArticles module, whose Eloquent models carry the articles instead of the document tree",
+            "components": [
+                "Evolution core",
+                "Laravel/Illuminate",
+                "Symfony (minor)",
+                "sArticles"
+            ],
+            "port": 8089
         },
         "drupal": {
             "label": "Drupal",
@@ -101,7 +112,7 @@
         }
     },
     "versions": {
-        "recordedAt": "2026-09-22T14:02:32Z",
+        "recordedAt": "2026-09-23T00:33:56Z",
         "runtime": {
             "php": "8.4.25",
             "mysql": "8.4.7",
@@ -117,7 +128,7 @@
                 },
                 {
                     "name": "Evolution CMS",
-                    "version": "3.5.9 (branch 3.5.x@671d9dc, 2026-09-22)",
+                    "version": "3.5.8 (tag 3.5.8@374e110, 2026-09-10)",
                     "source": "https://github.com/evolution-cms/evolution"
                 },
                 {
@@ -188,7 +199,7 @@
                 },
                 {
                     "name": "Evolution CMS",
-                    "version": "3.5.9 (branch 3.5.x@671d9dc, 2026-09-22)",
+                    "version": "3.5.8 (tag 3.5.8@374e110, 2026-09-10)",
                     "source": "https://github.com/evolution-cms/evolution"
                 },
                 {
@@ -215,6 +226,39 @@
                     "name": "phalcon (extension)",
                     "version": "5.9.3",
                     "source": "https://github.com/phalcon/cphalcon"
+                }
+            ],
+            "evo-sarticles": [
+                {
+                    "name": "PHP",
+                    "version": "8.4.25",
+                    "source": "https://github.com/php/php-src"
+                },
+                {
+                    "name": "Evolution CMS",
+                    "version": "3.5.8 (tag 3.5.8@374e110, 2026-09-10)",
+                    "source": "https://github.com/evolution-cms/evolution"
+                },
+                {
+                    "name": "evolution-cms-extras/tinymce5",
+                    "version": "v5.7.2"
+                },
+                {
+                    "name": "evolution-cms/evo-ui",
+                    "version": "v1.2.0"
+                },
+                {
+                    "name": "illuminate/database",
+                    "version": "v12.69.2",
+                    "source": "https://github.com/illuminate/database"
+                },
+                {
+                    "name": "livewire/livewire",
+                    "version": "v4.4.6"
+                },
+                {
+                    "name": "seiger/sarticles",
+                    "version": "2.x-dev"
                 }
             ],
             "drupal": [
@@ -7669,6 +7713,2146 @@
                         "firstQuarterMb": 26.43,
                         "lastQuarterMb": 26.89,
                         "growth": 0.0174
+                    }
+                },
+                "containerFootprint": null
+            }
+        },
+        {
+            "stack": "evo-sarticles",
+            "version": "3.5.8 \u00b7 sArticles 1.2.1",
+            "jit": "off",
+            "rate": 30,
+            "recordedAt": "2026-09-23T00:03:17Z",
+            "file": "guest-evo-sarticles~sarticles@1.2.1-jit-off-rps-30-2026-09-23T00-03-17Z.txt",
+            "components": [
+                {
+                    "name": "PHP",
+                    "version": "8.4.25",
+                    "source": "https://github.com/php/php-src"
+                },
+                {
+                    "name": "Evolution CMS",
+                    "version": "3.5.8 (tag 3.5.8@374e110, 2026-09-10)",
+                    "source": "https://github.com/evolution-cms/evolution"
+                },
+                {
+                    "name": "evolution-cms-extras/tinymce5",
+                    "version": "v5.7.2"
+                },
+                {
+                    "name": "illuminate/database",
+                    "version": "v12.69.2",
+                    "source": "https://github.com/illuminate/database"
+                },
+                {
+                    "name": "seiger/sarticles",
+                    "version": "v1.2.1"
+                }
+            ],
+            "rps": 30.36,
+            "p50Ms": 160.51,
+            "p99Ms": 296.19,
+            "errors": 0,
+            "requests": 1824,
+            "phpScriptMedianMb": 1.4,
+            "phpAllocMedianMb": 2,
+            "phpAllocP95Mb": 2,
+            "phpAllocMaxMb": 2,
+            "containerPeakMb": 28,
+            "containerFootprintMb": null,
+            "ref": "sarticles@1.2.1",
+            "repeats": {
+                "n": 1,
+                "metrics": {
+                    "rps": {
+                        "median": 30.36,
+                        "min": 30.36,
+                        "max": 30.36,
+                        "cv": null
+                    },
+                    "p50Ms": {
+                        "median": 160.51,
+                        "min": 160.51,
+                        "max": 160.51,
+                        "cv": null
+                    },
+                    "p99Ms": {
+                        "median": 296.19,
+                        "min": 296.19,
+                        "max": 296.19,
+                        "cv": null
+                    },
+                    "phpScriptMedianMb": {
+                        "median": 1.4,
+                        "min": 1.4,
+                        "max": 1.4,
+                        "cv": null
+                    },
+                    "phpAllocP95Mb": {
+                        "median": 2,
+                        "min": 2,
+                        "max": 2,
+                        "cv": null
+                    },
+                    "containerPeakMb": {
+                        "median": 28,
+                        "min": 28,
+                        "max": 28,
+                        "cv": null
+                    },
+                    "containerFootprintMb": null
+                }
+            },
+            "series": {
+                "phpPeak": {
+                    "points": [
+                        {
+                            "t": 0.75,
+                            "requests": 64,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 2.25,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 3.75,
+                            "requests": 62,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 5.25,
+                            "requests": 34,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 6.75,
+                            "requests": 37,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 8.25,
+                            "requests": 59,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 9.75,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 11.24,
+                            "requests": 64,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 12.74,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 14.24,
+                            "requests": 38,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 15.74,
+                            "requests": 58,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 17.24,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 18.74,
+                            "requests": 64,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 20.24,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 21.74,
+                            "requests": 40,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 23.24,
+                            "requests": 56,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 24.74,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 26.24,
+                            "requests": 64,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 27.74,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 29.24,
+                            "requests": 46,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 30.74,
+                            "requests": 50,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 32.23,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 33.73,
+                            "requests": 64,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 35.23,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 36.73,
+                            "requests": 48,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 38.23,
+                            "requests": 48,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 39.73,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 41.23,
+                            "requests": 64,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 42.73,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 44.23,
+                            "requests": 55,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 45.73,
+                            "requests": 41,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 47.23,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 48.73,
+                            "requests": 64,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 50.23,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 51.72,
+                            "requests": 54,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 53.22,
+                            "requests": 42,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 54.72,
+                            "requests": 34,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 56.22,
+                            "requests": 62,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 57.72,
+                            "requests": 32,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 59.22,
+                            "requests": 64,
+                            "medianMb": 1.35,
+                            "maxMb": 1.36
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": -0,
+                        "firstQuarterMb": 1.35,
+                        "lastQuarterMb": 1.35,
+                        "growth": -0
+                    }
+                },
+                "containerRss": {
+                    "points": [
+                        {
+                            "t": 0,
+                            "mb": 28
+                        },
+                        {
+                            "t": 1,
+                            "mb": 28
+                        },
+                        {
+                            "t": 3,
+                            "mb": 28
+                        },
+                        {
+                            "t": 4,
+                            "mb": 28
+                        },
+                        {
+                            "t": 5,
+                            "mb": 28
+                        },
+                        {
+                            "t": 7,
+                            "mb": 28
+                        },
+                        {
+                            "t": 8,
+                            "mb": 28
+                        },
+                        {
+                            "t": 9,
+                            "mb": 28
+                        },
+                        {
+                            "t": 11,
+                            "mb": 28
+                        },
+                        {
+                            "t": 12,
+                            "mb": 28
+                        },
+                        {
+                            "t": 13,
+                            "mb": 28
+                        },
+                        {
+                            "t": 15,
+                            "mb": 28
+                        },
+                        {
+                            "t": 16,
+                            "mb": 28
+                        },
+                        {
+                            "t": 17,
+                            "mb": 28
+                        },
+                        {
+                            "t": 19,
+                            "mb": 28
+                        },
+                        {
+                            "t": 20,
+                            "mb": 28
+                        },
+                        {
+                            "t": 21,
+                            "mb": 28
+                        },
+                        {
+                            "t": 23,
+                            "mb": 28
+                        },
+                        {
+                            "t": 24,
+                            "mb": 28
+                        },
+                        {
+                            "t": 26,
+                            "mb": 28
+                        },
+                        {
+                            "t": 27,
+                            "mb": 28
+                        },
+                        {
+                            "t": 28,
+                            "mb": 28
+                        },
+                        {
+                            "t": 30,
+                            "mb": 28
+                        },
+                        {
+                            "t": 31,
+                            "mb": 28
+                        },
+                        {
+                            "t": 32,
+                            "mb": 28
+                        },
+                        {
+                            "t": 34,
+                            "mb": 28
+                        },
+                        {
+                            "t": 35,
+                            "mb": 28
+                        },
+                        {
+                            "t": 36,
+                            "mb": 28
+                        },
+                        {
+                            "t": 38,
+                            "mb": 28
+                        },
+                        {
+                            "t": 39,
+                            "mb": 28
+                        },
+                        {
+                            "t": 40,
+                            "mb": 28
+                        },
+                        {
+                            "t": 42,
+                            "mb": 28
+                        },
+                        {
+                            "t": 43,
+                            "mb": 28
+                        },
+                        {
+                            "t": 44,
+                            "mb": 28
+                        },
+                        {
+                            "t": 46,
+                            "mb": 28
+                        },
+                        {
+                            "t": 47,
+                            "mb": 28
+                        },
+                        {
+                            "t": 48,
+                            "mb": 28
+                        },
+                        {
+                            "t": 50,
+                            "mb": 28
+                        },
+                        {
+                            "t": 51,
+                            "mb": 28
+                        },
+                        {
+                            "t": 52,
+                            "mb": 28
+                        },
+                        {
+                            "t": 54,
+                            "mb": 28
+                        },
+                        {
+                            "t": 55,
+                            "mb": 28
+                        },
+                        {
+                            "t": 56,
+                            "mb": 28
+                        },
+                        {
+                            "t": 58,
+                            "mb": 28
+                        },
+                        {
+                            "t": 59,
+                            "mb": 28
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": 0.008,
+                        "firstQuarterMb": 28.01,
+                        "lastQuarterMb": 28.01,
+                        "growth": 0
+                    }
+                },
+                "containerFootprint": null
+            }
+        },
+        {
+            "stack": "evo-sarticles",
+            "version": "3.5.8 \u00b7 sArticles 1.2.1",
+            "jit": "tracing",
+            "rate": 30,
+            "recordedAt": "2026-09-23T00:05:32Z",
+            "file": "guest-evo-sarticles~sarticles@1.2.1-jit-tracing-rps-30-2026-09-23T00-05-32Z.txt",
+            "components": [
+                {
+                    "name": "PHP",
+                    "version": "8.4.25",
+                    "source": "https://github.com/php/php-src"
+                },
+                {
+                    "name": "Evolution CMS",
+                    "version": "3.5.8 (tag 3.5.8@374e110, 2026-09-10)",
+                    "source": "https://github.com/evolution-cms/evolution"
+                },
+                {
+                    "name": "evolution-cms-extras/tinymce5",
+                    "version": "v5.7.2"
+                },
+                {
+                    "name": "illuminate/database",
+                    "version": "v12.69.2",
+                    "source": "https://github.com/illuminate/database"
+                },
+                {
+                    "name": "seiger/sarticles",
+                    "version": "v1.2.1"
+                }
+            ],
+            "rps": 30.39,
+            "p50Ms": 171.65,
+            "p99Ms": 363.52,
+            "errors": 0,
+            "requests": 1824,
+            "phpScriptMedianMb": 1.4,
+            "phpAllocMedianMb": 2,
+            "phpAllocP95Mb": 2,
+            "phpAllocMaxMb": 2,
+            "containerPeakMb": 29.7,
+            "containerFootprintMb": null,
+            "ref": "sarticles@1.2.1",
+            "repeats": {
+                "n": 1,
+                "metrics": {
+                    "rps": {
+                        "median": 30.39,
+                        "min": 30.39,
+                        "max": 30.39,
+                        "cv": null
+                    },
+                    "p50Ms": {
+                        "median": 171.65,
+                        "min": 171.65,
+                        "max": 171.65,
+                        "cv": null
+                    },
+                    "p99Ms": {
+                        "median": 363.52,
+                        "min": 363.52,
+                        "max": 363.52,
+                        "cv": null
+                    },
+                    "phpScriptMedianMb": {
+                        "median": 1.4,
+                        "min": 1.4,
+                        "max": 1.4,
+                        "cv": null
+                    },
+                    "phpAllocP95Mb": {
+                        "median": 2,
+                        "min": 2,
+                        "max": 2,
+                        "cv": null
+                    },
+                    "containerPeakMb": {
+                        "median": 29.7,
+                        "min": 29.7,
+                        "max": 29.7,
+                        "cv": null
+                    },
+                    "containerFootprintMb": null
+                }
+            },
+            "series": {
+                "phpPeak": {
+                    "points": [
+                        {
+                            "t": 0.75,
+                            "requests": 64,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 2.25,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 3.75,
+                            "requests": 64,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 5.25,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 6.75,
+                            "requests": 36,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 8.25,
+                            "requests": 60,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 9.75,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 11.25,
+                            "requests": 53,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 12.75,
+                            "requests": 43,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 14.25,
+                            "requests": 39,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 15.75,
+                            "requests": 57,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 17.25,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 18.75,
+                            "requests": 64,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 20.25,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 21.74,
+                            "requests": 40,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 23.24,
+                            "requests": 56,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 24.74,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 26.24,
+                            "requests": 64,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 27.74,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 29.24,
+                            "requests": 45,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 30.74,
+                            "requests": 51,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 32.24,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 33.74,
+                            "requests": 64,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 35.24,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 36.74,
+                            "requests": 51,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 38.24,
+                            "requests": 45,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 39.74,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 41.24,
+                            "requests": 64,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 42.74,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 44.24,
+                            "requests": 48,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 45.74,
+                            "requests": 48,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 47.24,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 48.74,
+                            "requests": 64,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 50.24,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 51.74,
+                            "requests": 57,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 53.24,
+                            "requests": 39,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 54.74,
+                            "requests": 33,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 56.24,
+                            "requests": 63,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 57.74,
+                            "requests": 32,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        },
+                        {
+                            "t": 59.24,
+                            "requests": 64,
+                            "medianMb": 1.36,
+                            "maxMb": 1.36
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": -0,
+                        "firstQuarterMb": 1.36,
+                        "lastQuarterMb": 1.36,
+                        "growth": -0
+                    }
+                },
+                "containerRss": {
+                    "points": [
+                        {
+                            "t": 0,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 2,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 3,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 4,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 6,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 7,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 8,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 10,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 11,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 12,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 14,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 15,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 16,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 18,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 19,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 20,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 22,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 23,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 24,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 26,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 27,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 28,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 30,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 31,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 33,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 34,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 35,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 37,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 38,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 39,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 41,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 42,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 44,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 45,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 46,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 48,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 49,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 51,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 52,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 53,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 55,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 56,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 58,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 59,
+                            "mb": 29.7
+                        },
+                        {
+                            "t": 60,
+                            "mb": 29.7
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": 0.0024,
+                        "firstQuarterMb": 29.73,
+                        "lastQuarterMb": 29.73,
+                        "growth": 0
+                    }
+                },
+                "containerFootprint": null
+            }
+        },
+        {
+            "stack": "evo-sarticles",
+            "version": "3.5.8 \u00b7 sArticles 2.x-dev",
+            "jit": "off",
+            "rate": 30,
+            "recordedAt": "2026-09-23T00:10:52Z",
+            "file": "guest-evo-sarticles~sarticles@2.x-jit-off-rps-30-2026-09-23T00-10-52Z.txt",
+            "components": [
+                {
+                    "name": "PHP",
+                    "version": "8.4.25",
+                    "source": "https://github.com/php/php-src"
+                },
+                {
+                    "name": "Evolution CMS",
+                    "version": "3.5.8 (tag 3.5.8@374e110, 2026-09-10)",
+                    "source": "https://github.com/evolution-cms/evolution"
+                },
+                {
+                    "name": "evolution-cms-extras/tinymce5",
+                    "version": "v5.7.2"
+                },
+                {
+                    "name": "evolution-cms/evo-ui",
+                    "version": "v1.2.0"
+                },
+                {
+                    "name": "illuminate/database",
+                    "version": "v12.69.2",
+                    "source": "https://github.com/illuminate/database"
+                },
+                {
+                    "name": "livewire/livewire",
+                    "version": "v4.4.6"
+                },
+                {
+                    "name": "seiger/sarticles",
+                    "version": "2.x-dev"
+                }
+            ],
+            "rps": 30.35,
+            "p50Ms": 132.99,
+            "p99Ms": 258.43,
+            "errors": 0,
+            "requests": 1824,
+            "phpScriptMedianMb": 1.7,
+            "phpAllocMedianMb": 2,
+            "phpAllocP95Mb": 2,
+            "phpAllocMaxMb": 2,
+            "containerPeakMb": 31.2,
+            "containerFootprintMb": null,
+            "ref": "sarticles@2.x",
+            "repeats": {
+                "n": 1,
+                "metrics": {
+                    "rps": {
+                        "median": 30.35,
+                        "min": 30.35,
+                        "max": 30.35,
+                        "cv": null
+                    },
+                    "p50Ms": {
+                        "median": 132.99,
+                        "min": 132.99,
+                        "max": 132.99,
+                        "cv": null
+                    },
+                    "p99Ms": {
+                        "median": 258.43,
+                        "min": 258.43,
+                        "max": 258.43,
+                        "cv": null
+                    },
+                    "phpScriptMedianMb": {
+                        "median": 1.7,
+                        "min": 1.7,
+                        "max": 1.7,
+                        "cv": null
+                    },
+                    "phpAllocP95Mb": {
+                        "median": 2,
+                        "min": 2,
+                        "max": 2,
+                        "cv": null
+                    },
+                    "containerPeakMb": {
+                        "median": 31.2,
+                        "min": 31.2,
+                        "max": 31.2,
+                        "cv": null
+                    },
+                    "containerFootprintMb": null
+                }
+            },
+            "series": {
+                "phpPeak": {
+                    "points": [
+                        {
+                            "t": 0.75,
+                            "requests": 64,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 2.25,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 3.75,
+                            "requests": 64,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 5.25,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 6.75,
+                            "requests": 36,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 8.25,
+                            "requests": 60,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 9.75,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 11.25,
+                            "requests": 64,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 12.75,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 14.25,
+                            "requests": 42,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 15.75,
+                            "requests": 54,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 17.25,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 18.75,
+                            "requests": 64,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 20.25,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 21.75,
+                            "requests": 46,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 23.25,
+                            "requests": 50,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 24.75,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 26.25,
+                            "requests": 64,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 27.75,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 29.25,
+                            "requests": 52,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 30.75,
+                            "requests": 44,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 32.25,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 33.75,
+                            "requests": 64,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 35.25,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 36.75,
+                            "requests": 52,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 38.26,
+                            "requests": 44,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 39.76,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 41.26,
+                            "requests": 64,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 42.76,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 44.26,
+                            "requests": 61,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 45.76,
+                            "requests": 35,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 47.26,
+                            "requests": 33,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 48.76,
+                            "requests": 63,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 50.26,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 51.76,
+                            "requests": 64,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 53.26,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 54.76,
+                            "requests": 38,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 56.26,
+                            "requests": 58,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 57.76,
+                            "requests": 32,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        },
+                        {
+                            "t": 59.26,
+                            "requests": 64,
+                            "medianMb": 1.68,
+                            "maxMb": 1.68
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": -0,
+                        "firstQuarterMb": 1.68,
+                        "lastQuarterMb": 1.68,
+                        "growth": -0
+                    }
+                },
+                "containerRss": {
+                    "points": [
+                        {
+                            "t": 0,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 2,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 3,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 4,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 6,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 7,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 8,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 10,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 11,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 12,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 14,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 15,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 16,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 18,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 19,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 20,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 22,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 23,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 24,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 26,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 27,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 28,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 30,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 31,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 32,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 34,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 35,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 36,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 38,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 39,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 40,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 42,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 43,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 44,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 46,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 47,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 49,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 50,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 51,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 52,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 54,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 55,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 57,
+                            "mb": 31.1
+                        },
+                        {
+                            "t": 58,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 59,
+                            "mb": 31.2
+                        },
+                        {
+                            "t": 61,
+                            "mb": 31.2
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": 0.0537,
+                        "firstQuarterMb": 31.11,
+                        "lastQuarterMb": 31.15,
+                        "growth": 0.0013
+                    }
+                },
+                "containerFootprint": null
+            }
+        },
+        {
+            "stack": "evo-sarticles",
+            "version": "3.5.8 \u00b7 sArticles 2.x-dev",
+            "jit": "tracing",
+            "rate": 30,
+            "recordedAt": "2026-09-23T00:22:19Z",
+            "file": "guest-evo-sarticles~sarticles@2.x-jit-tracing-rps-30-2026-09-23T00-22-19Z.txt",
+            "components": [
+                {
+                    "name": "PHP",
+                    "version": "8.4.25",
+                    "source": "https://github.com/php/php-src"
+                },
+                {
+                    "name": "Evolution CMS",
+                    "version": "3.5.8 (tag 3.5.8@374e110, 2026-09-10)",
+                    "source": "https://github.com/evolution-cms/evolution"
+                },
+                {
+                    "name": "evolution-cms-extras/tinymce5",
+                    "version": "v5.7.2"
+                },
+                {
+                    "name": "evolution-cms/evo-ui",
+                    "version": "v1.2.0"
+                },
+                {
+                    "name": "illuminate/database",
+                    "version": "v12.69.2",
+                    "source": "https://github.com/illuminate/database"
+                },
+                {
+                    "name": "livewire/livewire",
+                    "version": "v4.4.6"
+                },
+                {
+                    "name": "seiger/sarticles",
+                    "version": "2.x-dev"
+                }
+            ],
+            "rps": 30.36,
+            "p50Ms": 130.88,
+            "p99Ms": 252.67,
+            "errors": 0,
+            "requests": 1824,
+            "phpScriptMedianMb": 1.7,
+            "phpAllocMedianMb": 2,
+            "phpAllocP95Mb": 2,
+            "phpAllocMaxMb": 2,
+            "containerPeakMb": 32,
+            "containerFootprintMb": null,
+            "ref": "sarticles@2.x",
+            "repeats": {
+                "n": 1,
+                "metrics": {
+                    "rps": {
+                        "median": 30.36,
+                        "min": 30.36,
+                        "max": 30.36,
+                        "cv": null
+                    },
+                    "p50Ms": {
+                        "median": 130.88,
+                        "min": 130.88,
+                        "max": 130.88,
+                        "cv": null
+                    },
+                    "p99Ms": {
+                        "median": 252.67,
+                        "min": 252.67,
+                        "max": 252.67,
+                        "cv": null
+                    },
+                    "phpScriptMedianMb": {
+                        "median": 1.7,
+                        "min": 1.7,
+                        "max": 1.7,
+                        "cv": null
+                    },
+                    "phpAllocP95Mb": {
+                        "median": 2,
+                        "min": 2,
+                        "max": 2,
+                        "cv": null
+                    },
+                    "containerPeakMb": {
+                        "median": 32,
+                        "min": 32,
+                        "max": 32,
+                        "cv": null
+                    },
+                    "containerFootprintMb": null
+                }
+            },
+            "series": {
+                "phpPeak": {
+                    "points": [
+                        {
+                            "t": 0.75,
+                            "requests": 64,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 2.25,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 3.75,
+                            "requests": 64,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 5.25,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 6.74,
+                            "requests": 41,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 8.24,
+                            "requests": 55,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 9.74,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 11.24,
+                            "requests": 64,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 12.74,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 14.24,
+                            "requests": 44,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 15.74,
+                            "requests": 52,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 17.24,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 18.74,
+                            "requests": 64,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 20.23,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 21.73,
+                            "requests": 48,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 23.23,
+                            "requests": 48,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 24.73,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 26.23,
+                            "requests": 64,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 27.73,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 29.23,
+                            "requests": 53,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 30.73,
+                            "requests": 43,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 32.22,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 33.72,
+                            "requests": 64,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 35.22,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 36.72,
+                            "requests": 58,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 38.22,
+                            "requests": 38,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 39.72,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 41.22,
+                            "requests": 64,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 42.72,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 44.22,
+                            "requests": 64,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 45.71,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 47.21,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 48.71,
+                            "requests": 64,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 50.21,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 51.71,
+                            "requests": 64,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 53.21,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 54.71,
+                            "requests": 35,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 56.21,
+                            "requests": 61,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 57.7,
+                            "requests": 32,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        },
+                        {
+                            "t": 59.2,
+                            "requests": 64,
+                            "medianMb": 1.69,
+                            "maxMb": 1.69
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": -0,
+                        "firstQuarterMb": 1.69,
+                        "lastQuarterMb": 1.69,
+                        "growth": -0
+                    }
+                },
+                "containerRss": {
+                    "points": [
+                        {
+                            "t": 0,
+                            "mb": 32
+                        },
+                        {
+                            "t": 1,
+                            "mb": 32
+                        },
+                        {
+                            "t": 2,
+                            "mb": 32
+                        },
+                        {
+                            "t": 4,
+                            "mb": 32
+                        },
+                        {
+                            "t": 5,
+                            "mb": 32
+                        },
+                        {
+                            "t": 6,
+                            "mb": 32
+                        },
+                        {
+                            "t": 8,
+                            "mb": 32
+                        },
+                        {
+                            "t": 9,
+                            "mb": 32
+                        },
+                        {
+                            "t": 10,
+                            "mb": 32
+                        },
+                        {
+                            "t": 12,
+                            "mb": 32
+                        },
+                        {
+                            "t": 13,
+                            "mb": 32
+                        },
+                        {
+                            "t": 15,
+                            "mb": 32
+                        },
+                        {
+                            "t": 16,
+                            "mb": 32
+                        },
+                        {
+                            "t": 17,
+                            "mb": 32
+                        },
+                        {
+                            "t": 19,
+                            "mb": 32
+                        },
+                        {
+                            "t": 20,
+                            "mb": 32
+                        },
+                        {
+                            "t": 21,
+                            "mb": 32
+                        },
+                        {
+                            "t": 23,
+                            "mb": 32
+                        },
+                        {
+                            "t": 24,
+                            "mb": 32
+                        },
+                        {
+                            "t": 25,
+                            "mb": 32
+                        },
+                        {
+                            "t": 27,
+                            "mb": 32
+                        },
+                        {
+                            "t": 28,
+                            "mb": 32
+                        },
+                        {
+                            "t": 29,
+                            "mb": 32
+                        },
+                        {
+                            "t": 31,
+                            "mb": 32
+                        },
+                        {
+                            "t": 32,
+                            "mb": 32
+                        },
+                        {
+                            "t": 33,
+                            "mb": 32
+                        },
+                        {
+                            "t": 35,
+                            "mb": 32
+                        },
+                        {
+                            "t": 36,
+                            "mb": 32
+                        },
+                        {
+                            "t": 37,
+                            "mb": 32
+                        },
+                        {
+                            "t": 39,
+                            "mb": 32
+                        },
+                        {
+                            "t": 40,
+                            "mb": 32
+                        },
+                        {
+                            "t": 41,
+                            "mb": 32
+                        },
+                        {
+                            "t": 43,
+                            "mb": 32
+                        },
+                        {
+                            "t": 44,
+                            "mb": 32
+                        },
+                        {
+                            "t": 45,
+                            "mb": 32
+                        },
+                        {
+                            "t": 47,
+                            "mb": 32
+                        },
+                        {
+                            "t": 48,
+                            "mb": 32
+                        },
+                        {
+                            "t": 49,
+                            "mb": 32
+                        },
+                        {
+                            "t": 51,
+                            "mb": 32
+                        },
+                        {
+                            "t": 52,
+                            "mb": 32
+                        },
+                        {
+                            "t": 54,
+                            "mb": 32
+                        },
+                        {
+                            "t": 55,
+                            "mb": 32
+                        },
+                        {
+                            "t": 56,
+                            "mb": 32
+                        },
+                        {
+                            "t": 57,
+                            "mb": 32
+                        },
+                        {
+                            "t": 59,
+                            "mb": 32
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": 0.0018,
+                        "firstQuarterMb": 32.02,
+                        "lastQuarterMb": 32.02,
+                        "growth": 0
                     }
                 },
                 "containerFootprint": null
@@ -21494,6 +23678,2402 @@
                         "firstQuarterMb": 1.14,
                         "lastQuarterMb": 1.06,
                         "growth": -0.0758
+                    }
+                }
+            }
+        },
+        {
+            "stack": "evo-sarticles",
+            "version": "3.5.8 \u00b7 sArticles 1.2.1",
+            "jit": "off",
+            "components": [
+                {
+                    "name": "PHP",
+                    "version": "8.4.25",
+                    "source": "https://github.com/php/php-src"
+                },
+                {
+                    "name": "Evolution CMS",
+                    "version": "3.5.8 (tag 3.5.8@374e110, 2026-09-10)",
+                    "source": "https://github.com/evolution-cms/evolution"
+                },
+                {
+                    "name": "evolution-cms-extras/tinymce5",
+                    "version": "v5.7.2"
+                },
+                {
+                    "name": "illuminate/database",
+                    "version": "v12.69.2",
+                    "source": "https://github.com/illuminate/database"
+                },
+                {
+                    "name": "seiger/sarticles",
+                    "version": "v1.2.1"
+                }
+            ],
+            "rounds": 1,
+            "pages": 5,
+            "recordedAt": "2026-09-23T00:05:11.821Z",
+            "file": "admin-evo-sarticles~sarticles@1.2.1-jit-off-2026-09-23T00-05-11-820Z.json",
+            "totalWallMs": 21693,
+            "containerPeakMb": 203.3,
+            "containerFootprintMb": null,
+            "actions": {
+                "login": {
+                    "ms": 2068.89,
+                    "serverMs": 200.42,
+                    "phpPeakMb": 2.57,
+                    "jsHeapUsedMb": 17.53,
+                    "domNodes": 31011
+                },
+                "open-edit": {
+                    "ms": 180.93,
+                    "serverMs": 90.94,
+                    "phpPeakMb": 2.57,
+                    "jsHeapUsedMb": 12.17,
+                    "domNodes": 4760
+                },
+                "save-edit": {
+                    "ms": 812.66,
+                    "serverMs": 489.47,
+                    "phpPeakMb": 21.38,
+                    "jsHeapUsedMb": 12.07,
+                    "domNodes": 3377
+                },
+                "open-create": {
+                    "ms": 274.96,
+                    "serverMs": 171.57,
+                    "phpPeakMb": 2.57,
+                    "jsHeapUsedMb": 9.57,
+                    "domNodes": 3172
+                },
+                "save-create": {
+                    "ms": 2583.68,
+                    "serverMs": 1676.87,
+                    "phpPeakMb": 159.95,
+                    "jsHeapUsedMb": 11.97,
+                    "domNodes": 5940
+                },
+                "logout": {
+                    "ms": 183.01,
+                    "serverMs": 163.97,
+                    "phpPeakMb": 1.05,
+                    "jsHeapUsedMb": 9.58,
+                    "domNodes": 1556
+                }
+            },
+            "ref": "sarticles@1.2.1",
+            "repeats": {
+                "n": 2,
+                "metrics": {
+                    "totalWallMs": {
+                        "median": 13853.5,
+                        "min": 6014,
+                        "max": 21693,
+                        "cv": 0.8003
+                    },
+                    "login.ms": {
+                        "median": 2047.815,
+                        "min": 2026.74,
+                        "max": 2068.89,
+                        "cv": 0.0146
+                    },
+                    "login.serverMs": {
+                        "median": 204.725,
+                        "min": 200.42,
+                        "max": 209.03,
+                        "cv": 0.0297
+                    },
+                    "open-edit.ms": {
+                        "median": 176.575,
+                        "min": 172.22,
+                        "max": 180.93,
+                        "cv": 0.0349
+                    },
+                    "open-edit.serverMs": {
+                        "median": 85.05,
+                        "min": 79.16,
+                        "max": 90.94,
+                        "cv": 0.0979
+                    },
+                    "save-edit.ms": {
+                        "median": 815.3,
+                        "min": 812.66,
+                        "max": 817.94,
+                        "cv": 0.0046
+                    },
+                    "save-edit.serverMs": {
+                        "median": 500,
+                        "min": 489.47,
+                        "max": 510.53,
+                        "cv": 0.0298
+                    },
+                    "open-create.ms": {
+                        "median": 272.75,
+                        "min": 270.54,
+                        "max": 274.96,
+                        "cv": 0.0115
+                    },
+                    "open-create.serverMs": {
+                        "median": 177.7,
+                        "min": 171.57,
+                        "max": 183.83,
+                        "cv": 0.0488
+                    },
+                    "save-create.ms": {
+                        "median": 2558.66,
+                        "min": 2533.64,
+                        "max": 2583.68,
+                        "cv": 0.0138
+                    },
+                    "save-create.serverMs": {
+                        "median": 1701.25,
+                        "min": 1676.87,
+                        "max": 1725.63,
+                        "cv": 0.0203
+                    },
+                    "logout.ms": {
+                        "median": 187.815,
+                        "min": 183.01,
+                        "max": 192.62,
+                        "cv": 0.0362
+                    },
+                    "logout.serverMs": {
+                        "median": 174.525,
+                        "min": 163.97,
+                        "max": 185.08,
+                        "cv": 0.0855
+                    },
+                    "containerPeakMb": {
+                        "median": 188.5,
+                        "min": 173.7,
+                        "max": 203.3,
+                        "cv": 0.111
+                    },
+                    "containerFootprintMb": null
+                }
+            },
+            "series": {
+                "steps": [
+                    {
+                        "index": 1,
+                        "action": "login",
+                        "label": "round 1",
+                        "ms": 2068.89,
+                        "serverMs": 200.42,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 17.53,
+                        "domNodes": 31011
+                    },
+                    {
+                        "index": 2,
+                        "action": "open-edit",
+                        "label": "page 100001",
+                        "ms": 175.91,
+                        "serverMs": 79.68,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 19.83,
+                        "domNodes": 31707
+                    },
+                    {
+                        "index": 3,
+                        "action": "save-edit",
+                        "label": "page 100001",
+                        "ms": 862.4,
+                        "serverMs": 515.56,
+                        "phpPeakMb": 21.38,
+                        "jsHeapUsedMb": 9.7,
+                        "domNodes": 4125
+                    },
+                    {
+                        "index": 4,
+                        "action": "open-edit",
+                        "label": "page 100002",
+                        "ms": 171.78,
+                        "serverMs": 86.06,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 12.15,
+                        "domNodes": 4760
+                    },
+                    {
+                        "index": 5,
+                        "action": "save-edit",
+                        "label": "page 100002",
+                        "ms": 792.22,
+                        "serverMs": 491.83,
+                        "phpPeakMb": 21.38,
+                        "jsHeapUsedMb": 13,
+                        "domNodes": 4842
+                    },
+                    {
+                        "index": 6,
+                        "action": "open-edit",
+                        "label": "page 100003",
+                        "ms": 196.51,
+                        "serverMs": 110.83,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 13.16,
+                        "domNodes": 5477
+                    },
+                    {
+                        "index": 7,
+                        "action": "save-edit",
+                        "label": "page 100003",
+                        "ms": 787.12,
+                        "serverMs": 489.47,
+                        "phpPeakMb": 21.38,
+                        "jsHeapUsedMb": 8.73,
+                        "domNodes": 1943
+                    },
+                    {
+                        "index": 8,
+                        "action": "open-edit",
+                        "label": "page 100004",
+                        "ms": 180.93,
+                        "serverMs": 90.94,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 11.17,
+                        "domNodes": 2578
+                    },
+                    {
+                        "index": 9,
+                        "action": "save-edit",
+                        "label": "page 100004",
+                        "ms": 896.72,
+                        "serverMs": 470.03,
+                        "phpPeakMb": 21.38,
+                        "jsHeapUsedMb": 12.07,
+                        "domNodes": 2660
+                    },
+                    {
+                        "index": 10,
+                        "action": "open-edit",
+                        "label": "page 100005",
+                        "ms": 183.85,
+                        "serverMs": 93.64,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 12.17,
+                        "domNodes": 3295
+                    },
+                    {
+                        "index": 11,
+                        "action": "save-edit",
+                        "label": "page 100005",
+                        "ms": 812.66,
+                        "serverMs": 478.89,
+                        "phpPeakMb": 21.38,
+                        "jsHeapUsedMb": 13.02,
+                        "domNodes": 3377
+                    },
+                    {
+                        "index": 12,
+                        "action": "open-create",
+                        "label": "page 1",
+                        "ms": 279.03,
+                        "serverMs": 164.61,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 9.5,
+                        "domNodes": 3172
+                    },
+                    {
+                        "index": 13,
+                        "action": "save-create",
+                        "label": "page 1",
+                        "ms": 2583.68,
+                        "serverMs": 1693.98,
+                        "phpPeakMb": 159.95,
+                        "jsHeapUsedMb": 12.97,
+                        "domNodes": 6315
+                    },
+                    {
+                        "index": 14,
+                        "action": "open-create",
+                        "label": "page 2",
+                        "ms": 261.59,
+                        "serverMs": 171.57,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 9.57,
+                        "domNodes": 3171
+                    },
+                    {
+                        "index": 15,
+                        "action": "save-create",
+                        "label": "page 2",
+                        "ms": 2664.92,
+                        "serverMs": 1642.17,
+                        "phpPeakMb": 159.95,
+                        "jsHeapUsedMb": 11.97,
+                        "domNodes": 5940
+                    },
+                    {
+                        "index": 16,
+                        "action": "open-create",
+                        "label": "page 3",
+                        "ms": 274.96,
+                        "serverMs": 177.15,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 12.77,
+                        "domNodes": 8014
+                    },
+                    {
+                        "index": 17,
+                        "action": "save-create",
+                        "label": "page 3",
+                        "ms": 2580.12,
+                        "serverMs": 1618.96,
+                        "phpPeakMb": 159.95,
+                        "jsHeapUsedMb": 8.88,
+                        "domNodes": 1941
+                    },
+                    {
+                        "index": 18,
+                        "action": "open-create",
+                        "label": "page 4",
+                        "ms": 291.42,
+                        "serverMs": 205.69,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 11.62,
+                        "domNodes": 4012
+                    },
+                    {
+                        "index": 19,
+                        "action": "save-create",
+                        "label": "page 4",
+                        "ms": 2578.59,
+                        "serverMs": 1676.87,
+                        "phpPeakMb": 159.96,
+                        "jsHeapUsedMb": 11.43,
+                        "domNodes": 4344
+                    },
+                    {
+                        "index": 20,
+                        "action": "open-create",
+                        "label": "page 5",
+                        "ms": 264.62,
+                        "serverMs": 169.36,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 9.33,
+                        "domNodes": 3172
+                    },
+                    {
+                        "index": 21,
+                        "action": "save-create",
+                        "label": "page 5",
+                        "ms": 2601.92,
+                        "serverMs": 1683.22,
+                        "phpPeakMb": 159.96,
+                        "jsHeapUsedMb": 13.11,
+                        "domNodes": 6317
+                    },
+                    {
+                        "index": 22,
+                        "action": "logout",
+                        "label": "round 1",
+                        "ms": 183.01,
+                        "serverMs": 163.97,
+                        "phpPeakMb": 1.05,
+                        "jsHeapUsedMb": 9.58,
+                        "domNodes": 1556
+                    }
+                ],
+                "phpPeak": {
+                    "points": [
+                        {
+                            "t": 0.27,
+                            "requests": 1,
+                            "medianMb": 1.04,
+                            "maxMb": 1.04
+                        },
+                        {
+                            "t": 1.37,
+                            "requests": 4,
+                            "medianMb": 1.64,
+                            "maxMb": 2.49
+                        },
+                        {
+                            "t": 1.92,
+                            "requests": 7,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 2.47,
+                            "requests": 2,
+                            "medianMb": 1.06,
+                            "maxMb": 1.06
+                        },
+                        {
+                            "t": 3.02,
+                            "requests": 4,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 3.57,
+                            "requests": 2,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 4.12,
+                            "requests": 5,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 4.66,
+                            "requests": 1,
+                            "medianMb": 1.06,
+                            "maxMb": 1.06
+                        },
+                        {
+                            "t": 5.21,
+                            "requests": 6,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 6.31,
+                            "requests": 5,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 6.86,
+                            "requests": 1,
+                            "medianMb": 1.06,
+                            "maxMb": 1.06
+                        },
+                        {
+                            "t": 7.41,
+                            "requests": 5,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 7.96,
+                            "requests": 1,
+                            "medianMb": 1.06,
+                            "maxMb": 1.06
+                        },
+                        {
+                            "t": 9.05,
+                            "requests": 8,
+                            "medianMb": 2.57,
+                            "maxMb": 159.95
+                        },
+                        {
+                            "t": 9.6,
+                            "requests": 2,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 10.15,
+                            "requests": 4,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 10.7,
+                            "requests": 2,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 11.8,
+                            "requests": 5,
+                            "medianMb": 2.57,
+                            "maxMb": 159.95
+                        },
+                        {
+                            "t": 12.35,
+                            "requests": 5,
+                            "medianMb": 1.6,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 12.9,
+                            "requests": 2,
+                            "medianMb": 21.38,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 13.44,
+                            "requests": 4,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 14.54,
+                            "requests": 2,
+                            "medianMb": 159.95,
+                            "maxMb": 159.95
+                        },
+                        {
+                            "t": 15.09,
+                            "requests": 8,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 16.19,
+                            "requests": 6,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 17.83,
+                            "requests": 8,
+                            "medianMb": 2.57,
+                            "maxMb": 159.96
+                        },
+                        {
+                            "t": 18.38,
+                            "requests": 2,
+                            "medianMb": 1.06,
+                            "maxMb": 1.06
+                        },
+                        {
+                            "t": 18.93,
+                            "requests": 5,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 19.48,
+                            "requests": 1,
+                            "medianMb": 1.06,
+                            "maxMb": 1.06
+                        },
+                        {
+                            "t": 20.58,
+                            "requests": 9,
+                            "medianMb": 2.57,
+                            "maxMb": 159.96
+                        },
+                        {
+                            "t": 21.13,
+                            "requests": 1,
+                            "medianMb": 1.06,
+                            "maxMb": 1.06
+                        },
+                        {
+                            "t": 21.67,
+                            "requests": 5,
+                            "medianMb": 1.03,
+                            "maxMb": 21.38
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": 29.4728,
+                        "firstQuarterMb": 1.64,
+                        "lastQuarterMb": 1.83,
+                        "growth": 0.1189
+                    }
+                }
+            }
+        },
+        {
+            "stack": "evo-sarticles",
+            "version": "3.5.8 \u00b7 sArticles 1.2.1",
+            "jit": "tracing",
+            "components": [
+                {
+                    "name": "PHP",
+                    "version": "8.4.25",
+                    "source": "https://github.com/php/php-src"
+                },
+                {
+                    "name": "Evolution CMS",
+                    "version": "3.5.8 (tag 3.5.8@374e110, 2026-09-10)",
+                    "source": "https://github.com/evolution-cms/evolution"
+                },
+                {
+                    "name": "evolution-cms-extras/tinymce5",
+                    "version": "v5.7.2"
+                },
+                {
+                    "name": "illuminate/database",
+                    "version": "v12.69.2",
+                    "source": "https://github.com/illuminate/database"
+                },
+                {
+                    "name": "seiger/sarticles",
+                    "version": "v1.2.1"
+                }
+            ],
+            "rounds": 1,
+            "pages": 5,
+            "recordedAt": "2026-09-23T00:07:24.125Z",
+            "file": "admin-evo-sarticles~sarticles@1.2.1-jit-tracing-2026-09-23T00-07-24-124Z.json",
+            "totalWallMs": 21011,
+            "containerPeakMb": 136.6,
+            "containerFootprintMb": null,
+            "actions": {
+                "login": {
+                    "ms": 2038.96,
+                    "serverMs": 197.11,
+                    "phpPeakMb": 2.68,
+                    "jsHeapUsedMb": 17.6,
+                    "domNodes": 31010
+                },
+                "open-edit": {
+                    "ms": 173.49,
+                    "serverMs": 81.66,
+                    "phpPeakMb": 2.57,
+                    "jsHeapUsedMb": 11.68,
+                    "domNodes": 4760
+                },
+                "save-edit": {
+                    "ms": 674.17,
+                    "serverMs": 369.24,
+                    "phpPeakMb": 21.38,
+                    "jsHeapUsedMb": 9.93,
+                    "domNodes": 2717
+                },
+                "open-create": {
+                    "ms": 265.21,
+                    "serverMs": 178.37,
+                    "phpPeakMb": 2.57,
+                    "jsHeapUsedMb": 10.88,
+                    "domNodes": 4076
+                },
+                "save-create": {
+                    "ms": 2490.97,
+                    "serverMs": 1492.6,
+                    "phpPeakMb": 159.95,
+                    "jsHeapUsedMb": 10.01,
+                    "domNodes": 2008
+                },
+                "logout": {
+                    "ms": 231.75,
+                    "serverMs": 260.49,
+                    "phpPeakMb": 1.05,
+                    "jsHeapUsedMb": 11.76,
+                    "domNodes": 4491
+                }
+            },
+            "ref": "sarticles@1.2.1",
+            "repeats": {
+                "n": 1,
+                "metrics": {
+                    "totalWallMs": {
+                        "median": 21011,
+                        "min": 21011,
+                        "max": 21011,
+                        "cv": null
+                    },
+                    "login.ms": {
+                        "median": 2038.96,
+                        "min": 2038.96,
+                        "max": 2038.96,
+                        "cv": null
+                    },
+                    "login.serverMs": {
+                        "median": 197.11,
+                        "min": 197.11,
+                        "max": 197.11,
+                        "cv": null
+                    },
+                    "open-edit.ms": {
+                        "median": 173.49,
+                        "min": 173.49,
+                        "max": 173.49,
+                        "cv": null
+                    },
+                    "open-edit.serverMs": {
+                        "median": 81.66,
+                        "min": 81.66,
+                        "max": 81.66,
+                        "cv": null
+                    },
+                    "save-edit.ms": {
+                        "median": 674.17,
+                        "min": 674.17,
+                        "max": 674.17,
+                        "cv": null
+                    },
+                    "save-edit.serverMs": {
+                        "median": 369.24,
+                        "min": 369.24,
+                        "max": 369.24,
+                        "cv": null
+                    },
+                    "open-create.ms": {
+                        "median": 265.21,
+                        "min": 265.21,
+                        "max": 265.21,
+                        "cv": null
+                    },
+                    "open-create.serverMs": {
+                        "median": 178.37,
+                        "min": 178.37,
+                        "max": 178.37,
+                        "cv": null
+                    },
+                    "save-create.ms": {
+                        "median": 2490.97,
+                        "min": 2490.97,
+                        "max": 2490.97,
+                        "cv": null
+                    },
+                    "save-create.serverMs": {
+                        "median": 1492.6,
+                        "min": 1492.6,
+                        "max": 1492.6,
+                        "cv": null
+                    },
+                    "logout.ms": {
+                        "median": 231.75,
+                        "min": 231.75,
+                        "max": 231.75,
+                        "cv": null
+                    },
+                    "logout.serverMs": {
+                        "median": 260.49,
+                        "min": 260.49,
+                        "max": 260.49,
+                        "cv": null
+                    },
+                    "containerPeakMb": {
+                        "median": 136.6,
+                        "min": 136.6,
+                        "max": 136.6,
+                        "cv": null
+                    },
+                    "containerFootprintMb": null
+                }
+            },
+            "series": {
+                "steps": [
+                    {
+                        "index": 1,
+                        "action": "login",
+                        "label": "round 1",
+                        "ms": 2038.96,
+                        "serverMs": 197.11,
+                        "phpPeakMb": 2.68,
+                        "jsHeapUsedMb": 17.6,
+                        "domNodes": 31010
+                    },
+                    {
+                        "index": 2,
+                        "action": "open-edit",
+                        "label": "page 100001",
+                        "ms": 173.49,
+                        "serverMs": 79.47,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 19.49,
+                        "domNodes": 31706
+                    },
+                    {
+                        "index": 3,
+                        "action": "save-edit",
+                        "label": "page 100001",
+                        "ms": 717.03,
+                        "serverMs": 383.89,
+                        "phpPeakMb": 21.38,
+                        "jsHeapUsedMb": 9.61,
+                        "domNodes": 4125
+                    },
+                    {
+                        "index": 4,
+                        "action": "open-edit",
+                        "label": "page 100002",
+                        "ms": 163.94,
+                        "serverMs": 81.4,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 11.68,
+                        "domNodes": 4760
+                    },
+                    {
+                        "index": 5,
+                        "action": "save-edit",
+                        "label": "page 100002",
+                        "ms": 674.17,
+                        "serverMs": 370.3,
+                        "phpPeakMb": 21.38,
+                        "jsHeapUsedMb": 12.14,
+                        "domNodes": 4842
+                    },
+                    {
+                        "index": 6,
+                        "action": "open-edit",
+                        "label": "page 100003",
+                        "ms": 175.15,
+                        "serverMs": 84.54,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 13.09,
+                        "domNodes": 5477
+                    },
+                    {
+                        "index": 7,
+                        "action": "save-edit",
+                        "label": "page 100003",
+                        "ms": 682.28,
+                        "serverMs": 352.28,
+                        "phpPeakMb": 21.38,
+                        "jsHeapUsedMb": 8.9,
+                        "domNodes": 2000
+                    },
+                    {
+                        "index": 8,
+                        "action": "open-edit",
+                        "label": "page 100004",
+                        "ms": 158.8,
+                        "serverMs": 81.66,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 10.96,
+                        "domNodes": 2635
+                    },
+                    {
+                        "index": 9,
+                        "action": "save-edit",
+                        "label": "page 100004",
+                        "ms": 672.22,
+                        "serverMs": 369.24,
+                        "phpPeakMb": 21.38,
+                        "jsHeapUsedMb": 11.5,
+                        "domNodes": 2717
+                    },
+                    {
+                        "index": 10,
+                        "action": "open-edit",
+                        "label": "page 100005",
+                        "ms": 180.32,
+                        "serverMs": 90.01,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 9.08,
+                        "domNodes": 1928
+                    },
+                    {
+                        "index": 11,
+                        "action": "save-edit",
+                        "label": "page 100005",
+                        "ms": 663.98,
+                        "serverMs": 364.72,
+                        "phpPeakMb": 21.38,
+                        "jsHeapUsedMb": 9.93,
+                        "domNodes": 2010
+                    },
+                    {
+                        "index": 12,
+                        "action": "open-create",
+                        "label": "page 1",
+                        "ms": 349.12,
+                        "serverMs": 206.9,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 11.12,
+                        "domNodes": 4085
+                    },
+                    {
+                        "index": 13,
+                        "action": "save-create",
+                        "label": "page 1",
+                        "ms": 3032.04,
+                        "serverMs": 2097.35,
+                        "phpPeakMb": 159.95,
+                        "jsHeapUsedMb": 9.06,
+                        "domNodes": 2002
+                    },
+                    {
+                        "index": 14,
+                        "action": "open-create",
+                        "label": "page 2",
+                        "ms": 265.21,
+                        "serverMs": 177.69,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 10.85,
+                        "domNodes": 4076
+                    },
+                    {
+                        "index": 15,
+                        "action": "save-create",
+                        "label": "page 2",
+                        "ms": 2490.07,
+                        "serverMs": 1417.76,
+                        "phpPeakMb": 159.95,
+                        "jsHeapUsedMb": 11.41,
+                        "domNodes": 4344
+                    },
+                    {
+                        "index": 16,
+                        "action": "open-create",
+                        "label": "page 3",
+                        "ms": 261.4,
+                        "serverMs": 178.37,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 9.29,
+                        "domNodes": 3170
+                    },
+                    {
+                        "index": 17,
+                        "action": "save-create",
+                        "label": "page 3",
+                        "ms": 2583.52,
+                        "serverMs": 1637.78,
+                        "phpPeakMb": 159.95,
+                        "jsHeapUsedMb": 10.01,
+                        "domNodes": 2008
+                    },
+                    {
+                        "index": 18,
+                        "action": "open-create",
+                        "label": "page 4",
+                        "ms": 296.33,
+                        "serverMs": 211.53,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 10.88,
+                        "domNodes": 4079
+                    },
+                    {
+                        "index": 19,
+                        "action": "save-create",
+                        "label": "page 4",
+                        "ms": 2460.96,
+                        "serverMs": 1481.31,
+                        "phpPeakMb": 159.96,
+                        "jsHeapUsedMb": 9.03,
+                        "domNodes": 1941
+                    },
+                    {
+                        "index": 20,
+                        "action": "open-create",
+                        "label": "page 5",
+                        "ms": 249.19,
+                        "serverMs": 168.95,
+                        "phpPeakMb": 2.57,
+                        "jsHeapUsedMb": 10.91,
+                        "domNodes": 4012
+                    },
+                    {
+                        "index": 21,
+                        "action": "save-create",
+                        "label": "page 5",
+                        "ms": 2490.97,
+                        "serverMs": 1492.6,
+                        "phpPeakMb": 159.96,
+                        "jsHeapUsedMb": 11.49,
+                        "domNodes": 4344
+                    },
+                    {
+                        "index": 22,
+                        "action": "logout",
+                        "label": "round 1",
+                        "ms": 231.75,
+                        "serverMs": 260.49,
+                        "phpPeakMb": 1.05,
+                        "jsHeapUsedMb": 11.76,
+                        "domNodes": 4491
+                    }
+                ],
+                "phpPeak": {
+                    "points": [
+                        {
+                            "t": 0.27,
+                            "requests": 1,
+                            "medianMb": 1.04,
+                            "maxMb": 1.04
+                        },
+                        {
+                            "t": 1.33,
+                            "requests": 4,
+                            "medianMb": 1.64,
+                            "maxMb": 2.68
+                        },
+                        {
+                            "t": 1.86,
+                            "requests": 5,
+                            "medianMb": 1.96,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 2.39,
+                            "requests": 4,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 2.92,
+                            "requests": 5,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 3.45,
+                            "requests": 1,
+                            "medianMb": 1.08,
+                            "maxMb": 1.08
+                        },
+                        {
+                            "t": 3.98,
+                            "requests": 6,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 4.51,
+                            "requests": 2,
+                            "medianMb": 21.38,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 5.05,
+                            "requests": 4,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 5.58,
+                            "requests": 5,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 6.11,
+                            "requests": 1,
+                            "medianMb": 1.08,
+                            "maxMb": 1.08
+                        },
+                        {
+                            "t": 6.64,
+                            "requests": 5,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 7.17,
+                            "requests": 1,
+                            "medianMb": 1.08,
+                            "maxMb": 1.08
+                        },
+                        {
+                            "t": 8.23,
+                            "requests": 5,
+                            "medianMb": 2.57,
+                            "maxMb": 159.95
+                        },
+                        {
+                            "t": 8.76,
+                            "requests": 1,
+                            "medianMb": 1.6,
+                            "maxMb": 1.6
+                        },
+                        {
+                            "t": 9.3,
+                            "requests": 4,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 9.83,
+                            "requests": 4,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 10.36,
+                            "requests": 2,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 11.42,
+                            "requests": 5,
+                            "medianMb": 2.57,
+                            "maxMb": 159.95
+                        },
+                        {
+                            "t": 11.95,
+                            "requests": 5,
+                            "medianMb": 1.6,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 12.48,
+                            "requests": 2,
+                            "medianMb": 21.38,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 13.01,
+                            "requests": 4,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 14.08,
+                            "requests": 1,
+                            "medianMb": 159.95,
+                            "maxMb": 159.95
+                        },
+                        {
+                            "t": 14.61,
+                            "requests": 8,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 15.14,
+                            "requests": 1,
+                            "medianMb": 1.08,
+                            "maxMb": 1.08
+                        },
+                        {
+                            "t": 15.67,
+                            "requests": 6,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 17.26,
+                            "requests": 8,
+                            "medianMb": 2.57,
+                            "maxMb": 159.96
+                        },
+                        {
+                            "t": 17.79,
+                            "requests": 2,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 18.33,
+                            "requests": 5,
+                            "medianMb": 2.57,
+                            "maxMb": 21.38
+                        },
+                        {
+                            "t": 18.86,
+                            "requests": 1,
+                            "medianMb": 1.08,
+                            "maxMb": 1.08
+                        },
+                        {
+                            "t": 19.92,
+                            "requests": 6,
+                            "medianMb": 2.57,
+                            "maxMb": 159.96
+                        },
+                        {
+                            "t": 20.45,
+                            "requests": 4,
+                            "medianMb": 2.57,
+                            "maxMb": 2.57
+                        },
+                        {
+                            "t": 20.98,
+                            "requests": 5,
+                            "medianMb": 1.05,
+                            "maxMb": 21.38
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": 29.2863,
+                        "firstQuarterMb": 1.66,
+                        "lastQuarterMb": 1.83,
+                        "growth": 0.1021
+                    }
+                }
+            }
+        },
+        {
+            "stack": "evo-sarticles",
+            "version": "3.5.8 \u00b7 sArticles 2.x-dev",
+            "jit": "off",
+            "components": [
+                {
+                    "name": "PHP",
+                    "version": "8.4.25",
+                    "source": "https://github.com/php/php-src"
+                },
+                {
+                    "name": "Evolution CMS",
+                    "version": "3.5.8 (tag 3.5.8@374e110, 2026-09-10)",
+                    "source": "https://github.com/evolution-cms/evolution"
+                },
+                {
+                    "name": "evolution-cms-extras/tinymce5",
+                    "version": "v5.7.2"
+                },
+                {
+                    "name": "evolution-cms/evo-ui",
+                    "version": "v1.2.0"
+                },
+                {
+                    "name": "illuminate/database",
+                    "version": "v12.69.2",
+                    "source": "https://github.com/illuminate/database"
+                },
+                {
+                    "name": "livewire/livewire",
+                    "version": "v4.4.6"
+                },
+                {
+                    "name": "seiger/sarticles",
+                    "version": "2.x-dev"
+                }
+            ],
+            "rounds": 1,
+            "pages": 5,
+            "recordedAt": "2026-09-23T00:21:53.836Z",
+            "file": "admin-evo-sarticles~sarticles@2.x-jit-off-2026-09-23T00-21-53-774Z.json",
+            "totalWallMs": 474042,
+            "containerPeakMb": 486.2,
+            "containerFootprintMb": null,
+            "actions": {
+                "login": {
+                    "ms": 3357.38,
+                    "serverMs": 302.61,
+                    "phpPeakMb": 66.6,
+                    "jsHeapUsedMb": 216.91,
+                    "domNodes": 717774
+                },
+                "open-edit": {
+                    "ms": 9453.07,
+                    "serverMs": 1636.06,
+                    "phpPeakMb": 66.62,
+                    "jsHeapUsedMb": 413.6,
+                    "domNodes": 1835403
+                },
+                "save-edit": {
+                    "ms": 23018.6,
+                    "serverMs": 0,
+                    "phpPeakMb": 160.46,
+                    "jsHeapUsedMb": 494.97,
+                    "domNodes": 1829170
+                },
+                "open-create": {
+                    "ms": 14587.11,
+                    "serverMs": 2308.34,
+                    "phpPeakMb": 66.62,
+                    "jsHeapUsedMb": 1092.26,
+                    "domNodes": 4092016
+                },
+                "save-create": {
+                    "ms": 37117.54,
+                    "serverMs": 0,
+                    "phpPeakMb": 160.46,
+                    "jsHeapUsedMb": 1127.92,
+                    "domNodes": 4177215
+                },
+                "logout": {
+                    "ms": 2579.81,
+                    "serverMs": 1239.16,
+                    "phpPeakMb": 1.39,
+                    "jsHeapUsedMb": 1580.63,
+                    "domNodes": 5773965
+                }
+            },
+            "ref": "sarticles@2.x",
+            "repeats": {
+                "n": 2,
+                "metrics": {
+                    "totalWallMs": {
+                        "median": 262915.5,
+                        "min": 51789,
+                        "max": 474042,
+                        "cv": 1.1356
+                    },
+                    "login.ms": {
+                        "median": 3266.315,
+                        "min": 3175.25,
+                        "max": 3357.38,
+                        "cv": 0.0394
+                    },
+                    "login.serverMs": {
+                        "median": 271.24,
+                        "min": 239.87,
+                        "max": 302.61,
+                        "cv": 0.1636
+                    },
+                    "open-edit.ms": {
+                        "median": 7079.68,
+                        "min": 4706.29,
+                        "max": 9453.07,
+                        "cv": 0.4741
+                    },
+                    "open-edit.serverMs": {
+                        "median": 1406.61,
+                        "min": 1177.16,
+                        "max": 1636.06,
+                        "cv": 0.2307
+                    },
+                    "save-edit.ms": {
+                        "median": 20616.275,
+                        "min": 18213.95,
+                        "max": 23018.6,
+                        "cv": 0.1648
+                    },
+                    "save-edit.serverMs": {
+                        "median": 0,
+                        "min": 0,
+                        "max": 0,
+                        "cv": null
+                    },
+                    "open-create.ms": {
+                        "median": 9726.065,
+                        "min": 4865.02,
+                        "max": 14587.11,
+                        "cv": 0.7068
+                    },
+                    "open-create.serverMs": {
+                        "median": 1774.52,
+                        "min": 1240.7,
+                        "max": 2308.34,
+                        "cv": 0.4254
+                    },
+                    "save-create.ms": {
+                        "median": 28832.945,
+                        "min": 20548.35,
+                        "max": 37117.54,
+                        "cv": 0.4063
+                    },
+                    "save-create.serverMs": {
+                        "median": 0,
+                        "min": 0,
+                        "max": 0,
+                        "cv": null
+                    },
+                    "logout.ms": {
+                        "median": 1429.735,
+                        "min": 279.66,
+                        "max": 2579.81,
+                        "cv": 1.1376
+                    },
+                    "logout.serverMs": {
+                        "median": 683.68,
+                        "min": 128.2,
+                        "max": 1239.16,
+                        "cv": 1.149
+                    },
+                    "containerPeakMb": {
+                        "median": 444.55,
+                        "min": 402.9,
+                        "max": 486.2,
+                        "cv": 0.1325
+                    },
+                    "containerFootprintMb": null
+                }
+            },
+            "series": {
+                "steps": [
+                    {
+                        "index": 1,
+                        "action": "login",
+                        "label": "round 1",
+                        "ms": 3357.38,
+                        "serverMs": 302.61,
+                        "phpPeakMb": 66.6,
+                        "jsHeapUsedMb": 216.91,
+                        "domNodes": 717774
+                    },
+                    {
+                        "index": 2,
+                        "action": "open-edit",
+                        "label": "page 100001",
+                        "ms": 4840.92,
+                        "serverMs": 1168.07,
+                        "phpPeakMb": 66.6,
+                        "jsHeapUsedMb": 309.55,
+                        "domNodes": 772516
+                    },
+                    {
+                        "index": 3,
+                        "action": "save-edit",
+                        "label": "page 100001",
+                        "ms": 20748.65,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.46,
+                        "jsHeapUsedMb": 392.87,
+                        "domNodes": 1026366
+                    },
+                    {
+                        "index": 4,
+                        "action": "open-edit",
+                        "label": "page 100002",
+                        "ms": 9751.23,
+                        "serverMs": 1685.46,
+                        "phpPeakMb": 66.6,
+                        "jsHeapUsedMb": 407.67,
+                        "domNodes": 1835403
+                    },
+                    {
+                        "index": 5,
+                        "action": "save-edit",
+                        "label": "page 100002",
+                        "ms": 23018.6,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.46,
+                        "jsHeapUsedMb": 267.11,
+                        "domNodes": 742969
+                    },
+                    {
+                        "index": 6,
+                        "action": "open-edit",
+                        "label": "page 100003",
+                        "ms": 16917.05,
+                        "serverMs": 8385.42,
+                        "phpPeakMb": 66.62,
+                        "jsHeapUsedMb": 413.6,
+                        "domNodes": 1575300
+                    },
+                    {
+                        "index": 7,
+                        "action": "save-edit",
+                        "label": "page 100003",
+                        "ms": 20007.22,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.46,
+                        "jsHeapUsedMb": 494.97,
+                        "domNodes": 1829170
+                    },
+                    {
+                        "index": 8,
+                        "action": "open-edit",
+                        "label": "page 100004",
+                        "ms": 9453.07,
+                        "serverMs": 1636.06,
+                        "phpPeakMb": 66.62,
+                        "jsHeapUsedMb": 553.41,
+                        "domNodes": 2069298
+                    },
+                    {
+                        "index": 9,
+                        "action": "save-edit",
+                        "label": "page 100004",
+                        "ms": 23481.35,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.46,
+                        "jsHeapUsedMb": 614.19,
+                        "domNodes": 2298843
+                    },
+                    {
+                        "index": 10,
+                        "action": "open-edit",
+                        "label": "page 100005",
+                        "ms": 6963.92,
+                        "serverMs": 1518.95,
+                        "phpPeakMb": 66.62,
+                        "jsHeapUsedMb": 842.53,
+                        "domNodes": 3149187
+                    },
+                    {
+                        "index": 11,
+                        "action": "save-edit",
+                        "label": "page 100005",
+                        "ms": 38948.24,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.46,
+                        "jsHeapUsedMb": 650.9,
+                        "domNodes": 2336352
+                    },
+                    {
+                        "index": 12,
+                        "action": "open-create",
+                        "label": "page 1",
+                        "ms": 10790.69,
+                        "serverMs": 3588.79,
+                        "phpPeakMb": 66.62,
+                        "jsHeapUsedMb": 770.49,
+                        "domNodes": 2616818
+                    },
+                    {
+                        "index": 13,
+                        "action": "save-create",
+                        "label": "page 1",
+                        "ms": 22974.86,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.46,
+                        "jsHeapUsedMb": 849.71,
+                        "domNodes": 2861802
+                    },
+                    {
+                        "index": 14,
+                        "action": "open-create",
+                        "label": "page 2",
+                        "ms": 6641.23,
+                        "serverMs": 1599.41,
+                        "phpPeakMb": 66.62,
+                        "jsHeapUsedMb": 1092.26,
+                        "domNodes": 3711859
+                    },
+                    {
+                        "index": 15,
+                        "action": "save-create",
+                        "label": "page 2",
+                        "ms": 64435.83,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.46,
+                        "jsHeapUsedMb": 950.92,
+                        "domNodes": 3518730
+                    },
+                    {
+                        "index": 16,
+                        "action": "open-create",
+                        "label": "page 3",
+                        "ms": 14587.11,
+                        "serverMs": 2067.54,
+                        "phpPeakMb": 66.6,
+                        "jsHeapUsedMb": 1069.38,
+                        "domNodes": 4092016
+                    },
+                    {
+                        "index": 17,
+                        "action": "save-create",
+                        "label": "page 3",
+                        "ms": 27036.96,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.46,
+                        "jsHeapUsedMb": 1127.92,
+                        "domNodes": 4177215
+                    },
+                    {
+                        "index": 18,
+                        "action": "open-create",
+                        "label": "page 4",
+                        "ms": 23157.98,
+                        "serverMs": 2308.34,
+                        "phpPeakMb": 66.62,
+                        "jsHeapUsedMb": 1205.97,
+                        "domNodes": 4599272
+                    },
+                    {
+                        "index": 19,
+                        "action": "save-create",
+                        "label": "page 4",
+                        "ms": 37117.54,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.46,
+                        "jsHeapUsedMb": 1281.26,
+                        "domNodes": 4646818
+                    },
+                    {
+                        "index": 20,
+                        "action": "open-create",
+                        "label": "page 5",
+                        "ms": 44718.73,
+                        "serverMs": 4866.41,
+                        "phpPeakMb": 66.62,
+                        "jsHeapUsedMb": 1377.2,
+                        "domNodes": 5197336
+                    },
+                    {
+                        "index": 21,
+                        "action": "save-create",
+                        "label": "page 5",
+                        "ms": 42513.98,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.47,
+                        "jsHeapUsedMb": 1452.17,
+                        "domNodes": 5355960
+                    },
+                    {
+                        "index": 22,
+                        "action": "logout",
+                        "label": "round 1",
+                        "ms": 2579.81,
+                        "serverMs": 1239.16,
+                        "phpPeakMb": 1.39,
+                        "jsHeapUsedMb": 1580.63,
+                        "domNodes": 5773965
+                    }
+                ],
+                "phpPeak": {
+                    "points": [
+                        {
+                            "t": 6.94,
+                            "requests": 16,
+                            "medianMb": 1.99,
+                            "maxMb": 66.6
+                        },
+                        {
+                            "t": 34.69,
+                            "requests": 7,
+                            "medianMb": 66.04,
+                            "maxMb": 160.46
+                        },
+                        {
+                            "t": 48.56,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 62.44,
+                            "requests": 1,
+                            "medianMb": 160.46,
+                            "maxMb": 160.46
+                        },
+                        {
+                            "t": 76.31,
+                            "requests": 1,
+                            "medianMb": 66.05,
+                            "maxMb": 66.05
+                        },
+                        {
+                            "t": 90.19,
+                            "requests": 6,
+                            "medianMb": 66.04,
+                            "maxMb": 66.62
+                        },
+                        {
+                            "t": 117.94,
+                            "requests": 7,
+                            "medianMb": 66.05,
+                            "maxMb": 160.46
+                        },
+                        {
+                            "t": 131.81,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 145.69,
+                            "requests": 1,
+                            "medianMb": 160.46,
+                            "maxMb": 160.46
+                        },
+                        {
+                            "t": 159.56,
+                            "requests": 6,
+                            "medianMb": 66.05,
+                            "maxMb": 66.62
+                        },
+                        {
+                            "t": 173.44,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 201.19,
+                            "requests": 1,
+                            "medianMb": 160.46,
+                            "maxMb": 160.46
+                        },
+                        {
+                            "t": 215.06,
+                            "requests": 6,
+                            "medianMb": 66.05,
+                            "maxMb": 66.62
+                        },
+                        {
+                            "t": 228.94,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 242.81,
+                            "requests": 3,
+                            "medianMb": 66.07,
+                            "maxMb": 160.46
+                        },
+                        {
+                            "t": 256.69,
+                            "requests": 5,
+                            "medianMb": 2.9,
+                            "maxMb": 66.62
+                        },
+                        {
+                            "t": 270.56,
+                            "requests": 1,
+                            "medianMb": 66.07,
+                            "maxMb": 66.07
+                        },
+                        {
+                            "t": 312.19,
+                            "requests": 1,
+                            "medianMb": 160.46,
+                            "maxMb": 160.46
+                        },
+                        {
+                            "t": 326.06,
+                            "requests": 2,
+                            "medianMb": 66.04,
+                            "maxMb": 66.04
+                        },
+                        {
+                            "t": 339.94,
+                            "requests": 5,
+                            "medianMb": 2.9,
+                            "maxMb": 66.6
+                        },
+                        {
+                            "t": 353.81,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 367.69,
+                            "requests": 2,
+                            "medianMb": 160.46,
+                            "maxMb": 160.46
+                        },
+                        {
+                            "t": 381.56,
+                            "requests": 5,
+                            "medianMb": 2.9,
+                            "maxMb": 66.62
+                        },
+                        {
+                            "t": 395.44,
+                            "requests": 1,
+                            "medianMb": 66.05,
+                            "maxMb": 66.05
+                        },
+                        {
+                            "t": 409.31,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 437.06,
+                            "requests": 2,
+                            "medianMb": 160.46,
+                            "maxMb": 160.46
+                        },
+                        {
+                            "t": 450.94,
+                            "requests": 4,
+                            "medianMb": 66.05,
+                            "maxMb": 66.62
+                        },
+                        {
+                            "t": 464.81,
+                            "requests": 2,
+                            "medianMb": 66.05,
+                            "maxMb": 66.05
+                        },
+                        {
+                            "t": 506.44,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 534.19,
+                            "requests": 2,
+                            "medianMb": 160.47,
+                            "maxMb": 160.47
+                        },
+                        {
+                            "t": 548.06,
+                            "requests": 3,
+                            "medianMb": 1.39,
+                            "maxMb": 66.05
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": 1.5185,
+                        "firstQuarterMb": 2.9,
+                        "lastQuarterMb": 66.05,
+                        "growth": 21.7754
+                    }
+                }
+            }
+        },
+        {
+            "stack": "evo-sarticles",
+            "version": "3.5.8 \u00b7 sArticles 2.x-dev",
+            "jit": "tracing",
+            "components": [
+                {
+                    "name": "PHP",
+                    "version": "8.4.25",
+                    "source": "https://github.com/php/php-src"
+                },
+                {
+                    "name": "Evolution CMS",
+                    "version": "3.5.8 (tag 3.5.8@374e110, 2026-09-10)",
+                    "source": "https://github.com/evolution-cms/evolution"
+                },
+                {
+                    "name": "evolution-cms-extras/tinymce5",
+                    "version": "v5.7.2"
+                },
+                {
+                    "name": "evolution-cms/evo-ui",
+                    "version": "v1.2.0"
+                },
+                {
+                    "name": "illuminate/database",
+                    "version": "v12.69.2",
+                    "source": "https://github.com/illuminate/database"
+                },
+                {
+                    "name": "livewire/livewire",
+                    "version": "v4.4.6"
+                },
+                {
+                    "name": "seiger/sarticles",
+                    "version": "2.x-dev"
+                }
+            ],
+            "rounds": 1,
+            "pages": 5,
+            "recordedAt": "2026-09-23T00:33:35.145Z",
+            "file": "admin-evo-sarticles~sarticles@2.x-jit-tracing-2026-09-23T00-33-35-115Z.json",
+            "totalWallMs": 446782,
+            "containerPeakMb": 410.6,
+            "containerFootprintMb": null,
+            "actions": {
+                "login": {
+                    "ms": 3050.94,
+                    "serverMs": 250.68,
+                    "phpPeakMb": 66.63,
+                    "jsHeapUsedMb": 208.13,
+                    "domNodes": 915066
+                },
+                "open-edit": {
+                    "ms": 6769.57,
+                    "serverMs": 1848.93,
+                    "phpPeakMb": 66.63,
+                    "jsHeapUsedMb": 536.03,
+                    "domNodes": 1857382
+                },
+                "save-edit": {
+                    "ms": 23138.71,
+                    "serverMs": 0,
+                    "phpPeakMb": 160.52,
+                    "jsHeapUsedMb": 619.16,
+                    "domNodes": 2111233
+                },
+                "open-create": {
+                    "ms": 12872.71,
+                    "serverMs": 3507.2,
+                    "phpPeakMb": 66.62,
+                    "jsHeapUsedMb": 1208.74,
+                    "domNodes": 4369295
+                },
+                "save-create": {
+                    "ms": 48870.67,
+                    "serverMs": 0,
+                    "phpPeakMb": 160.53,
+                    "jsHeapUsedMb": 1077.16,
+                    "domNodes": 3848786
+                },
+                "logout": {
+                    "ms": 1282.61,
+                    "serverMs": 904.05,
+                    "phpPeakMb": 1.46,
+                    "jsHeapUsedMb": 1480.08,
+                    "domNodes": 5157961
+                }
+            },
+            "ref": "sarticles@2.x",
+            "repeats": {
+                "n": 1,
+                "metrics": {
+                    "totalWallMs": {
+                        "median": 446782,
+                        "min": 446782,
+                        "max": 446782,
+                        "cv": null
+                    },
+                    "login.ms": {
+                        "median": 3050.94,
+                        "min": 3050.94,
+                        "max": 3050.94,
+                        "cv": null
+                    },
+                    "login.serverMs": {
+                        "median": 250.68,
+                        "min": 250.68,
+                        "max": 250.68,
+                        "cv": null
+                    },
+                    "open-edit.ms": {
+                        "median": 6769.57,
+                        "min": 6769.57,
+                        "max": 6769.57,
+                        "cv": null
+                    },
+                    "open-edit.serverMs": {
+                        "median": 1848.93,
+                        "min": 1848.93,
+                        "max": 1848.93,
+                        "cv": null
+                    },
+                    "save-edit.ms": {
+                        "median": 23138.71,
+                        "min": 23138.71,
+                        "max": 23138.71,
+                        "cv": null
+                    },
+                    "save-edit.serverMs": {
+                        "median": 0,
+                        "min": 0,
+                        "max": 0,
+                        "cv": null
+                    },
+                    "open-create.ms": {
+                        "median": 12872.71,
+                        "min": 12872.71,
+                        "max": 12872.71,
+                        "cv": null
+                    },
+                    "open-create.serverMs": {
+                        "median": 3507.2,
+                        "min": 3507.2,
+                        "max": 3507.2,
+                        "cv": null
+                    },
+                    "save-create.ms": {
+                        "median": 48870.67,
+                        "min": 48870.67,
+                        "max": 48870.67,
+                        "cv": null
+                    },
+                    "save-create.serverMs": {
+                        "median": 0,
+                        "min": 0,
+                        "max": 0,
+                        "cv": null
+                    },
+                    "logout.ms": {
+                        "median": 1282.61,
+                        "min": 1282.61,
+                        "max": 1282.61,
+                        "cv": null
+                    },
+                    "logout.serverMs": {
+                        "median": 904.05,
+                        "min": 904.05,
+                        "max": 904.05,
+                        "cv": null
+                    },
+                    "containerPeakMb": {
+                        "median": 410.6,
+                        "min": 410.6,
+                        "max": 410.6,
+                        "cv": null
+                    },
+                    "containerFootprintMb": null
+                }
+            },
+            "series": {
+                "steps": [
+                    {
+                        "index": 1,
+                        "action": "login",
+                        "label": "round 1",
+                        "ms": 3050.94,
+                        "serverMs": 250.68,
+                        "phpPeakMb": 66.63,
+                        "jsHeapUsedMb": 208.13,
+                        "domNodes": 915066
+                    },
+                    {
+                        "index": 2,
+                        "action": "open-edit",
+                        "label": "page 100001",
+                        "ms": 4879.04,
+                        "serverMs": 1073.34,
+                        "phpPeakMb": 66.61,
+                        "jsHeapUsedMb": 281.05,
+                        "domNodes": 1156844
+                    },
+                    {
+                        "index": 3,
+                        "action": "save-edit",
+                        "label": "page 100001",
+                        "ms": 17475.81,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.52,
+                        "jsHeapUsedMb": 362.66,
+                        "domNodes": 1410694
+                    },
+                    {
+                        "index": 4,
+                        "action": "open-edit",
+                        "label": "page 100002",
+                        "ms": 6769.57,
+                        "serverMs": 1848.93,
+                        "phpPeakMb": 66.61,
+                        "jsHeapUsedMb": 464.52,
+                        "domNodes": 1856689
+                    },
+                    {
+                        "index": 5,
+                        "action": "save-edit",
+                        "label": "page 100002",
+                        "ms": 18347.82,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.52,
+                        "jsHeapUsedMb": 522.06,
+                        "domNodes": 2110540
+                    },
+                    {
+                        "index": 6,
+                        "action": "open-edit",
+                        "label": "page 100003",
+                        "ms": 5934.2,
+                        "serverMs": 1253.37,
+                        "phpPeakMb": 66.63,
+                        "jsHeapUsedMb": 748.55,
+                        "domNodes": 2960886
+                    },
+                    {
+                        "index": 7,
+                        "action": "save-edit",
+                        "label": "page 100003",
+                        "ms": 23138.71,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.52,
+                        "jsHeapUsedMb": 830.46,
+                        "domNodes": 3214737
+                    },
+                    {
+                        "index": 8,
+                        "action": "open-edit",
+                        "label": "page 100004",
+                        "ms": 13706.48,
+                        "serverMs": 6324.34,
+                        "phpPeakMb": 66.63,
+                        "jsHeapUsedMb": 536.03,
+                        "domNodes": 1857382
+                    },
+                    {
+                        "index": 9,
+                        "action": "save-edit",
+                        "label": "page 100004",
+                        "ms": 24389.87,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.52,
+                        "jsHeapUsedMb": 619.16,
+                        "domNodes": 2111233
+                    },
+                    {
+                        "index": 10,
+                        "action": "open-edit",
+                        "label": "page 100005",
+                        "ms": 13010.87,
+                        "serverMs": 3466.39,
+                        "phpPeakMb": 66.63,
+                        "jsHeapUsedMb": 670.33,
+                        "domNodes": 2878452
+                    },
+                    {
+                        "index": 11,
+                        "action": "save-edit",
+                        "label": "page 100005",
+                        "ms": 26132.45,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.52,
+                        "jsHeapUsedMb": 752.46,
+                        "domNodes": 2581004
+                    },
+                    {
+                        "index": 12,
+                        "action": "open-create",
+                        "label": "page 1",
+                        "ms": 16409.79,
+                        "serverMs": 4091.51,
+                        "phpPeakMb": 66.63,
+                        "jsHeapUsedMb": 844.89,
+                        "domNodes": 3416139
+                    },
+                    {
+                        "index": 13,
+                        "action": "save-create",
+                        "label": "page 1",
+                        "ms": 29287.33,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.52,
+                        "jsHeapUsedMb": 919.83,
+                        "domNodes": 3491301
+                    },
+                    {
+                        "index": 14,
+                        "action": "open-create",
+                        "label": "page 2",
+                        "ms": 12872.71,
+                        "serverMs": 1914.4,
+                        "phpPeakMb": 66.62,
+                        "jsHeapUsedMb": 900.44,
+                        "domNodes": 3824996
+                    },
+                    {
+                        "index": 15,
+                        "action": "save-create",
+                        "label": "page 2",
+                        "ms": 28369.31,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.53,
+                        "jsHeapUsedMb": 1003.37,
+                        "domNodes": 3519180
+                    },
+                    {
+                        "index": 16,
+                        "action": "open-create",
+                        "label": "page 3",
+                        "ms": 11516.5,
+                        "serverMs": 2811.74,
+                        "phpPeakMb": 66.61,
+                        "jsHeapUsedMb": 1220.36,
+                        "domNodes": 4369295
+                    },
+                    {
+                        "index": 17,
+                        "action": "save-create",
+                        "label": "page 3",
+                        "ms": 48870.67,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.53,
+                        "jsHeapUsedMb": 1077.16,
+                        "domNodes": 3848786
+                    },
+                    {
+                        "index": 18,
+                        "action": "open-create",
+                        "label": "page 4",
+                        "ms": 12233.18,
+                        "serverMs": 3507.2,
+                        "phpPeakMb": 66.62,
+                        "jsHeapUsedMb": 1208.74,
+                        "domNodes": 4397117
+                    },
+                    {
+                        "index": 19,
+                        "action": "save-create",
+                        "label": "page 4",
+                        "ms": 55782.75,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.53,
+                        "jsHeapUsedMb": 1311.12,
+                        "domNodes": 4651040
+                    },
+                    {
+                        "index": 20,
+                        "action": "open-create",
+                        "label": "page 5",
+                        "ms": 20243.66,
+                        "serverMs": 6906.13,
+                        "phpPeakMb": 66.62,
+                        "jsHeapUsedMb": 1340.61,
+                        "domNodes": 5054076
+                    },
+                    {
+                        "index": 21,
+                        "action": "save-create",
+                        "label": "page 5",
+                        "ms": 53078.14,
+                        "serverMs": 0,
+                        "phpPeakMb": 160.53,
+                        "jsHeapUsedMb": 1352.83,
+                        "domNodes": 4739956
+                    },
+                    {
+                        "index": 22,
+                        "action": "logout",
+                        "label": "round 1",
+                        "ms": 1282.61,
+                        "serverMs": 904.05,
+                        "phpPeakMb": 1.46,
+                        "jsHeapUsedMb": 1480.08,
+                        "domNodes": 5157961
+                    }
+                ],
+                "phpPeak": {
+                    "points": [
+                        {
+                            "t": 7.09,
+                            "requests": 16,
+                            "medianMb": 2.06,
+                            "maxMb": 66.63
+                        },
+                        {
+                            "t": 21.26,
+                            "requests": 2,
+                            "medianMb": 160.52,
+                            "maxMb": 160.52
+                        },
+                        {
+                            "t": 35.43,
+                            "requests": 6,
+                            "medianMb": 66.04,
+                            "maxMb": 66.61
+                        },
+                        {
+                            "t": 49.6,
+                            "requests": 1,
+                            "medianMb": 160.52,
+                            "maxMb": 160.52
+                        },
+                        {
+                            "t": 63.77,
+                            "requests": 7,
+                            "medianMb": 66.06,
+                            "maxMb": 66.63
+                        },
+                        {
+                            "t": 92.11,
+                            "requests": 2,
+                            "medianMb": 160.52,
+                            "maxMb": 160.52
+                        },
+                        {
+                            "t": 120.45,
+                            "requests": 5,
+                            "medianMb": 2.9,
+                            "maxMb": 66.63
+                        },
+                        {
+                            "t": 134.62,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 148.79,
+                            "requests": 1,
+                            "medianMb": 160.52,
+                            "maxMb": 160.52
+                        },
+                        {
+                            "t": 162.96,
+                            "requests": 6,
+                            "medianMb": 66.06,
+                            "maxMb": 66.63
+                        },
+                        {
+                            "t": 177.13,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 205.47,
+                            "requests": 2,
+                            "medianMb": 160.52,
+                            "maxMb": 160.52
+                        },
+                        {
+                            "t": 219.64,
+                            "requests": 5,
+                            "medianMb": 2.9,
+                            "maxMb": 66.63
+                        },
+                        {
+                            "t": 233.81,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 247.98,
+                            "requests": 2,
+                            "medianMb": 160.52,
+                            "maxMb": 160.52
+                        },
+                        {
+                            "t": 262.15,
+                            "requests": 6,
+                            "medianMb": 66.07,
+                            "maxMb": 66.62
+                        },
+                        {
+                            "t": 276.32,
+                            "requests": 1,
+                            "medianMb": 66.08,
+                            "maxMb": 66.08
+                        },
+                        {
+                            "t": 304.66,
+                            "requests": 3,
+                            "medianMb": 66.04,
+                            "maxMb": 160.53
+                        },
+                        {
+                            "t": 318.83,
+                            "requests": 5,
+                            "medianMb": 2.9,
+                            "maxMb": 66.61
+                        },
+                        {
+                            "t": 333,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 361.34,
+                            "requests": 2,
+                            "medianMb": 160.53,
+                            "maxMb": 160.53
+                        },
+                        {
+                            "t": 375.51,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 389.68,
+                            "requests": 5,
+                            "medianMb": 2.9,
+                            "maxMb": 66.62
+                        },
+                        {
+                            "t": 403.85,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 432.19,
+                            "requests": 1,
+                            "medianMb": 160.53,
+                            "maxMb": 160.53
+                        },
+                        {
+                            "t": 446.36,
+                            "requests": 1,
+                            "medianMb": 2.9,
+                            "maxMb": 2.9
+                        },
+                        {
+                            "t": 460.53,
+                            "requests": 1,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 488.87,
+                            "requests": 4,
+                            "medianMb": 2.9,
+                            "maxMb": 66.62
+                        },
+                        {
+                            "t": 503.04,
+                            "requests": 2,
+                            "medianMb": 66.06,
+                            "maxMb": 66.06
+                        },
+                        {
+                            "t": 545.55,
+                            "requests": 2,
+                            "medianMb": 160.53,
+                            "maxMb": 160.53
+                        },
+                        {
+                            "t": 559.72,
+                            "requests": 3,
+                            "medianMb": 1.46,
+                            "maxMb": 66.06
+                        }
+                    ],
+                    "trend": {
+                        "slopeMbPerMin": 1.266,
+                        "firstQuarterMb": 2.9,
+                        "lastQuarterMb": 66.05,
+                        "growth": 21.7503
                     }
                 }
             }

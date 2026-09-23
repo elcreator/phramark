@@ -174,7 +174,7 @@ expect(str_contains($setup, 'tar -C "$1" --null -T "$2" -cf - | tar -C "$3" -xf 
 // EVO_NO_SESSION=1 switches the Evolution front end to NO_SESSION on every
 // setup run (installed sites included), and a result records it.
 expect(str_contains(repositoryFile('benchmark/compose.yaml'), 'EVO_NO_SESSION: ${EVO_NO_SESSION:-}'), true, 'The setup service must take EVO_NO_SESSION from the environment.');
-expect(preg_match('/writeSettings\(.*\);\s+writeDefines\(\$site\);/', $setup), 1, 'The defines are applied to every installed site on every setup run, next to the settings.');
+expect(preg_match('/writeSettings\(.*\);(?:[^{}]|\{[^{}]*\})*?writeDefines\(\$site\);/s', $setup), 1, 'The defines are applied to every installed site on every setup run, in the same step as the settings.');
 expect(str_contains(repositoryFile('benchmark/scripts/versions.php'), "\$versions['front-end session'] = 'off (NO_SESSION)'"), true, 'versions.php must record a NO_SESSION site in the result components.');
 if (preg_match('/^function writeDefines\(string \$site\): void
 \{.*?^\}/ms', str_replace("
@@ -206,7 +206,14 @@ foreach (['benchmark/compose.yaml' => 'EVO_VERSION: ${EVO_VERSION:-latest}', 'be
 }
 
 // Version specs: which parts can be pinned, how a ref resolves, and the plan.
-expect(array_keys(VersionSpec::products()), ['php', 'evo', 'latte', 'phalcon', 'drupal', 'typo3', 'winter', 'modx', 'wordpress', 'gantry', 'classic-editor'], 'The versionable parts of the stacks.');
+expect(array_keys(VersionSpec::products()), ['php', 'evo', 'latte', 'phalcon', 'sarticles', 'tinymce', 'drupal', 'typo3', 'winter', 'modx', 'wordpress', 'gantry', 'classic-editor'], 'The versionable parts of the stacks.');
+// evo-sArticles: the module is compared release against branch, so both must
+// resolve, and the stack carries the editor plugin 1.x cannot render without.
+expect(VersionSpec::products()['sarticles']['stacks'], ['evo-sarticles'], 'sArticles belongs to its own stack.');
+expect(VersionSpec::products()['sarticles']['package'], 'seiger/sarticles', 'sArticles is installed from Packagist.');
+expect(VersionSpec::products()['tinymce']['stacks'], ['evo-sarticles'], 'The rich-text editor is part of the sArticles stack: 1.x dies on the editor without a plugin answering OnRichTextEditorInit.');
+expect(VersionSpec::resolveComposer('2.x', ['v1.2.1', 'v1.2.0', '2.x-dev', 'dev-1.x']), '2.x-dev', 'A branch of the module resolves to its dev version.');
+expect(VersionSpec::resolveComposer('1.2.1', ['v1.2.1', 'v1.2.0', '2.x-dev']), 'v1.2.1', 'A release of the module resolves to its tag.');
 expect(VersionSpec::product('alattex'), 'latte', 'aLatteX is addressed as "latte" (or "alattex").');
 expect(VersionSpec::product('Evolution'), 'evo', 'Product names are case-insensitive aliases.');
 expect(VersionSpec::product('illuminate'), null, 'Not every part has a version to choose: Illuminate comes with Evolution.');

@@ -16,7 +16,8 @@ stack_for_port() {
     8086) stack=winter; php=phramark-php-winter-1; nginx=phramark-nginx-winter-1; target=nginx-winter ;;
     8087) stack=modx; php=phramark-php-modx-1; nginx=phramark-nginx-modx-1; target=nginx-modx ;;
     8088) stack=wordpress-gantry; php=phramark-php-wordpress-gantry-1; nginx=phramark-nginx-wordpress-gantry-1; target=nginx-wordpress-gantry ;;
-    *) echo "PORT must be 8080 through 8088" >&2; exit 2 ;;
+    8089) stack=evo-sarticles; php=phramark-php-sarticles-1; nginx=phramark-nginx-sarticles-1; target=nginx-sarticles ;;
+    *) echo "PORT must be 8080 through 8089" >&2; exit 2 ;;
   esac
 }
 
@@ -32,7 +33,8 @@ port_for_stack() {
     winter) echo 8086 ;;
     modx) echo 8087 ;;
     wordpress-gantry) echo 8088 ;;
-    *) echo "unknown stack '$1' (evo-parser, evo-latte, evo-latte-parser, evo-phalcon, drupal, typo3, winter, modx, wordpress-gantry; evo-manticore is a job without a port)" >&2; return 2 ;;
+    evo-sarticles) echo 8089 ;;
+    *) echo "unknown stack '$1' (evo-parser, evo-latte, evo-latte-parser, evo-phalcon, drupal, typo3, winter, modx, wordpress-gantry, evo-sarticles; evo-manticore is a job without a port)" >&2; return 2 ;;
   esac
 }
 

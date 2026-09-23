@@ -57,6 +57,7 @@ function container(string $stack): string
         'evo-latte' => 'latte',
         'evo-latte-parser' => 'latte-parser',
         'evo-phalcon' => 'phalcon',
+        'evo-sarticles' => 'sarticles',
         default => $stack,
     } . '-1';
 }
@@ -172,6 +173,7 @@ function stackComponents(string $stack): ?array
         'evo-parser' => $evolution($stack, ['illuminate/database']),
         'evo-latte', 'evo-latte-parser' => $evolution($stack, ['elcreator/alattex', 'latte/latte', 'illuminate/database']),
         'evo-phalcon' => $evolution($stack, ['elcreator/alattex', 'elcreator/aphalcon', 'latte/latte', 'illuminate/database']),
+        'evo-sarticles' => $evolution($stack, ['seiger/sarticles', 'evolution-cms/evo-ui', 'livewire/livewire', 'evolution-cms-extras/tinymce5', 'illuminate/database']),
         'drupal' => components(composerVersions($container, 'vendor/composer/installed.json', ['drupal/core', 'symfony/http-kernel', 'symfony/http-foundation', 'twig/twig', 'drush/drush'])),
         'typo3' => components(composerVersions($container, 'vendor/composer/installed.json', ['typo3/cms-core', 'doctrine/dbal', 'typo3fluid/fluid', 'symfony/http-foundation'])),
         'winter' => components(composerVersions($container, 'vendor/composer/installed.json', ['winter/storm', 'winter/wn-cms-module', 'laravel/framework', 'twig/twig', 'doctrine/dbal', 'symfony/http-foundation'])),

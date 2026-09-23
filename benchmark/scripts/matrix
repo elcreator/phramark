@@ -8,6 +8,9 @@
 #   --solutions=evo-phalcon,winter   stacks by id (default: all; PORT... also works)
 #                    evo-manticore is never in the default set: name it here to
 #                    run the Manticore compile job (no port, no guest/admin cells)
+#                    evo-sarticles is not in the default set either: it compares
+#                    the sArticles module with itself, e.g.
+#                    --solutions=evo-sarticles --versions=sarticles@1.2.1,sarticles@2.x
 #   --versions=evo@3.5.x,evo@3.5.8,latte@0.4.0
 #                    compare versions of the parts a stack is built from: a
 #                    published tag of that name, else the branch of that name
@@ -18,8 +21,9 @@
 #                    the stacks are reinstalled from those refs before their
 #                    cells and results carry the label (guest-evo-latte~evo@3.5.8+latte@0.4.0-…).
 #                    Without --solutions only the stacks the products are part
-#                    of run. Products: php, evo, latte, phalcon, drupal, typo3,
-#                    winter, modx, wordpress, gantry, classic-editor
+#                    of run. Products: php, evo, latte, phalcon, sarticles,
+#                    tinymce, drupal, typo3, winter, modx, wordpress, gantry,
+#                    classic-editor
 #                    (Phramark\VersionSpec; php rebuilds the images).
 #   --jit=off | --jit=tracing | --jit=off,tracing   JIT modes (default: both)
 #   --workload=guest | --workload=admin | --workload=guest,admin   (default: both)

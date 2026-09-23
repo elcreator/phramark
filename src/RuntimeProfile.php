@@ -43,6 +43,12 @@ final class RuntimeProfile
                 'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'Phalcon (extension)', 'Latte'],
                 'port' => 8082,
             ],
+            'evo-sarticles' => [
+                'label' => 'Evolution + sArticles',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components + the sArticles module, whose Eloquent models carry the articles instead of the document tree',
+                'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'sArticles'],
+                'port' => 8089,
+            ],
             'drupal' => [
                 'label' => 'Drupal',
                 'framework' => 'Drupal core on Symfony HttpKernel/Routing + Twig',

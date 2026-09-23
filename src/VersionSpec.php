@@ -29,8 +29,8 @@ final class VersionSpec
 {
     public const LATEST = 'latest';
 
-    private const EVO_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon'];
-    private const ALL_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'drupal', 'typo3', 'winter', 'modx', 'wordpress-gantry'];
+    private const EVO_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles'];
+    private const ALL_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'drupal', 'typo3', 'winter', 'modx', 'wordpress-gantry'];
 
     /**
      * kind: how the setup scripts install a ref.
@@ -50,6 +50,8 @@ final class VersionSpec
             'evo' => ['label' => 'Evolution CMS', 'env' => 'EVO_VERSION', 'kind' => 'git', 'stacks' => self::EVO_STACKS, 'source' => 'https://github.com/evolution-cms/evolution', 'repo' => 'https://github.com/evolution-cms/evolution.git', 'aliases' => ['evolution']],
             'latte' => ['label' => 'aLatteX', 'env' => 'ALATTEX_VERSION', 'kind' => 'composer', 'stacks' => ['evo-latte', 'evo-latte-parser', 'evo-phalcon'], 'source' => 'https://github.com/elcreator/aLatteX', 'package' => 'elcreator/alattex', 'aliases' => ['alattex']],
             'phalcon' => ['label' => 'aPhalcon', 'env' => 'APHALCON_VERSION', 'kind' => 'composer', 'stacks' => ['evo-phalcon'], 'source' => 'https://github.com/elcreator/aPhalcon', 'package' => 'elcreator/aphalcon', 'aliases' => ['aphalcon'], 'default' => '../evo/aPhalcon'],
+            'sarticles' => ['label' => 'sArticles', 'env' => 'SARTICLES_VERSION', 'kind' => 'composer', 'stacks' => ['evo-sarticles'], 'source' => 'https://github.com/Seiger/sArticles', 'package' => 'seiger/sarticles', 'aliases' => ['sarticles']],
+            'tinymce' => ['label' => 'TinyMCE 5', 'env' => 'TINYMCE_VERSION', 'kind' => 'composer', 'stacks' => ['evo-sarticles'], 'source' => 'https://github.com/evolution-cms-extras/tinymce5', 'package' => 'evolution-cms-extras/tinymce5', 'aliases' => ['tinymce5']],
             'drupal' => ['label' => 'Drupal', 'env' => 'DRUPAL_VERSION', 'kind' => 'composer', 'stacks' => ['drupal'], 'source' => 'https://github.com/drupal/core', 'package' => 'drupal/recommended-project'],
             'typo3' => ['label' => 'TYPO3', 'env' => 'TYPO3_VERSION', 'kind' => 'composer', 'stacks' => ['typo3'], 'source' => 'https://github.com/TYPO3/typo3', 'package' => 'typo3/cms-base-distribution'],
             'winter' => ['label' => 'Winter CMS', 'env' => 'WINTER_VERSION', 'kind' => 'composer', 'stacks' => ['winter'], 'source' => 'https://github.com/wintercms/winter', 'package' => 'wintercms/winter'],

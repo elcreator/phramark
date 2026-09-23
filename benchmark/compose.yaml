@@ -37,6 +37,8 @@ services:
       EVO_VERSION: ${EVO_VERSION:-latest}
       ALATTEX_VERSION: ${ALATTEX_VERSION:-latest}
       APHALCON_VERSION: ${APHALCON_VERSION:-latest}
+      SARTICLES_VERSION: ${SARTICLES_VERSION:-latest}
+      TINYMCE_VERSION: ${TINYMCE_VERSION:-latest}
       # A version that is a ../path names a directory on the host relative
       # to this checkout: its parent is mounted at /host, and PHRAMARK_DIR is
       # the checkout's directory name there.
@@ -57,6 +59,7 @@ services:
       - evo-latte:/sites/evo-latte
       - evo-latte-parser:/sites/evo-latte-parser
       - evo-phalcon:/sites/evo-phalcon
+      - evo-sarticles:/sites/evo-sarticles
 
   php-parser:
     build:
@@ -122,6 +125,27 @@ services:
     volumes:
       - evo-phalcon:/var/www/html
 
+  php-sarticles:
+    build:
+      context: ..
+      dockerfile: benchmark/images/php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    environment:
+      PHP_FPM_PM_MAX_CHILDREN: ${PHP_FPM_PM_MAX_CHILDREN:-8}
+      PHP_JIT: ${PHP_JIT:-off}
+      # sArticles 2.x cannot save an article inside the 128M every other
+      # stack runs at (memory exhausted in the Illuminate connection, with
+      # 10 000 articles seeded). Both sArticles versions get the same raised
+      # limit, so 1.x and 2.x stay comparable.
+      PHP_MEMORY_LIMIT: ${PHP_MEMORY_LIMIT:-512M}
+    command: ["/usr/local/bin/phramark-fpm"]
+    volumes:
+      - evo-sarticles:/var/www/html
+
   nginx-parser:
     image: nginx:1.27-alpine
     depends_on: [php-parser]
@@ -153,6 +177,14 @@ services:
     volumes:
       - evo-phalcon:/var/www/html:ro
       - ./config/nginx-phalcon.conf:/etc/nginx/conf.d/default.conf:ro
+
+  nginx-sarticles:
+    image: nginx:1.27-alpine
+    depends_on: [php-sarticles]
+    ports: ["8089:80"]
+    volumes:
+      - evo-sarticles:/var/www/html:ro
+      - ./config/nginx-sarticles.conf:/etc/nginx/conf.d/default.conf:ro
 
   setup-cross-cms:
     profiles: ["cross-cms"]
@@ -357,6 +389,7 @@ volumes:
   evo-latte:
   evo-latte-parser:
   evo-phalcon:
+  evo-sarticles:
   drupal:
   typo3:
   winter:

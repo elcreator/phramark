@@ -5,17 +5,24 @@ declare(strict_types=1);
 use Phramark\FixturePlan;
 
 require '/opt/phramark/src/FixturePlan.php';
+require '/opt/phramark/benchmark/fixtures/sarticles.php';
+
+const PREFIX = 'site_';
 
 // Restores the admin workload fixture of one Evolution stack after a Playwright
 // run: seeded pages get their titles and bodies back and every document the
 // workload created under the admin folder is removed, so repeated admin runs
 // start from the same state the canonical fixture defines.
 //
-// Usage: php admin-reset.php evo-parser|evo-latte|evo-latte-parser|evo-phalcon
+// evo-sArticles edits articles in the module's own tables instead of
+// documents, so its round is restored there.
+//
+// Usage: php admin-reset.php evo-parser|evo-latte|evo-latte-parser|evo-phalcon|evo-sarticles
 
+$stacks = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles'];
 $stack = $argv[1] ?? '';
-if (!in_array($stack, ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon'], true)) {
-    fwrite(STDERR, "Usage: admin-reset.php evo-parser|evo-latte|evo-latte-parser|evo-phalcon\n");
+if (!in_array($stack, $stacks, true)) {
+    fwrite(STDERR, 'Usage: admin-reset.php ' . implode('|', $stacks) . "\n");
     exit(2);
 }
 
@@ -27,6 +34,17 @@ $pdo = new PDO(
     (string) getenv('DB_ROOT_PASSWORD'),
     [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
 );
+
+if ($stack === 'evo-sarticles') {
+    resetSArticlesAdminFixture(new PDO(
+        'mysql:host=' . getenv('DB_HOST') . ';dbname=' . $database,
+        'root',
+        (string) getenv('DB_ROOT_PASSWORD'),
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+    ));
+    clearSiteCache($stack);
+    exit(0);
+}
 
 $content = '`' . $prefix . 'site_content`';
 $closure = '`' . $prefix . 'site_content_closure`';

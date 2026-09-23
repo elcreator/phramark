@@ -8,6 +8,7 @@ use Phramark\VersionSpec;
 require '/opt/phramark/src/FixturePlan.php';
 require '/opt/phramark/src/VersionSpec.php';
 require '/opt/phramark/benchmark/fixtures/resolve-version.php';
+require '/opt/phramark/benchmark/fixtures/sarticles.php';
 
 const PREFIX = 'site_';
 const ROOT = '/sites';
@@ -48,6 +49,11 @@ function siteProducts(): array
         'evo-latte' => ['evo', 'latte'],
         'evo-latte-parser' => ['evo', 'latte'],
         'evo-phalcon' => ['evo', 'latte', 'phalcon'],
+        // sArticles renders its editor through the manager's rich-text
+        // editor: without a plugin answering OnRichTextEditorInit, 1.x dies on
+        // the content tab, so the stack carries TinyMCE 5 as every real
+        // sArticles install does.
+        'evo-sarticles' => ['evo', 'tinymce', 'sarticles'],
     ];
 }
 
@@ -155,7 +161,7 @@ function installPackage(string $site, string $product, string $wanted): void
 function createDatabases(): void
 {
     $pdo = rootPdo();
-    foreach (['canonical', 'evo_parser', 'evo_latte', 'evo_latte_parser', 'evo_phalcon'] as $name) {
+    foreach (['canonical', 'evo_parser', 'evo_latte', 'evo_latte_parser', 'evo_phalcon', 'evo_sarticles'] as $name) {
         $pdo->exec(sprintf('CREATE DATABASE IF NOT EXISTS `benchmark_%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci', $name));
         $pdo->exec(sprintf("GRANT ALL PRIVILEGES ON `benchmark_%s`.* TO 'benchmark'@'%%'", $name));
     }
@@ -322,7 +328,7 @@ function writeDefines(string $site): void
     }
 }
 
-function writeSettings(string $database, bool $parser): void
+function writeSettings(string $database, ?string $snippetCode): void
 {
     $pdo = rootPdo($database);
     $settings = PREFIX . 'system_settings';
@@ -340,10 +346,28 @@ function writeSettings(string $database, bool $parser): void
     foreach ($values as $name => $value) {
         $pdo->prepare('INSERT INTO `' . $settings . '` (setting_name, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)')->execute([$name, (string) $value]);
     }
-    if ($parser) {
+    if ($snippetCode !== null) {
         $snippet = PREFIX . 'site_snippets';
         $pdo->prepare('DELETE FROM `' . $snippet . '` WHERE name = ?')->execute(['benchmarkCategory']);
-        $code = <<<'PHP'
+        $pdo->prepare('INSERT INTO `' . $snippet . '` (name, description, snippet, category, locked) VALUES (?, ?, ?, 0, 1)')->execute(['benchmarkCategory', 'Phramark category workload', $snippetCode]);
+    }
+}
+
+/**
+ * The category snippet of a site: the document-tree workload for the
+ * parser stack (the Latte and Phalcon stacks bring their own view), the
+ * module's own models for evo-sArticles, and nothing for the rest.
+ */
+function snippetFor(string $site): ?string
+{
+    if ($site === 'evo-sarticles') {
+        return sArticlesSnippet();
+    }
+    if ($site !== 'evo-parser') {
+        return null;
+    }
+
+    return <<<'PHP'
 $evo = evo();
 $items = $evo->getDocumentChildren((int) $evo->documentObject['id'], 1, 0, 'id,pagetitle,introtext,alias,pub_date', '', 'menuindex', 'ASC', 20);
 $page = $evo->documentObject;
@@ -352,8 +376,6 @@ echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' . $esc
 foreach ($items as $item) { $tvs = $evo->getTemplateVarOutput('*', (int) $item['id']); echo '<article><img src="' . $escape($tvs['hero_image'] ?? '') . '" alt=""><h2><a href="/articles/' . $escape($page['alias']) . '/' . $escape($item['alias']) . '">' . $escape($item['pagetitle']) . '</a></h2><p class="intro">' . $escape($item['introtext']) . '</p><p class="meta"><span class="author">' . $escape($tvs['author'] ?? '') . '</span> · <span class="reading-time">' . $escape($tvs['reading_time'] ?? '') . ' min</span></p></article>'; }
 echo '</section></main><footer>Deterministic CMS benchmark fixture</footer></body></html>';
 PHP;
-        $pdo->prepare('INSERT INTO `' . $snippet . '` (name, description, snippet, category, locked) VALUES (?, ?, ?, 0, 1)')->execute(['benchmarkCategory', 'Phramark parser workload', $code]);
-    }
 }
 
 // Every site is installed on its own: a version that cannot be built (an
@@ -365,7 +387,7 @@ PHP;
 try {
     createDatabases();
     install('canonical');
-    $all = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon'];
+    $all = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles'];
     $required = array_values(array_intersect($all, array_filter(explode(' ', (string) getenv('PHRAMARK_STACKS')))));
     $sites = $required ?: $all;
     $failed = [];
@@ -381,10 +403,22 @@ try {
     seedCanonical();
     foreach ($installed as $site) {
         cloneCanonical(str_replace('-', '_', $site));
-        if ($site !== 'evo-parser') {
+        // A stack with its own views or config carries them as a tree;
+        // evo-parser and evo-sArticles are the plain core plus a snippet.
+        if (is_dir('/opt/phramark/benchmark/implementations/' . $site)) {
             copyTree('/opt/phramark/benchmark/implementations/' . $site, ROOT . '/' . $site);
         }
-        writeSettings('benchmark_' . str_replace('-', '_', $site), $site === 'evo-parser');
+        writeSettings('benchmark_' . str_replace('-', '_', $site), snippetFor($site));
+        if ($site === 'evo-sarticles') {
+            // The module's tables are created here, not in install(): a site
+            // that is already at the wanted versions is not reinstalled, but
+            // the fixture is seeded on every run, so the tables must exist
+            // on every run too. 2.x migrates from post-autoload-dump, 1.x
+            // does not, and migrating twice is a no-op.
+            run(['php', 'artisan', 'migrate', '--force'], ROOT . '/' . $site . '/core');
+            ensureSArticlesSettings($site);
+            seedSArticles(rootPdo('benchmark_' . str_replace('-', '_', $site)));
+        }
         writeDefines($site);
         // The service cache is written while a package is still being installed,
         // so it can miss the provider of the package that very command installs

@@ -211,6 +211,7 @@ final class ResultSet
         'evo-latte' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX'],
         'evo-latte-parser' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX'],
         'evo-phalcon' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX', 'elcreator/aphalcon' => 'aPhalcon'],
+        'evo-sarticles' => ['Evolution CMS' => '', 'seiger/sarticles' => 'sArticles'],
         'drupal' => ['drupal/core' => ''],
         'typo3' => ['typo3/cms-core' => ''],
         'winter' => ['winter/wn-cms-module' => ''],
