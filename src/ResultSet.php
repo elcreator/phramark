@@ -22,10 +22,20 @@ final class ResultSet
     public const ACTIONS = ['login', 'open-edit', 'save-edit', 'open-create', 'save-create', 'logout'];
     public const ADMIN_METRICS = ['ms', 'serverMs', 'hashMs', 'phpPeakMb', 'jsHeapUsedMb', 'domNodes'];
 
+    // Opt-in stacks that answer a different question from the rest of the
+    // matrix (README: "Comparing versions") and are never part of a default
+    // run; a result file left over from an earlier --solutions= run of one
+    // must not resurface in a later default run's tables.
+    private const OPT_IN_STACKS = ['evo-sarticles', 'evo-manticore'];
+
     /**
+     * @param string|null $since only rows recorded at or after this
+     *        recordedAt cutoff (same format, e.g. "2026-09-24T14:00:00Z")
+     *        count; a repeat from an earlier, unrelated run of the matrix
+     *        no longer blends into this run's spread/median.
      * @return array{generatedAt: string, stacks: array<string, array{label: string, framework: string, components: list<string>, port: int}>, guest: list<array<string, mixed>>, admin: list<array<string, mixed>>}
      */
-    public static function collect(string $dir): array
+    public static function collect(string $dir, ?string $since = null): array
     {
         $stacks = array_keys(RuntimeProfile::adapters());
         $order = static fn (string $stack): int => (int) array_search($stack, $stacks, true);
@@ -36,11 +46,17 @@ final class ResultSet
         // The exact versions the containers reported (benchmark/scripts/versions.php).
         $versions = is_file($dir . '/versions.json') ? json_decode((string) file_get_contents($dir . '/versions.json'), true) : null;
         $versions = is_array($versions) ? $versions : null;
+        if (is_array($versions['stacks'] ?? null)) {
+            $versions['stacks'] = array_diff_key($versions['stacks'], array_flip(self::OPT_IN_STACKS));
+        }
 
         $runs = [];
         foreach (glob($dir . '/guest-*-rps-*.txt') ?: [] as $file) {
             $row = self::guestRow($file);
-            if ($row === null) {
+            if ($row === null || in_array($row['stack'], self::OPT_IN_STACKS, true)) {
+                continue;
+            }
+            if ($since !== null && $row['recordedAt'] < $since) {
                 continue;
             }
             $row = self::withResolvedVersion($row, $versions);
@@ -69,7 +85,10 @@ final class ResultSet
                 continue;
             }
             $row = self::adminRow($file);
-            if ($row === null) {
+            if ($row === null || in_array($row['stack'], self::OPT_IN_STACKS, true)) {
+                continue;
+            }
+            if ($since !== null && $row['recordedAt'] < $since) {
                 continue;
             }
             $row = self::withResolvedVersion($row, $versions);

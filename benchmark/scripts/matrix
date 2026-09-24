@@ -41,6 +41,11 @@ set -u
 
 . "$(dirname "$0")/lib.sh"
 
+# The cutoff passed to summary.php --since: a result recorded before this
+# run started cannot be one of its cells, so it is excluded from the
+# repeats/median instead of blending an unrelated earlier run in.
+started=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
 rate=
 ports=
 versions=
@@ -182,7 +187,7 @@ echo
 # The exact versions the containers ran, then the tables: Markdown for the
 # README and JSON for the static results site (docs/, sortable in the browser).
 php benchmark/scripts/versions.php >/dev/null
-php benchmark/scripts/summary.php
-php benchmark/scripts/summary.php --json > docs/results.json
+php benchmark/scripts/summary.php --since="$started"
+php benchmark/scripts/summary.php --since="$started" --json > docs/results.json
 echo "docs/results.json updated"
 [ -z "$failed" ] || { echo "FAILED cells:$failed" >&2; exit 1; }
