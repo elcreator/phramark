@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import {
-  ACTIONS, ACTION_DESCRIPTIONS, GUEST_COLUMNS, actionNote, actionsNote, adminRows, compareValues, componentsText, errorRows, formatValue, guestRows, nextSort, sortRows, versionRows,
+  ACTIONS, ACTION_DESCRIPTIONS, GUEST_COLUMNS, actionNote, actionsNote, adminRows, compareValues, componentsText, errorRows, formatValue, guestRows, hashingExcluded, nextSort, sortRows, versionRows,
 } from '../../../../docs/site.js';
 import { versionSuffix } from '../lib/report.mjs';
 
@@ -128,6 +128,17 @@ test('every admin action chart explains the step it charts', () => {
     assert.ok(note.startsWith(ACTION_DESCRIPTIONS[action]), `the ${action} chart opens with what the step is`);
     assert.match(note, /wall time .*inner bar is the server time/s, `the ${action} chart says what its two bars are`);
   }
+});
+
+test('the login chart says password hashing is left out only when the results measured it', () => {
+  const measured = { admin: [{ actions: { login: { ms: 700, serverMs: 300, hashMs: 160 } } }] };
+  const older = { admin: [{ actions: { login: { ms: 700, serverMs: 300, hashMs: null } } }] };
+  assert.equal(hashingExcluded(measured), true);
+  assert.equal(hashingExcluded(older), false);
+  assert.equal(hashingExcluded({}), false);
+  assert.match(actionNote('login', { hashingExcluded: true }), /Password hashing is left out of both bars/);
+  assert.doesNotMatch(actionNote('login'), /Password hashing/);
+  assert.doesNotMatch(actionNote('save-edit', { hashingExcluded: true }), /Password hashing/);
 });
 
 test('no chart is rendered without an explanation under its title', () => {

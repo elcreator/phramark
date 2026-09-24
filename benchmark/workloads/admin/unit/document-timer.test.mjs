@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DocumentTimer, isServerWork } from '../lib/document-timer.mjs';
+import { isEvolutionTreeNodesResponse } from '../lib/adapters/evolution.mjs';
 import { adapterFor } from '../lib/adapters/index.mjs';
 import { WinterAdapter } from '../lib/adapters/winter.mjs';
 
@@ -29,8 +30,21 @@ test('isServerWork counts Evolution manager action XHRs, not the manager assets 
   assert.equal(isServerWork(at('xhr', 'http://nginx-parser/manager/index.php?a=lexicon')), false);
   assert.equal(isServerWork(at('fetch', 'http://nginx-parser/manager/index.php?a=27&id=10104')), true);
   assert.equal(isServerWork(at('xhr', 'http://nginx-parser/manager/media/style/default/ajax.php')), false);
+  assert.equal(isServerWork(at('xhr', 'http://nginx-parser/manager/media/style/default/ajax.php'), { includeEvolutionTree: true }), true);
   assert.equal(isServerWork(at('script', 'http://nginx-parser/manager/media/style/default/js/evo.js')), false);
   assert.equal(isServerWork(at('xhr', 'http://nginx-parser/index.php?id=1')), false);
+});
+
+test('Evolution login selects only the requested tree-node response', () => {
+  const response = (url, method, body) => ({
+    url: () => url,
+    request: () => ({ method: () => method, postData: () => body }),
+  });
+  const nodes = response('http://stack/manager/media/style/default/ajax.php', 'POST', 'a=1&f=nodes&expandAll=1');
+  assert.equal(isEvolutionTreeNodesResponse(nodes, 1), true);
+  assert.equal(isEvolutionTreeNodesResponse(nodes, 2), false);
+  assert.equal(isEvolutionTreeNodesResponse(response('http://stack/manager/media/style/default/ajax.php', 'POST', 'a=1&f=modxTagHelper'), 1), false);
+  assert.equal(isEvolutionTreeNodesResponse(response('http://stack/manager/index.php?a=1', 'POST', 'a=1&f=nodes&expandAll=1'), 1), false);
 });
 
 test('DocumentTimer sums server time of the counted requests between marks', async () => {

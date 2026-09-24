@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Timeline, formatReport, percentile, summarize } from '../lib/timeline.mjs';
-import { buildReport, mergePhpMemory } from '../lib/report.mjs';
+import { buildReport, excludeHashing, mergePhpMemory } from '../lib/report.mjs';
 import { adminPageIds } from '../lib/config.mjs';
 
 test('Timeline.measure records wall time and merges step details', async () => {
@@ -71,6 +71,39 @@ test('mergePhpMemory attributes per-step PHP peaks by the X-Phramark-Step key', 
   assert.equal(merged.containerPeakMb, 256);
   assert.equal(merged.summary.phpPeakMb['save-edit'].max, 1);
   assert.equal(merged.phpMemory.requests, 3);
+});
+
+test('mergePhpMemory takes password hashing out of the login step and keeps it as hashMs', () => {
+  const report = buildReport({ stack: 's', jit: 'off', baseUrl: 'http://x', rounds: 1, pages: 5, resultsDir: '.' }, [
+    { action: 'login', label: 'round 1', ms: 900.5, serverMs: 400.25 },
+    { action: 'logout', label: 'round 1', ms: 50, serverMs: 20 },
+  ]);
+  const stat = { requests: 1, peak_real: { max: 1048576 }, peak: { max: 1048576 } };
+  const merged = mergePhpMemory(report, {
+    requests: 2,
+    steps: { 'login:round 1': { ...stat, hash_ms: 160.1 }, 'logout:round 1': { ...stat, hash_ms: 0 } },
+  });
+  assert.deepEqual([merged.steps[0].ms, merged.steps[0].serverMs, merged.steps[0].hashMs], [740.4, 240.15, 160.1]);
+  assert.deepEqual([merged.steps[1].ms, merged.steps[1].serverMs, merged.steps[1].hashMs], [50, 20, undefined]);
+  assert.equal(merged.summary.ms.login.median, 740.4);
+  assert.equal(merged.summary.hashMs.login.median, 160.1);
+  assert.equal(merged.summary.hashMs.logout, undefined);
+});
+
+test('excludeHashing never subtracts twice, below zero, or from a missing time', () => {
+  const once = excludeHashing({ action: 'login', ms: 300, serverMs: 100 }, 150);
+  assert.deepEqual(once, { action: 'login', ms: 150, serverMs: 0, hashMs: 150 });
+  assert.equal(excludeHashing(once, 150), once);
+  assert.deepEqual(excludeHashing({ action: 'login', ms: 300 }, 100), { action: 'login', ms: 200, serverMs: undefined, hashMs: 100 });
+  const step = { action: 'login', ms: 300 };
+  assert.equal(excludeHashing(step, undefined), step);
+  assert.equal(excludeHashing(step, 0), step);
+});
+
+test('formatReport shows the hashing column when a step carries it', () => {
+  const text = formatReport({ stack: 's', jit: 'off', baseUrl: 'http://x', rounds: 1, pages: 5, steps: [{ action: 'login', ms: 10, serverMs: 5, hashMs: 160 }] });
+  assert.match(text, /hashing p50/);
+  assert.match(text, /160 ms/);
 });
 
 test('buildReport carries the run dimensions needed to compare JIT modes', () => {

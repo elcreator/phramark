@@ -55,7 +55,14 @@ $summary = [
     'steps' => [],
 ];
 foreach ($steps as $step => $entries) {
-    $summary['steps'][$step] = ['requests' => count($entries), 'peak_real' => stats($entries, 'peak_real'), 'peak' => stats($entries, 'peak')];
+    $summary['steps'][$step] = [
+        'requests' => count($entries),
+        'peak_real' => stats($entries, 'peak_real'),
+        'peak' => stats($entries, 'peak'),
+        // Password hashing over all requests of the step (the admin report
+        // takes it out of the step's times).
+        'hash_ms' => round(array_sum(array_map(static fn (array $entry): float => (float) ($entry['hash_ms'] ?? 0), $entries)), 2),
+    ];
 }
 
 if ($asJson) {

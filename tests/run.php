@@ -365,6 +365,37 @@ expect(str_contains(repositoryFile('benchmark/config/php.ini'), 'auto_prepend_fi
 expect(str_contains(repositoryFile('benchmark/fixtures/memory-prepend.php'), 'memory_get_peak_usage(true)'), true, 'The PHP memory probe must record the allocator peak.');
 expect(str_contains(repositoryFile('benchmark/scripts/run'), 'memory-summary.php'), true, 'Guest results must include the PHP memory summary.');
 expect(str_contains(repositoryFile('benchmark/scripts/admin'), 'merge-memory.mjs'), true, 'Admin results must merge the PHP memory summary.');
+
+// Password hashing is timed inside the request so the admin report can take it
+// out of the login: the prepend's forwarders in each CMS hasher's namespace
+// time the call and still return the real result.
+require_once dirname(__DIR__) . '/benchmark/fixtures/memory-prepend.php';
+$hashCaller = sys_get_temp_dir() . '/phramark-hash-caller-' . getmypid() . '.php';
+file_put_contents($hashCaller, "<?php\nnamespace EvolutionCMS\Legacy;\n\$hash = password_hash('secret', PASSWORD_BCRYPT, ['cost' => 4]);\nreturn [password_verify('secret', \$hash), password_verify('wrong', \$hash)];\n");
+$before = \Phramark\hashing_ms();
+expect(require $hashCaller, [true, false], 'The timing forwarders must return what the hashing functions return.');
+unlink($hashCaller);
+expect(\Phramark\hashing_ms() > $before, true, 'A namespaced password_verify()/password_hash() call must add to the hashing time.');
+$before = \Phramark\hashing_ms();
+\Phramark\hashing_finished();
+expect(\Phramark\hashing_ms(), $before, 'A finish mark without a start adds nothing (WordPress check_password also runs outside a login).');
+\Phramark\hashing_started();
+password_verify('secret', password_hash('secret', PASSWORD_BCRYPT, ['cost' => 4]));
+\Phramark\hashing_finished();
+expect(\Phramark\hashing_ms() > $before, true, 'The start/finish marks must add the time between them.');
+foreach (['Drupal\Core\Password', 'TYPO3\CMS\Core\Crypto\PasswordHashing', 'Illuminate\Hashing', 'MODX\Revolution\Hashing', 'EvolutionCMS\Legacy'] as $namespace) {
+    expect(function_exists($namespace . '\password_verify') && function_exists($namespace . '\password_hash'), true, sprintf('The hasher namespace %s must have its timing forwarders.', $namespace));
+}
+expect(str_contains(repositoryFile('benchmark/implementations/wordpress-gantry/mu-plugins/phramark-benchmark.php'), "add_filter('check_password'"), true, 'WordPress hashes in the global namespace; its mu-plugin must mark the check.');
+$memoryLog = sys_get_temp_dir() . '/phramark-memory-' . getmypid() . '.log';
+file_put_contents($memoryLog, implode("\n", [
+    json_encode(['step' => 'login:round 1', 'status' => 302, 'peak' => 1, 'peak_real' => 2, 'hash_ms' => 150.25]),
+    json_encode(['step' => 'login:round 1', 'status' => 200, 'peak' => 1, 'peak_real' => 2, 'hash_ms' => 0]),
+    json_encode(['step' => 'logout:round 1', 'status' => 200, 'peak' => 1, 'peak_real' => 2]),
+]) . "\n");
+$memorySummary = json_decode((string) shell_exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(dirname(__DIR__) . '/benchmark/scripts/memory-summary.php') . ' ' . escapeshellarg($memoryLog) . ' --json'), true);
+unlink($memoryLog);
+expect([$memorySummary['steps']['login:round 1']['hash_ms'] ?? null, $memorySummary['steps']['logout:round 1']['hash_ms'] ?? null], [150.25, 0], 'The memory summary must sum the hashing time per step; logs from before the probe count as none.');
 $crossSetup = repositoryFile('benchmark/fixtures/setup-cross-cms.sh');
 expect(str_contains($crossSetup, 'drupal-admin-seed.php') && str_contains($crossSetup, 'typo3-admin-seed.php') && str_contains($crossSetup, 'winter-admin-seed.php'), true, 'Cross-CMS installs must seed the admin fixture.');
 expect(str_contains($crossSetup, 'composer create-project "wintercms/winter:$version"'), true, 'Winter is installed from its licence-free Composer distribution at the resolved version.');

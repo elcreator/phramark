@@ -142,7 +142,10 @@ run_cells() {
 }
 
 # Round by round: provision (with --versions), then every stack's cells.
-plan_file=$(mktemp)
+# A repo-local path, not mktemp/$TMPDIR: on this host /tmp is an ntfs mount
+# of the Windows temp dir that silently drops writes from some shells,
+# which left this file empty and every round skipped with no error.
+plan_file="benchmark/results/.matrix-plan.$$"
 printf '%s\n' "$plan" > "$plan_file"
 rounds=$(grep -c '^round' "$plan_file")
 i=1

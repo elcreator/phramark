@@ -22,6 +22,11 @@ export const config = Object.freeze({
   // PHP-FPM (cold OPcache) does not land in round 1.
   warmup: (env.PHRAMARK_WARMUP ?? '1') !== '0',
   pages: integer('PHRAMARK_PAGES', 5),
+  // Evolution restores its remembered tree after the shell loads. The canonical
+  // fixture has 100 category folders and 10,000 resources, so the login run
+  // expands that tree and waits for its browser work by default.
+  evoFullTreeOnLogin: (env.PHRAMARK_EVO_FULL_TREE ?? '1') !== '0',
+  evoFullTreeMinimumNodes: integer('PHRAMARK_EVO_FULL_TREE_MINIMUM_NODES', 10_100),
   resultsDir: env.PHRAMARK_RESULTS_DIR ?? new URL('../../../results/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'),
   username: env.PHRAMARK_ADMIN_USER ?? 'benchmark',
   // Same admin user on every stack; TYPO3 enforces a password policy, so its

@@ -57,7 +57,7 @@ export function mergePhpMemory(report, memorySummary, containerPeakMb, container
     const stat = memorySummary.steps?.[`${step.action}:${step.label}`];
     // phpPeakMb: exact script peak (memory_get_peak_usage(false)); phpPeakRealMb:
     // what the allocator took from the OS (2 MiB granularity).
-    return stat ? { ...step, phpPeakMb: mib(stat.peak.max), phpPeakRealMb: mib(stat.peak_real.max), phpRequests: stat.requests } : step;
+    return stat ? excludeHashing({ ...step, phpPeakMb: mib(stat.peak.max), phpPeakRealMb: mib(stat.peak_real.max), phpRequests: stat.requests }, stat.hash_ms) : step;
   });
   const merged = { ...report, steps, phpMemory: memorySummary };
   if (typeof containerPeakMb === 'number') merged.containerPeakMb = containerPeakMb;
@@ -69,6 +69,19 @@ export function mergePhpMemory(report, memorySummary, containerPeakMb, container
   }
   merged.summary = summary;
   return merged;
+}
+
+// Takes the step's password hashing (memory-prepend.php times it inside the
+// request) out of its wall and server time and keeps it as hashMs: every CMS
+// hashes with its own algorithm and cost, slow on purpose, so a login would
+// otherwise compare hash settings rather than frameworks. The hash runs inside
+// the one PHP request the browser waits for, so it is part of both times. A
+// step that already carries hashMs is left alone, so a second merge cannot
+// subtract twice.
+export function excludeHashing(step, hashMs) {
+  if (typeof hashMs !== 'number' || hashMs <= 0 || typeof step.hashMs === 'number') return step;
+  const net = (ms) => (typeof ms === 'number' ? Math.round(Math.max(0, ms - hashMs) * 100) / 100 : ms);
+  return { ...step, ms: net(step.ms), serverMs: net(step.serverMs), hashMs };
 }
 
 function mib(bytes) {

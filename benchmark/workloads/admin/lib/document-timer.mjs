@@ -16,11 +16,15 @@ const AJAX_ENDPOINTS = [
   /\/connectors\/index\.php(\?|$)/,
   /\/manager\/index\.php\?(.*&)?a=\d+(&|$)/,
 ];
+const EVO_TREE_NODES_ENDPOINT = /\/manager\/media\/style\/[^/]+\/ajax\.php(\?|$)/;
 
-export function isServerWork(request) {
+export function isServerWork(request, { includeEvolutionTree = false } = {}) {
   if (request.resourceType() === 'document') return true;
   const headers = request.headers();
   if (AJAX_HANDLER_HEADERS.some((name) => name in headers)) return true;
+  if (includeEvolutionTree
+    && request.resourceType() === 'xhr'
+    && EVO_TREE_NODES_ENDPOINT.test(request.url())) return true;
   return AJAX_ENDPOINTS.some((pattern) => pattern.test(request.url()));
 }
 
@@ -29,7 +33,7 @@ export class DocumentTimer {
     this.page = page;
     this.entries = [];
     page.on('requestfinished', (request) => {
-      if (!isServerWork(request)) return;
+      if (!isServerWork(request, this.options)) return;
       const timing = request.timing();
       if (!timing || timing.responseEnd < 0 || timing.requestStart < 0) return;
       this.entries.push({
@@ -40,8 +44,9 @@ export class DocumentTimer {
     });
   }
 
-  mark() {
+  mark(options = {}) {
     this.entries = [];
+    this.options = options;
   }
 
   // Lets the requestfinished events of the step drain before reading them.

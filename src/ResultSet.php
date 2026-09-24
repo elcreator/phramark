@@ -20,7 +20,7 @@ namespace Phramark;
 final class ResultSet
 {
     public const ACTIONS = ['login', 'open-edit', 'save-edit', 'open-create', 'save-create', 'logout'];
-    public const ADMIN_METRICS = ['ms', 'serverMs', 'phpPeakMb', 'jsHeapUsedMb', 'domNodes'];
+    public const ADMIN_METRICS = ['ms', 'serverMs', 'hashMs', 'phpPeakMb', 'jsHeapUsedMb', 'domNodes'];
 
     /**
      * @return array{generatedAt: string, stacks: array<string, array{label: string, framework: string, components: list<string>, port: int}>, guest: list<array<string, mixed>>, admin: list<array<string, mixed>>}
@@ -195,6 +195,7 @@ final class ResultSet
                 'label' => $step['label'] ?? '',
                 'ms' => $step['ms'] ?? null,
                 'serverMs' => $step['serverMs'] ?? null,
+                'hashMs' => $step['hashMs'] ?? null,
                 'phpPeakMb' => $step['phpPeakMb'] ?? null,
                 'jsHeapUsedMb' => $step['jsHeapUsedMb'] ?? null,
                 'domNodes' => $step['domNodes'] ?? null,

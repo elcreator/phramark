@@ -6,7 +6,18 @@
 
 import { adminPageIds } from '../config.mjs';
 
+const TREE_AJAX = /\/manager\/media\/style\/[^/]+\/ajax\.php(\?|$)/;
 const EDITOR_URL = /[?&]a=27\b/;
+
+export function isEvolutionTreeNodesResponse(response, expandAll) {
+  const request = response.request();
+  if (!TREE_AJAX.test(response.url()) || request.method() !== 'POST') return false;
+
+  const body = new URLSearchParams(request.postData() ?? '');
+  return body.get('a') === '1'
+    && body.get('f') === 'nodes'
+    && body.get('expandAll') === String(expandAll);
+}
 
 export class EvolutionAdapter {
   static supports(stack) {
@@ -34,7 +45,8 @@ export class EvolutionAdapter {
   }
 
   async login() {
-    this.timer.mark();
+    this.timer.mark({ includeEvolutionTree: true });
+    const restoredTree = this.page.waitForResponse((response) => isEvolutionTreeNodesResponse(response, 2));
     await this.page.goto(`${this.config.baseUrl}/manager/`);
     await this.page.fill('#username', this.config.username);
     await this.page.fill('#password', this.config.password);
@@ -44,7 +56,32 @@ export class EvolutionAdapter {
     const mainframe = await element.contentFrame();
     await mainframe.waitForLoadState('load');
     await this.page.waitForSelector('a[href="index.php?a=8"]', { state: 'attached' });
+    await (await restoredTree).finished();
+    await this.waitForTreePaint();
+
+    if (this.config.evoFullTreeOnLogin) {
+      const expandedTree = this.page.waitForResponse((response) => isEvolutionTreeNodesResponse(response, 1));
+      await this.page.evaluate(() => window.evo.tree.expandTree());
+      await (await expandedTree).finished();
+      await this.waitForTreePaint({ full: true });
+    }
+
     return this.timer.collect();
+  }
+
+  async waitForTreePaint({ full = false } = {}) {
+    await this.page.waitForFunction(({ fullTree, minimumNodes }) => {
+      const loader = document.querySelector('#treeloader');
+      const root = document.querySelector('#treeRoot0');
+      const treeLoaded = root?.loaded === true
+        && root.childElementCount > 0
+        && !loader?.classList.contains('visible');
+
+      return treeLoaded && (!fullTree || root.querySelectorAll('a.node[data-id]').length >= minimumNodes);
+    }, {
+      fullTree: full,
+      minimumNodes: this.config.evoFullTreeMinimumNodes,
+    }, { timeout: 60_000 });
   }
 
   async openEditor(id) {

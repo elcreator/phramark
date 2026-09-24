@@ -3,7 +3,7 @@
 // Markdown tables) as sortable tables. The helpers are pure so
 // benchmark/workloads/admin/unit/site.test.mjs can cover them without a DOM.
 
-import { cellId, cellLabel, DEFAULT_ORDER, ORDERS, renderBars, renderSmallMultiples, trendOf } from './charts.js?v=20260923T003357Z';
+import { cellId, cellLabel, DEFAULT_ORDER, ORDERS, renderBars, renderSmallMultiples, trendOf } from './charts.js?v=20260924T151816Z';
 
 export const ACTIONS = ['login', 'open-edit', 'save-edit', 'open-create', 'save-create', 'logout'];
 
@@ -23,8 +23,18 @@ export const ACTION_DESCRIPTIONS = {
 // The explanation under one action's chart: what the step is, then what its
 // two bars mean. The charts carry it the way the memory charts do, so a chart
 // read on its own says what it measures.
-export function actionNote(action) {
-  return `${ACTION_DESCRIPTIONS[action]} The bar is the wall time the browser experienced end to end (network, rendering, JS); the inner bar is the server time, the PHP time of the step's main request(s) and the figure to compare between builds.`;
+// hashingExcluded: the results carry the login's password hashing apart
+// (hashMs), so both bars are without it.
+export function actionNote(action, { hashingExcluded = false } = {}) {
+  const note = `${ACTION_DESCRIPTIONS[action]} The bar is the wall time the browser experienced end to end (network, rendering, JS); the inner bar is the server time, the PHP time of the step's main request(s) and the figure to compare between builds.`;
+  return hashingExcluded && action === 'login'
+    ? `${note} Password hashing is left out of both bars: each CMS hashes with its own algorithm and cost, slow on purpose, so the time is measured inside the request and subtracted.`
+    : note;
+}
+
+// Whether any admin result has the login's password hashing measured apart.
+export function hashingExcluded(set) {
+  return (set.admin ?? []).some((row) => typeof row.actions?.login?.hashMs === 'number');
 }
 
 export function actionsNote() {
@@ -396,7 +406,7 @@ export function renderCharts(root, set) {
   for (const action of ACTIONS) {
     renderBars(section, {
       title: `Admin ${action}: wall time (bar) and server time (inner bar), median per session`,
-      note: actionNote(action),
+      note: actionNote(action, { hashingExcluded: hashingExcluded(set) }),
       rows: adminActionRows(set, action), key: 'value', inner: 'server', spreadMetric: 'value', stacks: set.stacks, unit: 'ms', order: chartOrder,
     });
   }

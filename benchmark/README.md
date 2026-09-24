@@ -172,6 +172,8 @@ Capacity is the highest offered rate with zero non-2xx responses and p99 below 1
 | `save-create` | 5 | Save of the new document, until its editor loads. TYPO3 keeps page and content as separate records, so this step is two saves there: the page, then a text element on it |
 | `logout` | 1 | Logout until the login form is shown |
 
+Password hashing is not in any step's `ms` or `serverMs`. Each CMS hashes with its own algorithm and cost (Argon2i on TYPO3, bcrypt at cost 10 or 12 elsewhere), slow on purpose, so a login would otherwise compare hash settings, not frameworks. `benchmark/fixtures/memory-prepend.php` times it inside the request: an unqualified `password_verify()`/`password_hash()`/`crypt()` call in namespaced code resolves a function of the caller's namespace first, so the prepend declares timing forwarders in the namespaces of the Drupal, TYPO3, Laravel (Winter), MODX and Evolution hashers. They are plain functions of the prepend OPcache already holds, so no class is added or autoloaded. WordPress hashes in the global namespace; its mu-plugin marks the check between the last `wp_authenticate_user` filter and the first `check_password` filter. The time lands in the memory log as `hash_ms`, and the report merge subtracts it from the step's wall and server time and keeps it as `hashMs`. A rehash on login (a seeded hash below the CMS's configured cost) is timed on the namespaced stacks but not on WordPress. The seeds already use each CMS's current format, so no rehash happens.
+
 Every step also records memory on both sides:
 
 | Metric | Side | Source |

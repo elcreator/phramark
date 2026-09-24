@@ -54,6 +54,24 @@ add_filter('document_title_parts', static function (array $parts): array {
 // fixtures use, so every stack posts the same bytes.
 add_filter('wp_default_editor', static fn (): string => 'html');
 
+// Admin workload: password hashing is timed apart and taken out of the login
+// step (benchmark/fixtures/memory-prepend.php). WordPress hashes in the global
+// namespace, where the prepend cannot intercept it, so the check is marked
+// between the last wp_authenticate_user filter, right before
+// wp_check_password(), and the first check_password filter at its end.
+if (function_exists('Phramark\hashing_started')) {
+    add_filter('wp_authenticate_user', static function ($user) {
+        Phramark\hashing_started();
+
+        return $user;
+    }, PHP_INT_MAX);
+    add_filter('check_password', static function ($check) {
+        Phramark\hashing_finished();
+
+        return $check;
+    }, PHP_INT_MIN);
+}
+
 // The dashboard's "WordPress Events and News" widget fetches wordpress.org
 // feeds and Site Health tests reach api.wordpress.org; the login step must
 // time the CMS, not the internet (the MODX stack drops its feed widgets

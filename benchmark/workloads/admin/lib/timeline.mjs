@@ -51,6 +51,8 @@ export function summarize(steps, key = 'ms') {
 export const METRICS = [
   { key: 'ms', label: 'wall', unit: 'ms' },
   { key: 'serverMs', label: 'server', unit: 'ms' },
+  // Password hashing, already taken out of wall and server (report.mjs excludeHashing).
+  { key: 'hashMs', label: 'hashing', unit: 'ms' },
   { key: 'phpPeakMb', label: 'php peak', unit: 'MiB' },
   { key: 'jsHeapUsedMb', label: 'js heap', unit: 'MiB' },
   { key: 'domNodes', label: 'dom nodes', unit: '' },
