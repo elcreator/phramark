@@ -313,7 +313,7 @@ $set = ResultSet::collect($dir);
 // shown under the resolved version, whatever the label said: the latest run
 // is the row and both count as repetitions.
 expect(array_map(static fn (array $r): array => [$r['stack'], $r['version'], $r['ref'], $r['p50Ms'], $r['repeats']['n']], $set['guest']), [['evo-latte', '3.5.8', '', 280.0, 2]], 'A default build and a run pinned to the same release merge into one cell named by the resolved version.');
-expect(array_map(static fn (array $r): array => [$r['version'], $r['components'][0]['version'] ?? null], $set['admin']), [['', null], ['evo@3.5.8+latte@0.4.0', '8.4.25']], 'A report whose components do not name the CMS keeps its label; one without components and without a snapshot stays the default build.');
+expect($set['admin'], [], 'Admin rows without components identifying the CMS do not create a duplicate build.');
 expect(ResultSet::shortVersion('3.5.8 (tag 3.5.8@374e110, 2026-09-10)'), '3.5.8', 'A tag build is its version.');
 expect(ResultSet::shortVersion('3.5.9 (path /host/evolution@3f9ea9220 2026-09-21, files 82685d73f20be0b3)'), '3.5.9 ../evolution@3f9ea9220', 'A working-copy build names the directory and commit.');
 expect(ResultSet::shortVersion('3.5.9 (branch 3.5.x@abc1234, 2026-09-21)'), '3.5.9 3.5.x@abc1234', 'A branch build names the branch and commit.');
@@ -327,7 +327,7 @@ $snapshot = ['stacks' => ['drupal' => [['name' => 'drupal/core', 'version' => '1
 expect(ResultSet::withResolvedVersion(['stack' => 'drupal', 'version' => '', 'components' => null], $snapshot)['version'], '11.4.7', 'A run recorded before components were attached takes the snapshot of a release build.');
 expect(ResultSet::withResolvedVersion(['stack' => 'evo-parser', 'version' => '', 'components' => null], $snapshot)['version'], '', 'A snapshot of a working-copy build says nothing about an old run.');
 expect(ResultSet::withResolvedVersion(['stack' => 'drupal', 'version' => 'drupal@11.4.7', 'components' => null], $snapshot)['version'], 'drupal@11.4.7', 'A labelled run without components keeps its label.');
-expect(str_contains(ResultSet::markdown($set), '| evo-latte (evo@3.5.8+latte@0.4.0) | off |'), true, 'The Markdown tables name the build.');
+expect(str_contains(ResultSet::markdown($set), '| evo-latte (3.5.8) | off |'), true, 'The Markdown tables name the resolved build.');
 foreach (glob($dir . '/*') as $file) {
     unlink($file);
 }
@@ -514,6 +514,32 @@ expect(str_contains($markdown, '| modx (3.2.4-pl) | off | 700.5 / 300.25 ms | - 
 expect(str_contains($markdown, '| modx (3.2.4-pl) | off | PHP peak (script) | 4.5 MiB | - | - | - | - | - | 90.5 MiB |'), true, 'The admin memory Markdown row keeps the README format.');
 expect(str_contains($markdown, '## Versions tested') && str_contains($markdown, '[MODX Revolution](https://github.com/modxcms/revolution) 3.2.4-pl, xpdo/xpdo v3.1.7'), true, 'The Markdown must name the exact versions tested, linked to their repositories.');
 expect(json_decode(json_encode($resultSet, JSON_THROW_ON_ERROR), true)['guest'][0]['repeats']['metrics']['p50Ms']['max'], 120.5, 'The result set must round-trip through JSON for the site.');
+
+$selectionDir = sys_get_temp_dir() . '/phramark-selection-' . getmypid();
+mkdir($selectionDir);
+$writeSelectionGuest = static function (string $stack, string $label, array $components, string $stamp) use ($selectionDir): void {
+    $file = $selectionDir . '/guest-' . $stack . '~' . $label . '-jit-off-rps-30-' . $stamp . '.txt';
+    file_put_contents($file, "Running 1m test\n 50.000% 100.00ms\n 99.000% 200.00ms\nRequests/sec: 30.00\n---- versions ----\nlabel: " . $label . "\n" . json_encode($components, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
+};
+$evoCore = static fn (string $version): array => [['name' => 'Evolution CMS', 'version' => $version]];
+$writeSelectionGuest('evo-parser', 'evo@3.5.8', $evoCore('3.5.8 (tag 3.5.8@release, 2026-09-10)'), '2026-09-20T10-00-00Z');
+$writeSelectionGuest('evo-parser', 'evo@3.5.x', $evoCore('3.5.9 (branch 3.5.x@f10e349, 2026-09-24)'), '2026-09-20T11-00-00Z');
+$writeSelectionGuest('evo-parser', 'evo@3.5.x', $evoCore('3.5.9 (branch 3.5.x@a18891c, 2026-09-28)'), '2026-09-20T12-00-00Z');
+$writeSelectionGuest('drupal', 'drupal@10.3.0', [['name' => 'drupal/core', 'version' => '10.3.0']], '2026-09-20T10-00-00Z');
+$writeSelectionGuest('drupal', 'drupal@11.4.7', [['name' => 'drupal/core', 'version' => '11.4.7']], '2026-09-20T11-00-00Z');
+file_put_contents($selectionDir . '/admin-evo-parser-old.json', json_encode(['stack' => 'evo-parser', 'version' => 'evo@3.5.x', 'jit' => 'off', 'recordedAt' => '2026-09-20T11:00:00Z', 'components' => $evoCore('3.5.9 (branch 3.5.x@f10e349, 2026-09-24)'), 'summary' => [], 'steps' => []]));
+file_put_contents($selectionDir . '/admin-evo-parser-current.json', json_encode(['stack' => 'evo-parser', 'version' => 'evo@3.5.x', 'jit' => 'off', 'recordedAt' => '2026-09-20T12:30:00Z', 'components' => $evoCore('3.5.9 (branch 3.5.x@a18891c, 2026-09-28)'), 'summary' => [], 'steps' => []]));
+$selection = ResultSet::collect($selectionDir);
+$selectedEvoBuilds = array_values(array_unique(array_column(array_filter($selection['guest'], static fn (array $row): bool => $row['stack'] === 'evo-parser'), 'version')));
+sort($selectedEvoBuilds);
+expect($selectedEvoBuilds, ['3.5.8', '3.5.9 3.5.x@a18891c'], 'Evolution keeps its latest release and the newest 3.5.x branch build, not older branch commits.');
+expect(array_values(array_unique(array_column(array_filter($selection['guest'], static fn (array $row): bool => $row['stack'] === 'drupal'), 'version'))), ['11.4.7'], 'A CMS shows its newest recorded release only.');
+expect(count($selection['admin']), 1, 'Admin results use the same selected builds as the guest results.');
+expect(ResultSet::buildVersion('evo-parser', $selection['versions']['stacks']['evo-parser']), '3.5.9 3.5.x@a18891c', 'The versions table follows the selected Evolution branch build.');
+expect(ResultSet::buildVersion('drupal', $selection['versions']['stacks']['drupal']), '11.4.7', 'The versions table records the selected latest CMS build.');
+array_map('unlink', glob($selectionDir . '/*') ?: []);
+rmdir($selectionDir);
+
 array_map('unlink', glob($resultsDir . '/*') ?: []);
 rmdir($resultsDir);
 expect(str_contains(repositoryFile('benchmark/scripts/matrix'), 'summary.php --since="$started" --json > docs/results.json') && str_contains(repositoryFile('benchmark/scripts/matrix'), 'versions.php'), true, 'A matrix run must record the versions and refresh the results site data.');

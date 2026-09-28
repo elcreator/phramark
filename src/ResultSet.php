@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Phramark;
 
 /**
- * Collects every recorded result in benchmark/results into one structure:
- * the latest guest run per stack × version × JIT × offered rate and the
+ * Collects recorded results in benchmark/results into one structure:
+ * the newest release build of each CMS, plus Evolution 3.5.x branch builds,
+ * with the latest guest run per stack × version × JIT × offered rate and the
  * latest admin run per stack × version × JIT, with the PHP-side and
  * frontend-side memory figures. The version of a row is what the stack
  * was actually built from, read from the components its container reported
@@ -118,6 +119,24 @@ final class ResultSet
         }
         uasort($admin, static fn (array $a, array $b): int => [$order($a['stack']), strnatcmp($a['version'], $b['version']), $a['jit']] <=> [$order($b['stack']), 0, $b['jit']]);
 
+        // Show only the newest recorded release for each CMS, plus the
+        // current 3.5.x branch build for Evolution and its extension stacks.
+        $visibleBuilds = self::visibleBuilds(array_merge(array_values($guest), array_values($admin)));
+        $isVisible = static fn (array $row): bool => isset($visibleBuilds['versions'][$row['stack']][$row['version']]);
+        $guest = array_filter($guest, $isVisible);
+        $admin = array_filter($admin, $isVisible);
+        $versionSnapshots = $versions['stacks'] ?? [];
+        $versions['stacks'] = [];
+        foreach ($visibleBuilds['preferred'] as $stack => $row) {
+            $components = $row['components'] ?? null;
+            $snapshot = $versionSnapshots[$stack] ?? null;
+            if (is_array($snapshot) && self::buildVersion($stack, $snapshot) === $row['version']) {
+                $versions['stacks'][$stack] = $snapshot;
+            } elseif (is_array($components)) {
+                $versions['stacks'][$stack] = $components;
+            }
+        }
+
         return [
             'generatedAt' => gmdate('Y-m-d\TH:i:s\Z'),
             'stacks' => RuntimeProfile::adapters(),
@@ -125,6 +144,119 @@ final class ResultSet
             'guest' => array_values($guest),
             'admin' => array_values($admin),
         ];
+    }
+
+    /**
+     * Pick one newest released build per stack and, for Evolution stacks,
+     * retain the latest recorded 3.5.x branch build as a comparison.
+     *
+     * @param list<array<string, mixed>> $rows
+     * @return array{versions: array<string, array<string, true>>, preferred: array<string, array<string, mixed>>}
+     */
+    private static function visibleBuilds(array $rows): array
+    {
+        $groups = [];
+        foreach ($rows as $row) {
+            if (($row['version'] ?? '') === '') {
+                continue;
+            }
+            $groups[$row['stack']][$row['version']][] = $row;
+        }
+
+        $versions = [];
+        $preferred = [];
+        foreach ($groups as $stack => $builds) {
+            $representatives = [];
+            foreach ($builds as $version => $runs) {
+                usort($runs, static fn (array $a, array $b): int => strcmp($a['recordedAt'], $b['recordedAt']));
+                $representatives[$version] = $runs[count($runs) - 1];
+            }
+
+            if (str_starts_with($stack, 'evo-')) {
+                $branch = array_filter($representatives, static fn (array $row): bool => self::isEvolution35Branch($row));
+                $release = array_filter($representatives, static fn (array $row): bool => !self::isEvolution35Branch($row));
+                $latestRelease = self::newestCmsBuild(array_values($release), $stack);
+                $latestBranch = self::latestRecordedBuild(array_values($branch));
+                foreach ([$latestRelease, $latestBranch] as $selected) {
+                    if ($selected === null) {
+                        continue;
+                    }
+                    $versions[$stack][$selected['version']] = true;
+                }
+                // The version list names the branch build when both are shown.
+                $preferred[$stack] = $latestBranch ?? $latestRelease;
+                continue;
+            }
+
+            $latest = self::newestCmsBuild(array_values($representatives), $stack);
+            if ($latest !== null) {
+                $versions[$stack][$latest['version']] = true;
+                $preferred[$stack] = $latest;
+            }
+        }
+
+        return ['versions' => $versions, 'preferred' => $preferred];
+    }
+
+    /** @param array<string, mixed> $row */
+    private static function isEvolution35Branch(array $row): bool
+    {
+        if (preg_match('/(?:^|\+)evo@3\.5\.x(?:\+|$)/', (string) ($row['ref'] ?? '')) === 1) {
+            return true;
+        }
+        foreach ($row['components'] ?? [] as $component) {
+            if (($component['name'] ?? '') === 'Evolution CMS' && str_contains((string) ($component['version'] ?? ''), '(branch 3.5.x@')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** @param list<array<string, mixed>> $builds @return array<string, mixed>|null */
+    private static function newestCmsBuild(array $builds, string $stack): ?array
+    {
+        usort($builds, static function (array $a, array $b) use ($stack): int {
+            $aVersion = self::primaryCmsVersion($stack, $a);
+            $bVersion = self::primaryCmsVersion($stack, $b);
+            if ($aVersion !== null && $bVersion !== null) {
+                $versionOrder = version_compare($bVersion, $aVersion);
+                if ($versionOrder !== 0) {
+                    return $versionOrder;
+                }
+            } elseif ($aVersion !== null || $bVersion !== null) {
+                return $aVersion !== null ? -1 : 1;
+            }
+
+            return strcmp($b['recordedAt'], $a['recordedAt']);
+        });
+
+        return $builds[0] ?? null;
+    }
+
+    /** @param list<array<string, mixed>> $builds @return array<string, mixed>|null */
+    private static function latestRecordedBuild(array $builds): ?array
+    {
+        usort($builds, static fn (array $a, array $b): int => strcmp($b['recordedAt'], $a['recordedAt']));
+
+        return $builds[0] ?? null;
+    }
+
+    /** @param array<string, mixed> $row */
+    private static function primaryCmsVersion(string $stack, array $row): ?string
+    {
+        $cms = array_key_first(self::BUILD_COMPONENTS[$stack] ?? []);
+        $components = is_array($row['components'] ?? null) ? $row['components'] : [];
+        $componentVersions = array_column($components, 'version', 'name');
+        if ($components !== [] && !isset($componentVersions[$cms])) {
+            return null;
+        }
+        $candidate = (string) ($componentVersions[$cms] ?? $row['version'] ?? '');
+        if (preg_match('/(?:^|[^0-9])v?(\d+(?:\.\d+)+(?:-pl)?)/i', $candidate, $match) === 1) {
+            return $match[1];
+        }
+
+        return null;
     }
 
     /**

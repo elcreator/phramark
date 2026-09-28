@@ -3,7 +3,7 @@
 // Markdown tables) as sortable tables. The helpers are pure so
 // benchmark/workloads/admin/unit/site.test.mjs can cover them without a DOM.
 
-import { cellId, cellLabel, DEFAULT_ORDER, ORDERS, renderBars, renderSmallMultiples, trendOf } from './charts.js?v=20260928T212129Z';
+import { cellId, cellLabel, DEFAULT_ORDER, ORDERS, renderBars, renderSmallMultiples, trendOf } from './charts.js?v=20260928T223359Z';
 
 export const ACTIONS = ['login', 'open-edit', 'save-edit', 'open-create', 'save-create', 'logout'];
 
@@ -250,7 +250,7 @@ export function renderVersions(root, versions) {
   const runtime = versions.runtime ?? {};
   const section = renderTable(root, {
     title: 'Versions tested',
-    note: `Recorded from the running containers on ${versions.recordedAt ?? '?'}: PHP ${runtime.php ?? '?'}, MySQL ${runtime.mysql ?? '?'}, ${runtime.nginx ?? '?'}, OPcache ${runtime.opcache ?? '?'}.`,
+    note: `Components are from each selected build. Runtime versions were recorded on ${versions.recordedAt ?? '?'}: PHP ${runtime.php ?? '?'}, MySQL ${runtime.mysql ?? '?'}, ${runtime.nginx ?? '?'}, OPcache ${runtime.opcache ?? '?'}.`,
     columns: [
       { key: 'id', label: 'Stack' },
       { key: 'components', label: 'Components (exact versions)' },
@@ -495,7 +495,7 @@ export function render(set, root) {
   renderStacks(root, set.stacks);
   renderTable(root, {
     title: 'Guest workload (wrk2, constant offered rate)',
-    note: 'Latest run per stack, version, JIT mode and offered rate. Version is what the stack was built from, read from the components its container reported: the CMS release (3.5.8, 11.4.7), a working copy as directory@commit (3.5.9 ../evolution@3f9ea9220), a branch as branch@commit, and the extensions the harness adds (aLatteX, aPhalcon, Gantry); a run pinned with benchmark/scripts/matrix --versions=evo@3.5.8 and a default build of the same release are one cell. Hover the version for the exact components. wrk2 reports coordinated-omission-corrected latency, so an offered rate above capacity shows queueing time. Memory: PHP script peak per request (median), allocator peak (p95), FPM peak RSS (the cgroup\'s anonymous memory: the process, not the page cache) and, when recorded with --footprint, the container footprint with the page cache (what docker stats shows).',
+    note: 'The newest released build of each CMS, plus Evolution 3.5.x with the aLatteX and aPhalcon variants. JIT modes remain separate. Version is what each stack was built from, read from the components its container reported; hover for the exact components. wrk2 reports coordinated-omission-corrected latency, so an offered rate above capacity shows queueing time. Memory: PHP script peak per request (median), allocator peak (p95), FPM peak RSS (the cgroup\'s anonymous memory: the process, not the page cache) and, when recorded with --footprint, the container footprint with the page cache (what docker stats shows).',
     columns: GUEST_COLUMNS,
     rows: guestRows(set),
   });

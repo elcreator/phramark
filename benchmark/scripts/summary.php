@@ -7,9 +7,9 @@ use Phramark\ResultSet;
 require dirname(__DIR__, 2) . '/src/RuntimeProfile.php';
 require dirname(__DIR__, 2) . '/src/ResultSet.php';
 
-// Tabulates every recorded result in benchmark/results: one guest table
-// (latest run per stack × JIT × rate) and one admin table (latest run per
-// stack × JIT), both with the PHP-side and frontend-side memory columns.
+// Tabulates the newest released build of each CMS plus Evolution 3.5.x:
+// one guest row per stack × version × JIT × rate and one admin row per
+// stack × version × JIT, with the PHP-side and frontend-side memory columns.
 // As Markdown for the README, or as JSON for the static results site
 // (docs/results.json, sorted in the browser by docs/site.js).
 //
