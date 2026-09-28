@@ -174,7 +174,7 @@ final class ResultSet
 
             if (str_starts_with($stack, 'evo-')) {
                 $branch = array_filter($representatives, static fn (array $row): bool => self::isEvolution35Branch($row));
-                $release = array_filter($representatives, static fn (array $row): bool => !self::isEvolution35Branch($row));
+                $release = array_filter($representatives, static fn (array $row): bool => !self::isEvolution35Branch($row) && !self::isEvolutionWorkingCopy($row));
                 $latestRelease = self::newestCmsBuild(array_values($release), $stack);
                 $latestBranch = self::latestRecordedBuild(array_values($branch));
                 foreach ([$latestRelease, $latestBranch] as $selected) {
@@ -206,6 +206,18 @@ final class ResultSet
         }
         foreach ($row['components'] ?? [] as $component) {
             if (($component['name'] ?? '') === 'Evolution CMS' && str_contains((string) ($component['version'] ?? ''), '(branch 3.5.x@')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** @param array<string, mixed> $row */
+    private static function isEvolutionWorkingCopy(array $row): bool
+    {
+        foreach ($row['components'] ?? [] as $component) {
+            if (($component['name'] ?? '') === 'Evolution CMS' && str_contains((string) ($component['version'] ?? ''), '(path ')) {
                 return true;
             }
         }
