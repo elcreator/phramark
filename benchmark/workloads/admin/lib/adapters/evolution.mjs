@@ -8,6 +8,11 @@ import { adminPageIds } from '../config.mjs';
 
 const TREE_AJAX = /\/manager\/media\/style\/[^/]+\/ajax\.php(\?|$)/;
 const EDITOR_URL = /[?&]a=27\b/;
+const LOGOUT_ACTION_PATTERN = '(?:^|[?&])a=8(?:&|$)';
+
+export function isEvolutionLogoutHref(href) {
+  return typeof href === 'string' && new RegExp(LOGOUT_ACTION_PATTERN).test(href);
+}
 
 export function isEvolutionTreeNodesResponse(response, expandAll) {
   const request = response.request();
@@ -55,7 +60,11 @@ export class EvolutionAdapter {
     const element = await this.page.waitForSelector('iframe#mainframe');
     const mainframe = await element.contentFrame();
     await mainframe.waitForLoadState('load');
-    await this.page.waitForSelector('a[href="index.php?a=8"]', { state: 'attached' });
+    await this.page.waitForFunction((pattern) => {
+      const isLogout = new RegExp(pattern);
+      return Array.from(document.querySelectorAll('a[href]')).some((link) =>
+        isLogout.test(link.getAttribute('href') ?? ''));
+    }, LOGOUT_ACTION_PATTERN);
     await (await restoredTree).finished();
     await this.waitForTreePaint();
 
@@ -157,7 +166,11 @@ export class EvolutionAdapter {
 
   async logout() {
     this.timer.mark();
-    await this.page.goto(this.url('a=8'));
+    const hrefs = await this.page.locator('a[href]').evaluateAll((links) =>
+      links.map((link) => link.getAttribute('href') ?? ''));
+    const logoutHref = hrefs.find(isEvolutionLogoutHref);
+    if (!logoutHref) throw new Error('The Evolution manager logout link is missing.');
+    await this.page.goto(new URL(logoutHref, this.page.url()).href);
     await this.page.waitForSelector('#username');
     return this.timer.collect();
   }

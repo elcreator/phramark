@@ -29,10 +29,10 @@ final class ResultSet
     private const OPT_IN_STACKS = ['evo-sarticles', 'evo-manticore'];
 
     /**
-     * @param string|null $since only rows recorded at or after this
-     *        recordedAt cutoff (same format, e.g. "2026-09-24T14:00:00Z")
-     *        count; a repeat from an earlier, unrelated run of the matrix
-     *        no longer blends into this run's spread/median.
+     * @param string|null $since rows recorded at or after this recordedAt
+     *        cutoff (same format, e.g. "2026-09-24T14:00:00Z") take precedence
+     *        within each cell. If a cell has no rows after the cutoff, its
+     *        existing history remains in the result set.
      * @return array{generatedAt: string, stacks: array<string, array{label: string, framework: string, components: list<string>, port: int}>, guest: list<array<string, mixed>>, admin: list<array<string, mixed>>}
      */
     public static function collect(string $dir, ?string $since = null): array
@@ -56,15 +56,18 @@ final class ResultSet
             if ($row === null || in_array($row['stack'], self::OPT_IN_STACKS, true)) {
                 continue;
             }
-            if ($since !== null && $row['recordedAt'] < $since) {
-                continue;
-            }
             $row = self::withResolvedVersion($row, $versions);
             $runs[$row['stack'] . '|' . $row['version'] . '|' . $row['jit'] . '|' . $row['rate']][] = $row;
         }
         $guest = [];
         foreach ($runs as $key => $rows) {
             usort($rows, static fn (array $a, array $b): int => strcmp($a['recordedAt'], $b['recordedAt']));
+            if ($since !== null) {
+                $current = array_values(array_filter($rows, static fn (array $row): bool => $row['recordedAt'] >= $since));
+                if ($current !== []) {
+                    $rows = $current;
+                }
+            }
             $latest = $rows[count($rows) - 1];
             $latest['repeats'] = self::spread($rows, ['rps', 'p50Ms', 'p99Ms', 'phpScriptMedianMb', 'phpAllocP95Mb', 'containerPeakMb', 'containerFootprintMb']);
             $base = $dir . '/' . substr($latest['file'], 0, -4);
@@ -88,15 +91,18 @@ final class ResultSet
             if ($row === null || in_array($row['stack'], self::OPT_IN_STACKS, true)) {
                 continue;
             }
-            if ($since !== null && $row['recordedAt'] < $since) {
-                continue;
-            }
             $row = self::withResolvedVersion($row, $versions);
             $runs[$row['stack'] . '|' . $row['version'] . '|' . $row['jit']][] = $row;
         }
         $admin = [];
         foreach ($runs as $key => $rows) {
             usort($rows, static fn (array $a, array $b): int => strcmp($a['recordedAt'], $b['recordedAt']));
+            if ($since !== null) {
+                $current = array_values(array_filter($rows, static fn (array $row): bool => $row['recordedAt'] >= $since));
+                if ($current !== []) {
+                    $rows = $current;
+                }
+            }
             $latest = $rows[count($rows) - 1];
             $flat = static fn (array $row): array => array_merge(['totalWallMs' => $row['totalWallMs']], ...array_map(
                 static fn (string $action): array => [$action . '.ms' => $row['actions'][$action]['ms'], $action . '.serverMs' => $row['actions'][$action]['serverMs']],

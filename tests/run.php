@@ -495,6 +495,18 @@ expect(array_column($adminRow['series']['steps'], 'action'), ['login', 'logout']
 expect($adminRow['series']['phpPeak'], null, 'An admin run without a memory log has no per-request series.');
 expect(isset($adminRow['steps']), false, 'Steps live under series only.');
 expect($resultSet['versions']['stacks']['modx'][0]['version'], '3.2.4-pl', 'The tested versions are part of the result set.');
+
+// A partial matrix refresh should isolate new repetitions only for cells it
+// measured, while keeping the previous rows for all other cells.
+touch($resultsDir . '/guest-modx-jit-tracing-rps-30.txt', 1_789_900_000);
+file_put_contents($resultsDir . '/guest-modx-jit-off-rps-30-2026-09-20T13-00-00Z.txt', "Running 1m test\n 50.000%  80.00ms\n 99.000%  160.00ms\nRequests/sec:     30.00\n");
+$partialResultSet = ResultSet::collect($resultsDir, '2026-09-20T12:30:00Z');
+expect(count($partialResultSet['guest']), 2, 'A since cutoff retains existing guest cells outside the current run.');
+$partialGuestRows = array_column($partialResultSet['guest'], null, 'jit');
+expect([$partialGuestRows['off']['file'], $partialGuestRows['off']['repeats']['n']], ['guest-modx-jit-off-rps-30-2026-09-20T13-00-00Z.txt', 1], 'Current guest repetitions replace older spread data in a measured cell.');
+expect([$partialGuestRows['tracing']['file'], $partialGuestRows['tracing']['repeats']['n']], ['guest-modx-jit-tracing-rps-30.txt', 1], 'An unmeasured guest cell falls back to its existing result.');
+expect([$partialResultSet['admin'][0]['file'], $partialResultSet['admin'][0]['repeats']['n']], ['admin-modx-jit-off-2026-09-20T10-00-00-000Z.json', 2], 'An unmeasured admin cell retains its existing runs and spread.');
+
 $markdown = ResultSet::markdown($resultSet);
 expect(str_contains($markdown, '| modx (3.2.4-pl) | off | 30 | 29.9 | 100.00ms | 200.00ms | 0 | - | - | 60.0 MiB | 90.0 MiB |'), true, 'The guest Markdown row keeps the README format, names the build from the versions snapshot and shows the latest repetition.');
 expect(str_contains($markdown, '| modx (3.2.4-pl) | tracing | 30 | - | - | - | 0 | - | - | - | - |'), true, 'A guest run without numbers renders dashes.');
@@ -504,7 +516,7 @@ expect(str_contains($markdown, '## Versions tested') && str_contains($markdown, 
 expect(json_decode(json_encode($resultSet, JSON_THROW_ON_ERROR), true)['guest'][0]['repeats']['metrics']['p50Ms']['max'], 120.5, 'The result set must round-trip through JSON for the site.');
 array_map('unlink', glob($resultsDir . '/*') ?: []);
 rmdir($resultsDir);
-expect(str_contains(repositoryFile('benchmark/scripts/matrix'), 'summary.php --json > docs/results.json') && str_contains(repositoryFile('benchmark/scripts/matrix'), 'versions.php'), true, 'A matrix run must record the versions and refresh the results site data.');
+expect(str_contains(repositoryFile('benchmark/scripts/matrix'), 'summary.php --since="$started" --json > docs/results.json') && str_contains(repositoryFile('benchmark/scripts/matrix'), 'versions.php'), true, 'A matrix run must record the versions and refresh the results site data.');
 expect(trim(repositoryFile('docs/CNAME')), 'phramark.artur.work', 'The results site is published at phramark.artur.work.');
 expect(str_contains(repositoryFile('benchmark/scripts/matrix'), 'REPEATS') && str_contains(repositoryFile('benchmark/scripts/run'), '-${stamp}.txt') && str_contains(repositoryFile('benchmark/scripts/run'), '.rss.log'), true, 'Cells can be repeated for an error estimate; every guest run keeps its own file and its RSS samples.');
 expect(str_contains(repositoryFile('docs/site.js'), "from './charts.js?v=") && str_contains(repositoryFile('docs/charts.js'), 'export function renderSmallMultiples'), true, 'The results site draws the memory series as small multiples.');

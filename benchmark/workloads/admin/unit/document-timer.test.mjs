@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DocumentTimer, isServerWork } from '../lib/document-timer.mjs';
-import { isEvolutionTreeNodesResponse } from '../lib/adapters/evolution.mjs';
+import { isEvolutionLogoutHref, isEvolutionTreeNodesResponse } from '../lib/adapters/evolution.mjs';
 import { adapterFor } from '../lib/adapters/index.mjs';
 import { WinterAdapter } from '../lib/adapters/winter.mjs';
 
@@ -45,6 +45,15 @@ test('Evolution login selects only the requested tree-node response', () => {
   assert.equal(isEvolutionTreeNodesResponse(nodes, 2), false);
   assert.equal(isEvolutionTreeNodesResponse(response('http://stack/manager/media/style/default/ajax.php', 'POST', 'a=1&f=modxTagHelper'), 1), false);
   assert.equal(isEvolutionTreeNodesResponse(response('http://stack/manager/index.php?a=1', 'POST', 'a=1&f=nodes&expandAll=1'), 1), false);
+});
+
+test('Evolution login recognizes logout links with and without a CSRF token', () => {
+  assert.equal(isEvolutionLogoutHref('index.php?a=8'), true);
+  assert.equal(isEvolutionLogoutHref('index.php?a=8&_token=csrf-token'), true);
+  assert.equal(isEvolutionLogoutHref('/manager/index.php?_token=csrf-token&a=8'), true);
+  assert.equal(isEvolutionLogoutHref('index.php?a=80&_token=csrf-token'), false);
+  assert.equal(isEvolutionLogoutHref('index.php?a=27&id=10104'), false);
+  assert.equal(isEvolutionLogoutHref(null), false);
 });
 
 test('DocumentTimer sums server time of the counted requests between marks', async () => {

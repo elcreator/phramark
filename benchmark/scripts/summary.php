@@ -16,9 +16,9 @@ require dirname(__DIR__, 2) . '/src/ResultSet.php';
 // Usage: php summary.php [RESULTS_DIR] [--json] [--since=2026-09-24T14:00:00Z]
 //   --json also stamps the build's generatedAt into the script URLs of the
 //   site (docs/index.html, docs/site.js), so browsers fetch the scripts anew.
-//   --since drops any result recorded before the cutoff from a cell's
-//   repeats/median, so an unrelated earlier run of the matrix (a different
-//   day, a one-off retry) does not blend into this run's spread.
+//   --since selects current-run rows within each cell when present, so older
+//   runs do not blend into that cell's spread. Cells not measured in this run
+//   retain their existing history in the summary.
 
 $arguments = array_slice($argv, 1);
 $json = in_array('--json', $arguments, true);

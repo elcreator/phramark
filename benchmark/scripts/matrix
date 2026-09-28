@@ -41,9 +41,9 @@ set -u
 
 . "$(dirname "$0")/lib.sh"
 
-# The cutoff passed to summary.php --since: a result recorded before this
-# run started cannot be one of its cells, so it is excluded from the
-# repeats/median instead of blending an unrelated earlier run in.
+# The cutoff passed to summary.php --since: current-run repetitions replace
+# older spread data in measured cells, while cells this run did not measure
+# retain their existing history in the summary.
 started=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 rate=
