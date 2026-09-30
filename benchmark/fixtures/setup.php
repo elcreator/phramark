@@ -220,7 +220,7 @@ function seedCanonical(): void
         insert($pdo, $tvTable, ['id' => $id, 'name' => $name, 'caption' => ucwords(str_replace('_', ' ', $name)), 'type' => 'text', 'elements' => '', 'default_text' => '', 'category' => 0, 'rank' => $id, 'display' => 'default'], $tvColumns);
         // Evolution only resolves a TV for a document when it is assigned to
         // the document's template; without this row getTemplateVarOutput()
-        // returns nothing and the parser and Latte stacks render empty cards.
+        // returns nothing and the manager shows no TV fields to edit.
         $pdo->prepare('INSERT INTO `' . $tvTemplateTable . '` (tmplvarid, templateid, `rank`) VALUES (?, 10, ?)')->execute([$id, $id]);
     }
 
@@ -372,8 +372,14 @@ $evo = evo();
 $items = $evo->getDocumentChildren((int) $evo->documentObject['id'], 1, 0, 'id,pagetitle,introtext,alias,pub_date', '', 'menuindex', 'ASC', 20);
 $page = $evo->documentObject;
 $escape = static fn ($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+// One DBAPI query reads the TVs of every card: getTemplateVarOutput per card would be N+1.
+$cardTvs = [];
+if ($items) {
+    $rs = $evo->db->select('tvc.contentid, tv.name, tvc.value', $evo->getFullTableName('site_tmplvar_contentvalues') . ' tvc INNER JOIN ' . $evo->getFullTableName('site_tmplvars') . ' tv ON tv.id = tvc.tmplvarid', 'tvc.contentid IN (' . implode(',', array_map('intval', array_column($items, 'id'))) . ')');
+    foreach ($evo->db->makeArray($rs) as $row) { $cardTvs[(int) $row['contentid']][$row['name']] = $row['value']; }
+}
 echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' . $escape($page['pagetitle']) . '</title><meta name="description" content="' . $escape($page['description']) . '"></head><body><header><a href="/">Phramark benchmark</a></header><main><h1>' . $escape($page['pagetitle']) . '</h1><p class="intro">' . $escape($page['introtext']) . '</p><section class="articles">';
-foreach ($items as $item) { $tvs = $evo->getTemplateVarOutput('*', (int) $item['id']); echo '<article><img src="' . $escape($tvs['hero_image'] ?? '') . '" alt=""><h2><a href="/articles/' . $escape($page['alias']) . '/' . $escape($item['alias']) . '">' . $escape($item['pagetitle']) . '</a></h2><p class="intro">' . $escape($item['introtext']) . '</p><p class="meta"><span class="author">' . $escape($tvs['author'] ?? '') . '</span> · <span class="reading-time">' . $escape($tvs['reading_time'] ?? '') . ' min</span></p></article>'; }
+foreach ($items as $item) { $tvs = $cardTvs[(int) $item['id']] ?? []; echo '<article><img src="' . $escape($tvs['hero_image'] ?? '') . '" alt=""><h2><a href="/articles/' . $escape($page['alias']) . '/' . $escape($item['alias']) . '">' . $escape($item['pagetitle']) . '</a></h2><p class="intro">' . $escape($item['introtext']) . '</p><p class="meta"><span class="author">' . $escape($tvs['author'] ?? '') . '</span> · <span class="reading-time">' . $escape($tvs['reading_time'] ?? '') . ' min</span></p></article>'; }
 echo '</section></main><footer>Deterministic CMS benchmark fixture</footer></body></html>';
 PHP;
 }

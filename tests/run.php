@@ -339,6 +339,14 @@ expect(str_contains($setup, "'seostrict' => 0"), true, 'Evolution must answer th
 expect(str_contains(repositoryFile('benchmark/implementations/evo-latte/core/custom/config/alattex.php'), "'evo_tags' => false"), true, 'evo-latte measures the Latte view without the EVO pass.');
 expect(str_contains(repositoryFile('benchmark/implementations/evo-latte-parser/core/custom/config/alattex.php'), "'evo_tags' => true"), true, 'evo-latte-parser measures the Latte view with the EVO pass.');
 expect(repositoryFile('benchmark/implementations/evo-latte-parser/views/benchmark-category.latte'), repositoryFile('benchmark/implementations/evo-latte/views/benchmark-category.latte'), 'Both Latte stacks must render the identical view; only the pass differs.');
+// Evolution TVs: one DBAPI IN (...) query per page, never one TV lookup per card.
+$evoCategoryViews = ['evo-parser snippet' => repositoryFile('benchmark/fixtures/setup.php'), 'evo-latte view' => repositoryFile('benchmark/implementations/evo-latte/views/benchmark-category.latte')];
+foreach ($evoCategoryViews as $name => $source) {
+    expect(str_contains($source, "getTemplateVarOutput('*'"), false, $name . ' must not call getTemplateVarOutput() per card (N+1 queries).');
+    expect(str_contains($source, "\$evo->db->select('tvc.contentid, tv.name, tvc.value'"), true, $name . ' must read the card TVs through the DBAPI.');
+    expect(str_contains($source, "'tvc.contentid IN (' . implode(',', array_map('intval', array_column("), true, $name . ' must read the TVs of every card in one IN (...) query over integer ids.');
+    expect(str_contains($source, "getDocumentChildren("), true, $name . ' must keep getDocumentChildren() so document-group access checks still apply.');
+}
 expect(RuntimeProfile::adapters()['evo-latte-parser']['port'], 8085, 'evo-latte-parser takes the port October used.');
 expect(str_contains(repositoryFile('benchmark/workloads/category.lua'), '"/articles/category-%03d"'), true, 'The load workload must use the canonical URL form.');
 expect(str_contains(repositoryFile('benchmark/implementations/drupal/modules/custom/phramark_benchmark/phramark_benchmark.routing.yml'), "path: '/articles/{category}'"), true, 'Drupal placeholders must span a whole path segment.');

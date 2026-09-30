@@ -11,9 +11,15 @@
     <h1>{$pagetitle}</h1>
     <p class="intro">{$introtext}</p>
     {var $cards = $evo->getDocumentChildren((int) $id, 1, 0, 'id,pagetitle,introtext,alias,pub_date', '', 'menuindex', 'ASC', 20)}
+    {* One DBAPI query reads the TVs of every card: getTemplateVarOutput per card would be N+1. *}
+    {var $cardTvs = []}
+    {if $cards}
+        {var $rows = $evo->db->makeArray($evo->db->select('tvc.contentid, tv.name, tvc.value', $evo->getFullTableName('site_tmplvar_contentvalues') . ' tvc INNER JOIN ' . $evo->getFullTableName('site_tmplvars') . ' tv ON tv.id = tvc.tmplvarid', 'tvc.contentid IN (' . implode(',', array_map('intval', array_column($cards, 'id'))) . ')'))}
+        {foreach $rows as $row}{do $cardTvs[(int) $row['contentid']][$row['name']] = $row['value']}{/foreach}
+    {/if}
     <section class="articles">
         {foreach $cards as $card}
-            {var $tvs = $evo->getTemplateVarOutput('*', (int) $card['id'])}
+            {var $tvs = $cardTvs[(int) $card['id']] ?? []}
             <article>
                 <img src="{$tvs['hero_image'] ?? ''}" alt="">
                 <h2><a href="/articles/{$alias}/{$card['alias']}">{$card['pagetitle']}</a></h2>
