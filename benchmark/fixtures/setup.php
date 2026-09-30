@@ -372,10 +372,16 @@ $evo = evo();
 $items = $evo->getDocumentChildren((int) $evo->documentObject['id'], 1, 0, 'id,pagetitle,introtext,alias,pub_date', '', 'menuindex', 'ASC', 20);
 $page = $evo->documentObject;
 $escape = static fn ($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
-// One DBAPI query reads the TVs of every card: getTemplateVarOutput per card would be N+1.
+// One query reads the TVs of every card: getTemplateVarOutput per card would be N+1.
+// Only the three TVs a card renders are read, as the other stacks select only those columns.
+$tvNames = ['hero_image', 'author', 'reading_time'];
 $cardTvs = [];
-if ($items) {
-    $rs = $evo->db->select('tvc.contentid, tv.name, tvc.value', $evo->getFullTableName('site_tmplvar_contentvalues') . ' tvc INNER JOIN ' . $evo->getFullTableName('site_tmplvars') . ' tv ON tv.id = tvc.tmplvarid', 'tvc.contentid IN (' . implode(',', array_map('intval', array_column($items, 'id'))) . ')');
+if ($items && method_exists($evo, 'getTemplateVarValues')) {
+    // The core bulk reader (Evolution after 3.5.8).
+    $cardTvs = $evo->getTemplateVarValues(array_column($items, 'id'), $tvNames);
+} elseif ($items) {
+    // Releases without it: the same query through the DBAPI.
+    $rs = $evo->db->select('tvc.contentid, tv.name, tvc.value', $evo->getFullTableName('site_tmplvars') . ' tv INNER JOIN ' . $evo->getFullTableName('site_tmplvar_contentvalues') . ' tvc ON tvc.tmplvarid = tv.id', "tv.name IN ('" . implode("','", $tvNames) . "') AND tvc.contentid IN (" . implode(',', array_map('intval', array_column($items, 'id'))) . ')');
     foreach ($evo->db->makeArray($rs) as $row) { $cardTvs[(int) $row['contentid']][$row['name']] = $row['value']; }
 }
 echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' . $escape($page['pagetitle']) . '</title><meta name="description" content="' . $escape($page['description']) . '"></head><body><header><a href="/">Phramark benchmark</a></header><main><h1>' . $escape($page['pagetitle']) . '</h1><p class="intro">' . $escape($page['introtext']) . '</p><section class="articles">';

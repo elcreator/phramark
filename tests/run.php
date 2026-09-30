@@ -339,14 +339,21 @@ expect(str_contains($setup, "'seostrict' => 0"), true, 'Evolution must answer th
 expect(str_contains(repositoryFile('benchmark/implementations/evo-latte/core/custom/config/alattex.php'), "'evo_tags' => false"), true, 'evo-latte measures the Latte view without the EVO pass.');
 expect(str_contains(repositoryFile('benchmark/implementations/evo-latte-parser/core/custom/config/alattex.php'), "'evo_tags' => true"), true, 'evo-latte-parser measures the Latte view with the EVO pass.');
 expect(repositoryFile('benchmark/implementations/evo-latte-parser/views/benchmark-category.latte'), repositoryFile('benchmark/implementations/evo-latte/views/benchmark-category.latte'), 'Both Latte stacks must render the identical view; only the pass differs.');
-// Evolution TVs: one DBAPI IN (...) query per page, never one TV lookup per card.
+// Evolution TVs: one IN (...) query per page, never one TV lookup per card.
 $evoCategoryViews = ['evo-parser snippet' => repositoryFile('benchmark/fixtures/setup.php'), 'evo-latte view' => repositoryFile('benchmark/implementations/evo-latte/views/benchmark-category.latte')];
 foreach ($evoCategoryViews as $name => $source) {
     expect(str_contains($source, "getTemplateVarOutput('*'"), false, $name . ' must not call getTemplateVarOutput() per card (N+1 queries).');
     expect(str_contains($source, "\$evo->db->select('tvc.contentid, tv.name, tvc.value'"), true, $name . ' must read the card TVs through the DBAPI.');
-    expect(str_contains($source, "'tvc.contentid IN (' . implode(',', array_map('intval', array_column("), true, $name . ' must read the TVs of every card in one IN (...) query over integer ids.');
     expect(str_contains($source, "getDocumentChildren("), true, $name . ' must keep getDocumentChildren() so document-group access checks still apply.');
 }
+expect(str_contains($evoCategoryViews['evo-latte view'], "'tvc.contentid IN (' . implode(',', array_map('intval', array_column("), true, 'evo-latte view must read the TVs of every card in one IN (...) query over integer ids.');
+// evo-parser: the core bulk reader where the installed Evolution has it, the same
+// single query through the DBAPI on releases before it, and only the TVs a card renders.
+$evoParser = $evoCategoryViews['evo-parser snippet'];
+expect(str_contains($evoParser, "\$tvNames = ['hero_image', 'author', 'reading_time'];"), true, 'evo-parser must read only the three TVs a card renders.');
+expect(str_contains($evoParser, "method_exists(\$evo, 'getTemplateVarValues')"), true, 'evo-parser must use the core bulk reader only where the installed Evolution has it.');
+expect(str_contains($evoParser, "\$evo->getTemplateVarValues(array_column(\$items, 'id'), \$tvNames)"), true, 'evo-parser must read the TVs of every card with one getTemplateVarValues() call.');
+expect(str_contains($evoParser, "\"tv.name IN ('\" . implode(\"','\", \$tvNames) . \"') AND tvc.contentid IN (\" . implode(',', array_map('intval', array_column("), true, 'The evo-parser DBAPI fallback must filter the same TV names over integer ids.');
 expect(RuntimeProfile::adapters()['evo-latte-parser']['port'], 8085, 'evo-latte-parser takes the port October used.');
 expect(str_contains(repositoryFile('benchmark/workloads/category.lua'), '"/articles/category-%03d"'), true, 'The load workload must use the canonical URL form.');
 expect(str_contains(repositoryFile('benchmark/implementations/drupal/modules/custom/phramark_benchmark/phramark_benchmark.routing.yml'), "path: '/articles/{category}'"), true, 'Drupal placeholders must span a whole path segment.');
