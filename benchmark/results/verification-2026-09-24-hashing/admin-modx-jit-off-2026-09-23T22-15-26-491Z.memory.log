@@ -1,0 +1,298 @@
+{"t":1790201704.648,"step":"warmup","method":"GET","uri":"/manager/","status":200,"ms":465.7,"peak":3557728,"peak_real":6291456,"hash_ms":0}
+{"t":1790201705.126,"step":"warmup","method":"POST","uri":"/manager/","status":302,"ms":262.44,"peak":1007824,"peak_real":2097152,"hash_ms":164.19}
+{"t":1790201705.303,"step":"warmup","method":"GET","uri":"/manager/","status":200,"ms":168.6,"peak":1614960,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.368,"step":"warmup","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,welcome,configcheck,dashboards,workspace,trash&action=","status":200,"ms":41.67,"peak":1081296,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.383,"step":"warmup","method":"GET","uri":"/connectors/modx.config.js.php?action=&wctx=mgr&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6913c7f3.14938482","status":200,"ms":44.13,"peak":878712,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.53,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":7.39,"peak":778968,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.557,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":10.37,"peak":779192,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.558,"step":"warmup","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":14.08,"peak":992800,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.681,"step":"warmup","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":79.94,"peak":1037632,"peak_real":4194304,"hash_ms":0}
+{"t":1790201705.799,"step":"warmup","method":"GET","uri":"/manager/?a=resource/update&id=10104","status":200,"ms":162.84,"peak":1510728,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.814,"step":"warmup","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":16.73,"peak":888488,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.82,"step":"warmup","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6913c7f3.14938482","status":200,"ms":21.47,"peak":870208,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.871,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":9.87,"peak":779472,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.877,"step":"warmup","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":10.89,"peak":863568,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.879,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":10.48,"peak":777024,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.935,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":7.37,"peak":777344,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.944,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":11.86,"peak":777056,"peak_real":2097152,"hash_ms":0}
+{"t":1790201705.971,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":11.42,"peak":777400,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.037,"step":"warmup","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":16.31,"peak":879608,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.269,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":79.6,"peak":820008,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.33,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":8.2,"peak":623056,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.338,"step":"warmup","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":32.97,"peak":847272,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.742,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":8.31,"peak":648064,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.758,"step":"warmup","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":30.53,"peak":847272,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.782,"step":"warmup","method":"GET","uri":"/manager/?a=resource/create&context_key=web&parent=10103","status":200,"ms":59.49,"peak":1085440,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.805,"step":"warmup","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/create","status":200,"ms":32.83,"peak":770024,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.805,"step":"warmup","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/create&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6913c7f3.14938482","status":200,"ms":33.64,"peak":780960,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.847,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.84,"peak":602192,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.856,"step":"warmup","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":5.39,"peak":773872,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.864,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.94,"peak":655144,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.895,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.09,"peak":600064,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.895,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.42,"peak":621896,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.909,"step":"warmup","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.97,"peak":641120,"peak_real":2097152,"hash_ms":0}
+{"t":1790201706.968,"step":"warmup","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":27.99,"peak":879304,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.008,"step":"warmup","method":"GET","uri":"/manager/?a=security/logout","status":302,"ms":28.83,"peak":781224,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.039,"step":"warmup","method":"GET","uri":"/manager/","status":200,"ms":28.51,"peak":1077088,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.104,"step":"login:round 1","method":"GET","uri":"/manager/","status":200,"ms":10.03,"peak":785056,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.535,"step":"login:round 1","method":"POST","uri":"/manager/","status":302,"ms":234.61,"peak":746344,"peak_real":2097152,"hash_ms":168.13}
+{"t":1790201707.575,"step":"login:round 1","method":"GET","uri":"/manager/","status":200,"ms":36.72,"peak":1105000,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.602,"step":"login:round 1","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,welcome,configcheck,dashboards,workspace,trash&action=","status":200,"ms":17.02,"peak":885592,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.609,"step":"login:round 1","method":"GET","uri":"/connectors/modx.config.js.php?action=&wctx=mgr&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":21.65,"peak":756328,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.651,"step":"login:round 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.65,"peak":601592,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.664,"step":"login:round 1","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":7.18,"peak":746712,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.665,"step":"login:round 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.3,"peak":631088,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.724,"step":"login:round 1","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":15.8,"peak":852032,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.827,"step":"open-edit:page 10104","method":"GET","uri":"/manager/?a=resource/update&id=10104","status":200,"ms":61.97,"peak":1038760,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.831,"step":"open-edit:page 10104","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":7.64,"peak":746592,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.836,"step":"open-edit:page 10104","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":12.73,"peak":757312,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.865,"step":"open-edit:page 10104","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.87,"peak":602128,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.875,"step":"open-edit:page 10104","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":4.69,"peak":747184,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.877,"step":"open-edit:page 10104","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.13,"peak":631624,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.918,"step":"open-edit:page 10104","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.28,"peak":600000,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.921,"step":"open-edit:page 10104","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.79,"peak":623776,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.937,"step":"open-edit:page 10104","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.54,"peak":661800,"peak_real":2097152,"hash_ms":0}
+{"t":1790201707.993,"step":"open-edit:page 10104","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":19.42,"peak":852616,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.252,"step":"save-edit:page 10104","method":"POST","uri":"/connectors/index.php","status":200,"ms":68.41,"peak":759448,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.306,"step":"save-edit:page 10104","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":18.44,"peak":774736,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.309,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.92,"peak":599808,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.723,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.7,"peak":601952,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.775,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":56.09,"peak":774704,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.828,"step":"verify","method":"GET","uri":"/manager/?a=resource/update&id=10104","status":200,"ms":123.85,"peak":999992,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.843,"step":"verify","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":6.29,"peak":746736,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.865,"step":"verify","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":26.31,"peak":718064,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.888,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.6,"peak":602272,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.902,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":8.44,"peak":634824,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.906,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":10.35,"peak":631768,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.933,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.31,"peak":600144,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.934,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.22,"peak":619224,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.947,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.93,"peak":632328,"peak_real":2097152,"hash_ms":0}
+{"t":1790201708.994,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":22.64,"peak":832608,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.036,"step":"open-edit:page 10105","method":"POST","uri":"/connectors/index.php","status":200,"ms":16.8,"peak":603632,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.465,"step":"open-edit:page 10105","method":"GET","uri":"/manager/?a=resource/update&id=10105","status":200,"ms":46.55,"peak":999768,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.475,"step":"open-edit:page 10105","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":8.15,"peak":746816,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.486,"step":"open-edit:page 10105","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":19.08,"peak":718144,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.509,"step":"open-edit:page 10105","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.73,"peak":602352,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.522,"step":"open-edit:page 10105","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":5.78,"peak":634904,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.522,"step":"open-edit:page 10105","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.63,"peak":631848,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.564,"step":"open-edit:page 10105","method":"POST","uri":"/connectors/index.php","status":200,"ms":9.23,"peak":600224,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.572,"step":"open-edit:page 10105","method":"POST","uri":"/connectors/index.php","status":200,"ms":9.35,"peak":619304,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.591,"step":"open-edit:page 10105","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.37,"peak":632408,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.686,"step":"open-edit:page 10105","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":17.05,"peak":832688,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.898,"step":"save-edit:page 10105","method":"POST","uri":"/connectors/index.php","status":200,"ms":64.33,"peak":756848,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.956,"step":"save-edit:page 10105","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":24.58,"peak":774968,"peak_real":2097152,"hash_ms":0}
+{"t":1790201709.968,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":10.93,"peak":600032,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.38,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":19.83,"peak":774936,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.437,"step":"verify","method":"GET","uri":"/manager/?a=resource/update&id=10105","status":200,"ms":78.59,"peak":999992,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.468,"step":"verify","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":38.45,"peak":746784,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.468,"step":"verify","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":38.1,"peak":718112,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.497,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.17,"peak":602320,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.508,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":5.76,"peak":634872,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.513,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.06,"peak":631816,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.546,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.58,"peak":600192,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.547,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.28,"peak":619272,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.563,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.32,"peak":632376,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.605,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":14.38,"peak":832656,"peak_real":2097152,"hash_ms":0}
+{"t":1790201710.666,"step":"open-edit:page 10106","method":"POST","uri":"/connectors/index.php","status":200,"ms":17.05,"peak":603680,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.089,"step":"open-edit:page 10106","method":"GET","uri":"/manager/?a=resource/update&id=10106","status":200,"ms":39.34,"peak":999608,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.095,"step":"open-edit:page 10106","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":5.03,"peak":746864,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.106,"step":"open-edit:page 10106","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":16.6,"peak":718192,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.128,"step":"open-edit:page 10106","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.41,"peak":602400,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.141,"step":"open-edit:page 10106","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":6.42,"peak":634952,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.141,"step":"open-edit:page 10106","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.52,"peak":631896,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.173,"step":"open-edit:page 10106","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.27,"peak":600272,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.176,"step":"open-edit:page 10106","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.16,"peak":619352,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.188,"step":"open-edit:page 10106","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.9,"peak":632456,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.258,"step":"open-edit:page 10106","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":20.53,"peak":832736,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.509,"step":"save-edit:page 10106","method":"POST","uri":"/connectors/index.php","status":200,"ms":62.65,"peak":756896,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.558,"step":"save-edit:page 10106","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":19.81,"peak":775024,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.564,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.13,"peak":600080,"peak_real":2097152,"hash_ms":0}
+{"t":1790201711.992,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":28.6,"peak":774992,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.005,"step":"verify","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":6.14,"peak":746832,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.01,"step":"verify","method":"GET","uri":"/manager/?a=resource/update&id=10106","status":200,"ms":51.56,"peak":999832,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.03,"step":"verify","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":28.65,"peak":718160,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.064,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.51,"peak":602368,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.071,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":4.55,"peak":634920,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.076,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.84,"peak":631864,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.111,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.11,"peak":600240,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.113,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.62,"peak":619320,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.126,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.78,"peak":632424,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.17,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":14.25,"peak":832704,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.211,"step":"open-edit:page 10107","method":"POST","uri":"/connectors/index.php","status":200,"ms":17.06,"peak":603728,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.636,"step":"open-edit:page 10107","method":"GET","uri":"/manager/?a=resource/update&id=10107","status":200,"ms":41.98,"peak":999656,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.642,"step":"open-edit:page 10107","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":8.74,"peak":746912,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.653,"step":"open-edit:page 10107","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":19.51,"peak":718240,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.68,"step":"open-edit:page 10107","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.6,"peak":602448,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.692,"step":"open-edit:page 10107","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.58,"peak":631944,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.696,"step":"open-edit:page 10107","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":10.13,"peak":635000,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.729,"step":"open-edit:page 10107","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.63,"peak":600320,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.732,"step":"open-edit:page 10107","method":"POST","uri":"/connectors/index.php","status":200,"ms":7.78,"peak":619400,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.743,"step":"open-edit:page 10107","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.75,"peak":632504,"peak_real":2097152,"hash_ms":0}
+{"t":1790201712.825,"step":"open-edit:page 10107","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":27.36,"peak":832784,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.103,"step":"save-edit:page 10107","method":"POST","uri":"/connectors/index.php","status":200,"ms":83.51,"peak":757360,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.157,"step":"save-edit:page 10107","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":18.86,"peak":775080,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.161,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.94,"peak":600128,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.579,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":20.68,"peak":775048,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.616,"step":"verify","method":"GET","uri":"/manager/?a=resource/update&id=10107","status":200,"ms":59.88,"peak":999880,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.619,"step":"verify","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":8.8,"peak":747056,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.627,"step":"verify","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":15.26,"peak":718512,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.658,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.24,"peak":602592,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.669,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":5.18,"peak":635144,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.671,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.68,"peak":632088,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.703,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.51,"peak":600464,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.704,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.74,"peak":619592,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.721,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.61,"peak":632648,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.786,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":18.14,"peak":832928,"peak_real":2097152,"hash_ms":0}
+{"t":1790201713.814,"step":"open-edit:page 10108","method":"POST","uri":"/connectors/index.php","status":200,"ms":27.64,"peak":603952,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.239,"step":"open-edit:page 10108","method":"GET","uri":"/manager/?a=resource/update&id=10108","status":200,"ms":51.1,"peak":999880,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.246,"step":"open-edit:page 10108","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":10.71,"peak":747136,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.253,"step":"open-edit:page 10108","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":17,"peak":718592,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.279,"step":"open-edit:page 10108","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.5,"peak":602672,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.288,"step":"open-edit:page 10108","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":5.7,"peak":635224,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.291,"step":"open-edit:page 10108","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.99,"peak":632168,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.32,"step":"open-edit:page 10108","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.06,"peak":600544,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.322,"step":"open-edit:page 10108","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.66,"peak":619672,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.34,"step":"open-edit:page 10108","method":"POST","uri":"/connectors/index.php","status":200,"ms":9.1,"peak":632728,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.407,"step":"open-edit:page 10108","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":17.06,"peak":833008,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.642,"step":"save-edit:page 10108","method":"POST","uri":"/connectors/index.php","status":200,"ms":55.7,"peak":757168,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.696,"step":"save-edit:page 10108","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":21.88,"peak":775312,"peak_real":2097152,"hash_ms":0}
+{"t":1790201714.699,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.36,"peak":600352,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.12,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":19.66,"peak":775280,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.152,"step":"verify","method":"GET","uri":"/manager/?a=resource/update&id=10108","status":200,"ms":56.63,"peak":1000104,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.158,"step":"verify","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":23.79,"peak":718608,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.177,"step":"verify","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":42.27,"peak":747104,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.206,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.41,"peak":602640,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.216,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":4.95,"peak":635192,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.222,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":8.99,"peak":632136,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.249,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.59,"peak":600512,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.256,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.86,"peak":619640,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.265,"step":"verify","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.13,"peak":632696,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.32,"step":"verify","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":19.6,"peak":832976,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.374,"step":"open-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":25.76,"peak":604000,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.775,"step":"open-create:page 1","method":"GET","uri":"/manager/?a=resource/create&context_key=web&parent=10103","status":200,"ms":26.83,"peak":963992,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.786,"step":"open-create:page 1","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/create","status":200,"ms":10.2,"peak":748280,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.791,"step":"open-create:page 1","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/create&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":15.58,"peak":719992,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.813,"step":"open-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.21,"peak":603816,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.823,"step":"open-create:page 1","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":5.15,"peak":636368,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.825,"step":"open-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.31,"peak":633312,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.853,"step":"open-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.03,"peak":601688,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.854,"step":"open-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":3.88,"peak":621072,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.867,"step":"open-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.51,"peak":633872,"peak_real":2097152,"hash_ms":0}
+{"t":1790201715.952,"step":"open-create:page 1","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":26.25,"peak":834152,"peak_real":2097152,"hash_ms":0}
+{"t":1790201716.199,"step":"save-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":68.03,"peak":776440,"peak_real":2097152,"hash_ms":0}
+{"t":1790201716.228,"step":"save-create:page 1","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":22.14,"peak":793904,"peak_real":2097152,"hash_ms":0}
+{"t":1790201716.278,"step":"save-create:page 1","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":20.54,"peak":793904,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.079,"step":"save-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.1,"peak":603672,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.302,"step":"save-create:page 1","method":"GET","uri":"/manager/?a=resource/update&id=10129&parent=10103&context_key=web","status":200,"ms":93.23,"peak":1001824,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.313,"step":"save-create:page 1","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":9.79,"peak":748648,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.324,"step":"save-create:page 1","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":13.26,"peak":720360,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.347,"step":"save-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.3,"peak":604184,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.359,"step":"save-create:page 1","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":6.49,"peak":636736,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.364,"step":"save-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":7.56,"peak":633680,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.399,"step":"save-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.5,"peak":602056,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.401,"step":"save-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.07,"peak":621440,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.42,"step":"save-create:page 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":10.4,"peak":634240,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.475,"step":"save-create:page 1","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":18.99,"peak":834520,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.515,"step":"open-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":18.73,"peak":605520,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.939,"step":"open-create:page 2","method":"GET","uri":"/manager/?a=resource/create&context_key=web&parent=10103","status":200,"ms":42.76,"peak":964800,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.959,"step":"open-create:page 2","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/create","status":200,"ms":11.6,"peak":748696,"peak_real":2097152,"hash_ms":0}
+{"t":1790201717.972,"step":"open-create:page 2","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/create&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":23.87,"peak":720408,"peak_real":2097152,"hash_ms":0}
+{"t":1790201718.008,"step":"open-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.28,"peak":604232,"peak_real":2097152,"hash_ms":0}
+{"t":1790201718.019,"step":"open-create:page 2","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":5.2,"peak":636784,"peak_real":2097152,"hash_ms":0}
+{"t":1790201718.026,"step":"open-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.57,"peak":633728,"peak_real":2097152,"hash_ms":0}
+{"t":1790201718.058,"step":"open-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.29,"peak":602104,"peak_real":2097152,"hash_ms":0}
+{"t":1790201718.062,"step":"open-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.66,"peak":621488,"peak_real":2097152,"hash_ms":0}
+{"t":1790201718.072,"step":"open-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.1,"peak":634288,"peak_real":2097152,"hash_ms":0}
+{"t":1790201718.136,"step":"open-create:page 2","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":16,"peak":834568,"peak_real":2097152,"hash_ms":0}
+{"t":1790201718.365,"step":"save-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":61.08,"peak":776936,"peak_real":2097152,"hash_ms":0}
+{"t":1790201718.397,"step":"save-create:page 2","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":23.99,"peak":811776,"peak_real":2097152,"hash_ms":0}
+{"t":1790201718.447,"step":"save-create:page 2","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":22.94,"peak":811776,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.296,"step":"save-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.01,"peak":604088,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.417,"step":"save-create:page 2","method":"GET","uri":"/manager/?a=resource/update&id=10130&parent=10103&context_key=web","status":200,"ms":41.36,"peak":1001920,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.428,"step":"save-create:page 2","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":10.9,"peak":748744,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.434,"step":"save-create:page 2","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":15.67,"peak":720456,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.466,"step":"save-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.35,"peak":604280,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.476,"step":"save-create:page 2","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":6.01,"peak":636832,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.479,"step":"save-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.25,"peak":633776,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.514,"step":"save-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.57,"peak":602152,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.517,"step":"save-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.07,"peak":621536,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.533,"step":"save-create:page 2","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.94,"peak":634336,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.617,"step":"save-create:page 2","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":41.28,"peak":834616,"peak_real":2097152,"hash_ms":0}
+{"t":1790201719.647,"step":"open-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":20.95,"peak":605616,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.053,"step":"open-create:page 3","method":"GET","uri":"/manager/?a=resource/create&context_key=web&parent=10103","status":200,"ms":25.35,"peak":964904,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.057,"step":"open-create:page 3","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/create","status":200,"ms":5.61,"peak":748792,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.066,"step":"open-create:page 3","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/create&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":14.34,"peak":720504,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.089,"step":"open-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.46,"peak":604328,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.102,"step":"open-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.4,"peak":633824,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.102,"step":"open-create:page 3","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":5.48,"peak":636880,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.131,"step":"open-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.25,"peak":602200,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.134,"step":"open-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.32,"peak":621584,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.145,"step":"open-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.6,"peak":634384,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.189,"step":"open-create:page 3","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":15.9,"peak":834664,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.451,"step":"save-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":69.89,"peak":777112,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.489,"step":"save-create:page 3","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":30.42,"peak":829936,"peak_real":2097152,"hash_ms":0}
+{"t":1790201720.587,"step":"save-create:page 3","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":24.87,"peak":829936,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.437,"step":"save-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.11,"peak":604184,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.503,"step":"save-create:page 3","method":"GET","uri":"/manager/?a=resource/update&id=10131&parent=10103&context_key=web","status":200,"ms":40.94,"peak":1002008,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.514,"step":"save-create:page 3","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":11.49,"peak":748840,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.52,"step":"save-create:page 3","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":16.79,"peak":720552,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.543,"step":"save-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.7,"peak":604376,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.555,"step":"save-create:page 3","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":7.21,"peak":636928,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.556,"step":"save-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.18,"peak":633872,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.598,"step":"save-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":8.56,"peak":602248,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.603,"step":"save-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":8.85,"peak":621632,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.613,"step":"save-create:page 3","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.46,"peak":634432,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.667,"step":"save-create:page 3","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":15.63,"peak":834712,"peak_real":2097152,"hash_ms":0}
+{"t":1790201721.707,"step":"open-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":19.19,"peak":605712,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.13,"step":"open-create:page 4","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/create","status":200,"ms":9.13,"peak":748840,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.133,"step":"open-create:page 4","method":"GET","uri":"/manager/?a=resource/create&context_key=web&parent=10103","status":200,"ms":44.4,"peak":965000,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.144,"step":"open-create:page 4","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/create&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":24.13,"peak":720600,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.166,"step":"open-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.03,"peak":604424,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.178,"step":"open-create:page 4","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":7.35,"peak":636976,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.184,"step":"open-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":8.32,"peak":633920,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.218,"step":"open-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.35,"peak":602296,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.218,"step":"open-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.42,"peak":621680,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.233,"step":"open-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.06,"peak":634480,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.291,"step":"open-create:page 4","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":17.64,"peak":834760,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.585,"step":"save-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":84.71,"peak":777704,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.633,"step":"save-create:page 4","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":38.33,"peak":847808,"peak_real":2097152,"hash_ms":0}
+{"t":1790201722.728,"step":"save-create:page 4","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":30.93,"peak":847808,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.571,"step":"save-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.16,"peak":604280,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.672,"step":"save-create:page 4","method":"GET","uri":"/manager/?a=resource/update&id=10132&parent=10103&context_key=web","status":200,"ms":74.21,"peak":1002112,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.679,"step":"save-create:page 4","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":28.4,"peak":748936,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.709,"step":"save-create:page 4","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":48.76,"peak":720600,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.737,"step":"save-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.76,"peak":604424,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.753,"step":"save-create:page 4","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":7.21,"peak":636976,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.756,"step":"save-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":7.18,"peak":633920,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.789,"step":"save-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.23,"peak":602296,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.795,"step":"save-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":9.34,"peak":621680,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.807,"step":"save-create:page 4","method":"POST","uri":"/connectors/index.php","status":200,"ms":7.25,"peak":634480,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.875,"step":"save-create:page 4","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":16.26,"peak":834760,"peak_real":2097152,"hash_ms":0}
+{"t":1790201723.889,"step":"open-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":18.98,"peak":605760,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.301,"step":"open-create:page 5","method":"GET","uri":"/manager/?a=resource/create&context_key=web&parent=10103","status":200,"ms":29.22,"peak":965048,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.317,"step":"open-create:page 5","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/create","status":200,"ms":15.01,"peak":748936,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.326,"step":"open-create:page 5","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/create&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":21.55,"peak":720648,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.348,"step":"open-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.97,"peak":604472,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.361,"step":"open-create:page 5","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":8.09,"peak":637024,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.362,"step":"open-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.3,"peak":633968,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.397,"step":"open-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.25,"peak":621728,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.397,"step":"open-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.64,"peak":602344,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.411,"step":"open-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":5.64,"peak":634528,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.478,"step":"open-create:page 5","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":19.93,"peak":834808,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.717,"step":"save-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":66.83,"peak":777832,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.764,"step":"save-create:page 5","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":37.11,"peak":865440,"peak_real":2097152,"hash_ms":0}
+{"t":1790201724.863,"step":"save-create:page 5","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_10103&type=MODX\\Revolution\\modResource","status":200,"ms":35.53,"peak":865440,"peak_real":2097152,"hash_ms":0}
+{"t":1790201725.707,"step":"save-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":4.74,"peak":604328,"peak_real":2097152,"hash_ms":0}
+{"t":1790201725.772,"step":"save-create:page 5","method":"GET","uri":"/manager/?a=resource/update&id=10133&parent=10103&context_key=web","status":200,"ms":42.82,"peak":1002160,"peak_real":2097152,"hash_ms":0}
+{"t":1790201725.78,"step":"save-create:page 5","method":"GET","uri":"/connectors/lang.js.php?ctx=mgr&topic=topmenu,file,resource,resource,trash&action=resource/update","status":200,"ms":8.64,"peak":749240,"peak_real":2097152,"hash_ms":0}
+{"t":1790201725.79,"step":"save-create:page 5","method":"GET","uri":"/connectors/modx.config.js.php?action=resource/update&wctx=web&HTTP_MODAUTH=modx6ab16858994b01.58625081_16ab44f6b7c5673.90178746","status":200,"ms":18.52,"peak":721208,"peak_real":2097152,"hash_ms":0}
+{"t":1790201725.818,"step":"save-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.3,"peak":604776,"peak_real":2097152,"hash_ms":0}
+{"t":1790201725.827,"step":"save-create:page 5","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=root","status":200,"ms":5.54,"peak":637328,"peak_real":2097152,"hash_ms":0}
+{"t":1790201725.831,"step":"save-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.98,"peak":634272,"peak_real":2097152,"hash_ms":0}
+{"t":1790201725.868,"step":"save-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":7.1,"peak":602648,"peak_real":2097152,"hash_ms":0}
+{"t":1790201725.869,"step":"save-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":5,"peak":622288,"peak_real":2097152,"hash_ms":0}
+{"t":1790201725.884,"step":"save-create:page 5","method":"POST","uri":"/connectors/index.php","status":200,"ms":6.12,"peak":634832,"peak_real":2097152,"hash_ms":0}
+{"t":1790201725.962,"step":"save-create:page 5","method":"POST","uri":"/connectors/index.php?action=Resource/GetNodes&id=web_0&type=MODX\\Revolution\\modContext","status":200,"ms":25.35,"peak":835112,"peak_real":2097152,"hash_ms":0}
+{"t":1790201726.017,"step":"logout:round 1","method":"POST","uri":"/connectors/index.php","status":200,"ms":16.84,"peak":606096,"peak_real":2097152,"hash_ms":0}
+{"t":1790201726.419,"step":"logout:round 1","method":"GET","uri":"/manager/?a=security/logout","status":302,"ms":18.37,"peak":758592,"peak_real":2097152,"hash_ms":0}
+{"t":1790201726.448,"step":"logout:round 1","method":"GET","uri":"/manager/","status":200,"ms":27.56,"peak":778352,"peak_real":2097152,"hash_ms":0}

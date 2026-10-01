@@ -1,0 +1,71 @@
+== building trees
+  old differs from new in 23 files
+== 1. CLI install (new tree), SQLite
+  PASS cli sqlite: installer exits 0 (0)
+  PASS cli sqlite: front page answers 200 (200)
+  PASS cli sqlite: SQLite keeps PDO's prepares (0n)
+  PASS cli sqlite: site cache holds the translated text defaults
+  PASS cli sqlite: index created on SQLite (1)
+== 2. CLI update: old install, new files, --typeInstall=2
+  PASS cli update: old install exits 0 (0)
+  PASS cli update: old install answers
+  PASS cli update: updater exits 0 (0)
+  PASS cli_upd: front page answers 200 (200)
+  PASS cli_upd: no PHP error on the page
+  PASS cli_upd: (parent, menuindex) index exists (2 columns)
+  PASS cli_upd: migration recorded once
+  PASS cli_upd: site cache holds the translated text defaults
+  PASS cli_upd: existing connection config left as it was (0u)
+  PASS cli_upd: no errors in the core log
+== 3. Web install (new tree)
+  PASS web install: install step answers 200 (200)
+  PASS web_new: front page answers 200 (200)
+  PASS web_new: no PHP error on the page
+  PASS web_new: (parent, menuindex) index exists (2 columns)
+  PASS web_new: migration recorded once
+  PASS web_new: site cache holds the translated text defaults
+  PASS web_new: new connection: client-side prepares, no use statement (1n)
+  PASS web_new: no errors in the core log
+== 3b. Control: web install of the old tree
+  PASS web install (old): install step answers 200 (200)
+  PASS web install (old): front page answers 200 (200)
+== 4. Web update: old install, new files, installmode=1
+  PASS web update: install step answers 200 (200)
+  PASS web_upd: front page answers 200 (200)
+  PASS web_upd: no PHP error on the page
+  PASS web_upd: (parent, menuindex) index exists (2 columns)
+  PASS web_upd: migration recorded once
+  PASS web_upd: site cache holds the translated text defaults
+  PASS web_upd: existing connection config left as it was (0u)
+  PASS web_upd: no errors in the core log
+== packaging the new tree like a GitHub archive (one root folder)
+  zip 30457958 bytes
+== 5. CLI: artisan make:site update (old site updates itself to the new archive)
+  seam patched: download=1 metadata=1
+  PASS make:site: exits 0 (0)
+  PASS make:site: reports the new version
+  PASS make:site: new files are in place
+  PASS make:site: Composer ran without dev packages
+  PASS make_upd: front page answers 200 (200)
+  PASS make_upd: no PHP error on the page
+  PASS make_upd: (parent, menuindex) index exists (2 columns)
+  PASS make_upd: migration recorded once
+  PASS make_upd: site cache holds the translated text defaults
+  PASS make_upd: existing connection config left as it was (0u)
+  PASS make_upd: no errors in the core log
+== 6. Admin panel: update button -> queued site_update task -> system:task-worker
+  seam patched: download=1 metadata=1
+  FAIL admin: task queued ({"ok":false,"status":null,"error":"SITE_UPDATE_BLOCKED"})
+  PASS admin: worker exits 0 (0)
+  FAIL admin: task succeeded ()
+  FAIL admin: database backup was made first
+  FAIL admin: new files are in place
+  PASS admin_upd: front page answers 200 (200)
+  PASS admin_upd: no PHP error on the page
+  FAIL admin_upd: (parent, menuindex) index exists (0 columns)
+  FAIL admin_upd: migration recorded once
+  FAIL admin_upd: site cache holds the translated text defaults
+  PASS admin_upd: existing connection config left as it was (0u)
+  PASS admin_upd: no errors in the core log
+== cleanup
+RESULT pass=49 fail=7

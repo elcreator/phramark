@@ -1,0 +1,11 @@
+Phramark admin workload: stack=modx jit=off base=http://nginx-modx:80 rounds=1 pages=5
+Total wall time: 15452.21 ms over 22 steps
+PHP-FPM container peak RSS during the run: 27 MiB
+
+action        n    wall p50    wall p95    wall max    server p50     hashing p50    php peak p50   js heap p50    dom nodes p50  
+login         1    492.14 ms   492.14 ms   492.14 ms   152.17 ms      168.13 ms      1.05 MiB       22.88 MiB      9702           
+open-edit     5    617.06 ms   642.04 ms   642.04 ms   203.98 ms      -              0.95 MiB       27.78 MiB      6942           
+save-edit     5    260.52 ms   279 ms      279 ms      131.45 ms      -              0.74 MiB       22.28 MiB      2032           
+open-create   5    615.29 ms   638.58 ms   638.58 ms   176.23 ms      -              0.92 MiB       48.45 MiB      6909           
+save-create   5    1473.5 ms   1502.56 ms  1502.56 ms  385.76 ms      -              0.96 MiB       39.71 MiB      9535           
+logout        1    486.78 ms   486.78 ms   486.78 ms   70.73 ms       -              0.74 MiB       64.05 MiB      10416          

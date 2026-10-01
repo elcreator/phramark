@@ -1,0 +1,11 @@
+Phramark admin workload: stack=evo-parser jit=off base=http://nginx-parser:80 rounds=1 pages=5
+Total wall time: 18117.82 ms over 22 steps
+PHP-FPM container peak RSS during the run: 96.1 MiB
+
+action        n    wall p50    wall p95    wall max    server p50     php peak p50   js heap p50    dom nodes p50  
+login         1    2468.8 ms   2468.8 ms   2468.8 ms   442.54 ms      2.5 MiB        13.86 MiB      27352          
+open-edit     5    380.74 ms   457.53 ms   457.53 ms   177.25 ms      1.23 MiB       15.44 MiB      8251           
+save-edit     5    1114.27 ms  1249.21 ms  1249.21 ms  747.11 ms      5.94 MiB       16.74 MiB      9699           
+open-create   5    418.02 ms   551.74 ms   551.74 ms   165.54 ms      1.26 MiB       18.72 MiB      13345          
+save-create   5    1140.71 ms  1364.22 ms  1364.22 ms  892.65 ms      5.93 MiB       16.93 MiB      12162          
+logout        1    489.22 ms   489.22 ms   489.22 ms   338.24 ms      2.12 MiB       12.78 MiB      5018           

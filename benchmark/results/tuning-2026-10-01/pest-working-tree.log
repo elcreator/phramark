@@ -1,0 +1,1607 @@
+PHP Deprecated:  uploader::checkUploadedFile(): Implicitly marking parameter $aFile as nullable is deprecated, the explicit nullable type must be used instead in /w/manager/media/browser/mcpuk/core/uploader.php on line 373
+PHP Deprecated:  uploader::label(): Implicitly marking parameter $data as nullable is deprecated, the explicit nullable type must be used instead in /w/manager/media/browser/mcpuk/core/uploader.php on line 735
+PHP Deprecated:  uploader::backMsg(): Implicitly marking parameter $data as nullable is deprecated, the explicit nullable type must be used instead in /w/manager/media/browser/mcpuk/core/uploader.php on line 748
+PHP Deprecated:  browser::errorMsg(): Implicitly marking parameter $data as nullable is deprecated, the explicit nullable type must be used instead in /w/manager/media/browser/mcpuk/core/browser.php on line 1543
+
+   INFO  Deprecated: uploader::checkUploadedFile(): Implicitly marking parameter $aFile as nullable is deprecated, the explicit nullable type must be used instead in /w/manager/media/browser/mcpuk/core/uploader.php on line 373
+
+
+Deprecated: uploader::label(): Implicitly marking parameter $data as nullable is deprecated, the explicit nullable type must be used instead in /w/manager/media/browser/mcpuk/core/uploader.php on line 735
+
+Deprecated: uploader::backMsg(): Implicitly marking parameter $data as nullable is deprecated, the explicit nullable type must be used instead in /w/manager/media/browser/mcpuk/core/uploader.php on line 748
+
+Deprecated: browser::errorMsg(): Implicitly marking parameter $data as nullable is deprecated, the explicit nullable type must be used instead in /w/manager/media/browser/mcpuk/core/browser.php on line 1543.
+
+   PASS  Tests\Feature\InstallerWebPathTest
+  ✓ fresh web install requires successful completion before its install… 0.18s  
+
+   PASS  Tests\Feature\ModifiersTest
+  ✓ addbreak modifier adds br tags to plain text lines                   0.02s  
+  ✓ addbreak modifier does not add br after block elements
+  ✓ addbreak modifier handles mixed content
+  ✓ addbreak modifier handles different line endings
+  ✓ addbreak modifier trims trailing whitespace
+  ✓ addbreak modifier handles empty lines
+  ✓ addbreak modifier handles HTML tags in lines
+
+   PASS  Tests\Feature\ModuleRoleAclDatabaseTest
+  ✓ it restricts an already installed Extras module to administrators w… 0.05s  
+  ✓ it hides a restricted module from the roles it is not granted to     0.01s  
+  ✓ it grants a restricted module to a role that is listed on it         0.01s  
+  ✓ it keeps a module with no rows available to every role
+  ✓ it counts a module as restricted even when only other roles are listed
+  ✓ it applies the shipped default when an install path creates a bundled module
+  ✓ it leaves a bundled module alone once an administrator has changed its restriction
+  ✓ it skips a default for a role that does not exist on the site
+
+   PASS  Tests\Feature\SiteUpdateE2ETest
+  ✓ update from version N to N+1 applies migrations, update seeders and… 0.05s  
+  ✓ manager system upgrade action queues work and finishes on the reque… 0.08s  
+  ✓ moveFiles replaces files into the destination tree
+  ✓ rmdirs removes a directory tree recursively
+[EvolutionCMS] Skipped invalid custom config file "/tmp/evo-config-broken-custom-5f1ebf073f/custom/config/cms/settings/ControllerNamespace.php": syntax error, unexpected end of file, expecting variable or "${" or "{$"
+[EvolutionCMS] Skipped invalid custom config file "/tmp/evo-config-broken-custom-runtime-2cf7c141ca/custom/config/cms/settings/Broken.php": array_merge(): Argument #2 must be of type array, false given
+
+   PASS  Tests\Unit\AbstractLaravelLoadConfigurationTest
+  ✓ loadConfiguration reads valid split custom settings files            0.01s  
+  ✓ loadConfiguration skips invalid custom config files without killing bootstrap
+  ✓ loadConfiguration skips custom config runtime failures without killing bootstrap
+  ✓ loadConfiguration still throws for invalid non-custom config files
+  ✓ loadConfiguration still throws for non-custom config runtime failures
+
+   PASS  Tests\Unit\BackupManagerSqlImportSplitTest
+  ✓ backup manager import keeps semicolons inside sqlite string literal… 0.01s  
+  ✓ backup manager import ignores semicolons inside quoted values and comments
+  ✓ backup manager import keeps serialized sqlite settings values together
+  ✓ backup manager executes sqlite restore dumps as one script
+
+   PASS  Tests\Unit\BladeDirectivesOnDemandTest
+  ✓ booting the providers does not build the compiler                    0.01s  
+  ✓ the compiler gets the directives once it is built                    0.01s  
+  ✓ a compiler built before the providers boot gets the directives too
+
+   WARN  Tests\Unit\Bootstrap\EnvCacheLoaderInstallStateTest
+  ! bootstrap configuration is not cached or reused before installation… 0.02s  
+  ! cached configuration is rebuilt after a packaged build moves to a n… 0.01s  
+
+   WARN  Tests\Unit\CommittedClassmapTest
+  - every class under core/src is in the committed classmap with ('auto… 0.01s  
+  - every class under core/src is in the committed classmap with ('autoload_static.php') → no git checkout to read the committed classmap from
+
+   PASS  Tests\Unit\Console\ClearCacheFullCommandTest
+  ✓ command has correct name                                             0.01s  
+  ✓ command has correct description
+  ✓ handle deletes services file if it exists
+  ✓ handle deletes packages file if it exists
+  ✓ handle does not fail when cache files do not exist
+  ✓ handle calls evo clearCache with full parameter
+  ✓ handle clears all caches in correct order
+
+   PASS  Tests\Unit\Console\PackageDiscoverStaleProviderCleanupTest
+  ✓ package discovery removes provider config files whose class no long… 0.01s  
+  ✓ package discovery keeps provider files generated during the current run
+  ✓ configured provider registration skips classes that do not exist
+
+   PASS  Tests\Unit\Console\PackageDiscoverTransitiveWarningTest
+  ✓ package discovery warns about provider packages kept by transitive requirements
+
+   PASS  Tests\Unit\Console\PackageRequireCommandTest
+  ✓ package remove require reports missing requirements                  0.01s  
+  ✓ package remove require reports removed requirements
+  ✓ composer option handling is guarded by command signature
+  ✓ package install require scopes composer update to the installed package
+  ✓ package remove require scopes composer update to the removed package
+  ✓ composer update falls back to a full update when no package was changed
+  ✓ a failed composer update restores composer.json and the lock file, then reinstalls from it
+  ✓ an update after which the site no longer boots is rolled back as well
+  ✓ a successful update keeps the new requirement and lock file
+  ✓ composer update asks for minimal changes when the composer knows the option
+  ✓ keep-dependencies leaves the dependencies of an uploaded package alone
+  ✓ composer arguments become an escaped non-interactive command line
+  ✓ minimal changes is used only from composer 2.7 on with (null, false)
+  ✓ minimal changes is used only from composer 2.7 on with ('2.6.6', false)
+  ✓ minimal changes is used only from composer 2.7 on with ('2.7.0', true)
+  ✓ minimal changes is used only from composer 2.7 on with ('2.8.12', true)
+  ✓ minimal changes is used only from composer 2.7 on with ('3.0', true)
+  ✓ composer version is read from the version banner with ('Composer version 2.8.12 2025-…:41:59', '2.8.12')
+  ✓ composer version is read from the version banner with ('PHP version 8.4.1Composer v…-02-08', '2.7.0')
+  ✓ composer version is read from the version banner with ('Composer 2.2.18', '2.2.18')
+  ✓ composer version is read from the version banner with ('command not found', null)
+  ✓ autoload registration rebuilds the autoloader instead of updating every package
+  ✓ composer runs in-process only when no process can be started
+
+   PASS  Tests\Unit\Console\SiteUpdateCommandTest
+  ✓ buildArchiveUrl uses tag archive path for semantic versions          0.01s  
+  ✓ buildArchiveUrl uses branch archive path for branch refs
+  ✓ buildArchiveUrl preserves nested branch paths
+  ✓ buildArchiveUrl uses commit archive path for commit hashes
+  ✓ normalizeRequestedVersion keeps explicit refs and normalizes empty input
+  ✓ normalizeUpdateRepository trims custom repository slugs
+  ✓ site updater runs core migrations during updates
+  ✓ site updater removes update placeholder files before composer repair
+  ✓ site updater repairs composer vendor state before artisan commands
+  ✓ ordinary composer lifecycle does not synchronize root version metadata
+  ✓ site updater accepts only real composer package names for scoped updates
+  ✓ site updater builds scoped composer update for custom packages
+  ✓ site updater accepts configured composer binary
+  ✓ site updater checks user local composer path as a fallback
+  ✓ site updater can read bundled extras installer metadata
+  ✓ composer detection uses a probe the local shell actually understands
+  ✓ shellCommandExists finds a command that is really on PATH
+  ✓ composer binary candidates cover windows layouts as well as posix ones
+  ✓ isExecutableFile accepts a windows shim that is_executable rejects
+  ✓ downloadUpdateArchive rejects a download that returned nothing
+  ✓ downloadUpdateArchive stores a payload it actually received
+  ✓ extractUpdateArchive refuses an empty file that opens as a valid archive
+  ✓ extractUpdateArchive refuses a truncated or wrong payload without throwing
+  ✓ extractUpdateArchive unpacks a real archive
+  ✓ resolveExtractedRoot names the single unpacked directory and rejects anything else
+  ✓ startUpdate aborts on a bad package before touching the site
+
+   PASS  Tests\Unit\Console\VendorPublishManifestTest
+  ✓ vendor publish records written assets in a storage manifest          0.01s  
+
+   PASS  Tests\Unit\Controllers\ControllerNullableSignatureTest
+  ✓ resources controller autoload has no implicit nullable deprecation   0.09s  
+  ✓ role management controller autoload has no implicit nullable deprec… 0.08s  
+
+   PASS  Tests\Unit\Controllers\ManagerEmptyHashLoginTest
+  ✓ manager hash login rejects empty hashes before user lookup           0.01s  
+
+   PASS  Tests\Unit\Controllers\SearchTest
+  ✓ sqlite text searches remain case-insensitive for manager search que… 0.01s  
+  ✓ sqlite case-insensitive search also matches secondary text columns
+
+   PASS  Tests\Unit\Controllers\UserRoles\UserRolePermissionPayloadTest
+  ✓ it keeps disabled manager permissions when no checkbox payload is s… 0.01s  
+  ✓ it merges required permissions into the submitted role payload
+
+   PASS  Tests\Unit\CoreAddDataToViewTest
+  ✓ addDataToView → it stores data and shares it with the view factory
+  ✓ addDataToView → it ignores non-array data without clearing existing view data
+
+   PASS  Tests\Unit\CoreCheckAccessTest
+  ✓ checkAccess admits a clear user and a user without an attributes row
+  ✓ checkAccess refuses blocked, temporarily blocked and expired users, and unknown ids
+  ✓ checkAccess is a single query
+
+   PASS  Tests\Unit\CoreProviderRegistrationTest
+  ✓ registering the same service provider twice reuses its first instance
+
+   PASS  Tests\Unit\CoreTest
+  ✓ date conversion round trips without runtime timezone drift           0.04s  
+  ✓ getTagsFromContent → it extracts basic placeholders correctly
+  ✓ getTagsFromContent → it handles multibyte characters in content and tags
+  ✓ getTagsFromContent → it ignores empty chunks {{}}
+  ✓ getTagsFromContent → it handles nested tags when filters enabled
+  ✓ getTagsFromContent → it ignores nested tags when filters disabled
+  ✓ getTagsFromContent → it deduplicates tags efficiently
+  ✓ getTagsFromContent → it handles unclosed tags gracefully
+  ✓ getTagsFromContent → it processes complex nesting scenarios
+
+   PASS  Tests\Unit\DatabaseBackupServiceConsistencyTest
+  ✓ mysql and sqlite dumpers wrap snapshot reads in database transactio… 0.01s  
+  ✓ postgres snapshots are written to a temporary file before atomic publish
+  ✓ postgres snapshots pass the password by environment, not a shell prefix
+  ✓ postgres dump output is streamed rather than buffered in memory
+
+   PASS  Tests\Unit\DatabasePrefixPlaceholderCompatibilityTest
+  ✓ select replaces legacy prefix placeholders in fields and from claus… 0.01s  
+
+   PASS  Tests\Unit\DefineConstantsCompatibilityTest
+  ✓ evo bootstrap constants publish modx aliases                         0.11s  
+  ✓ legacy modx bootstrap env still hydrates evo constants               0.09s  
+
+   PASS  Tests\Unit\FactorySettingsTranslationTest
+  ✓ without known values every default text is translated                0.01s  
+  ✓ a default the caller already has a value for is not translated
+  ✓ the site cache gets the string defaults the stored settings lack
+  ✓ the site cache translates into the stored manager language
+  ✓ a manager language set in the configuration files wins over the stored one
+
+   PASS  Tests\Unit\FileGroupsSchemaAndModelTest
+  ✓ file groups migration owns the file_groups table definition          0.01s  
+  ✓ file group model remains a simple non timestamped acl pivot
+  ✓ document group model exposes file group relation
+
+   PASS  Tests\Unit\FileManagerAccessTest
+  ✓ file manager access requires every restricted ancestor to match      0.01s  
+  ✓ file manager access collects inherited effective groups for display
+  ✓ file manager access prevents modifying top level entries
+  ✓ a root contains itself and what lies below it, not a sibling sharing its prefix
+  ✓ the relative path of a sibling that shares the root prefix is empty, not a path
+  ✓ a requested path is resolved before the ACL sees it
+  ✓ restricted descendants the user cannot reach are reported, reachable ones are not
+  ✓ subtree restrictions cover ancestors and every level below, and nothing beside
+  ✓ a path below a personal root is keyed by the site-wide root
+  ✓ a personal root above the site-wide one keys only what lies inside it
+  ✓ a personal root beside the site-wide one has no keys
+  ✓ groups follow a renamed folder, its descendants included, and nothing beside it
+  ✓ groups of a removed entry and everything below it are dropped, and nothing beside it
+
+   PASS  Tests\Unit\FrontendManagerViewNamespaceTest
+  ✓ namespace waits until the view factory is resolved                   0.01s  
+  ✓ namespace is registered when the view factory already exists
+
+   PASS  Tests\Unit\HelperJsJsonTest
+  ✓ js_json keeps apostrophes as JavaScript string content
+  ✓ js_json escapes markup delimiters so the payload cannot leave the script element
+  ✓ js_json is Htmlable so templates can print it with the escaping echo
+  ✓ js_json degrades to a valid JavaScript literal for unencodable input
+
+   PASS  Tests\Unit\Install\CliInstallComposerNoDevTest
+  ✓ it updates with the development packages, then removes them          0.05s  
+  ✓ it leaves the packages alone when the update failed                  0.05s  
+
+   PASS  Tests\Unit\Install\CliInstallExecAutoloadTest
+  ✓ it loads ExecWithFallback in a process without the Composer autoloa… 0.05s  
+  ✓ it reports a missing package instead of fataling                     0.05s  
+  ✓ it makes the package loadable before the installer calls it
+  ✓ it reports a failed composer update instead of passing over it
+
+   WARN  Tests\Unit\Install\CliInstallTest
+  ✓ write config uses the provided database name                         0.01s  
+  ! config writer returns false when the parent directory does not exist → fopen(/tmp/evo-missing-6abe3e87311e08.14342879/default.php): Failed to open stream: No such file or directory
+  ✓ config writer writes the complete contents
+  ✓ config writer rejects a partial write
+  ! cli write config throws when the target cannot be opened → fopen(/tmp/evo-missing-6abe3e87318ad3.96472966/default.php): Failed to open stream: No such file or directory
+
+   PASS  Tests\Unit\Install\ConnectionStubPdoOptionsTest
+  ✓ it connects to MySQL and MariaDB with client-side prepares and with… 0.01s  
+  ✓ it connects to MySQL and MariaDB with client-side prepares and without a use statement with ('mariadb')
+  ✓ it leaves the prepares of other drivers to PDO with ('pgsql')
+  ✓ it leaves the prepares of other drivers to PDO with ('sqlite')
+
+   PASS  Tests\Unit\Install\ConnectionTemplatePasswordValidationTest
+  ✓ short admin passwords use dedicated min length message               0.01s  
+  ✓ password validator shares the same min length contract
+
+   PASS  Tests\Unit\Install\DashboardWidgetRolePermissionUpgradeTest
+  ✓ update seeder remaps legacy permission keys for existing installs
+  ✓ fresh install role seeders use new widget permission keys
+
+   PASS  Tests\Unit\Install\DefaultSiteTemplateSeederTest
+  ✓ default site template seeders use the database source for the minim… 0.09s  
+
+   PASS  Tests\Unit\Install\InstallerExtensionCheckTest
+  ✓ extensions reported with mixed case are found
+  ✓ simplexml is found when loaded
+  ✓ missing extensions keep their mandatory flag
+
+   PASS  Tests\Unit\Install\InstallerLanguageSelectionTest
+  ✓ shipped language is selected                                         0.05s  
+  ✓ unknown language falls back instead of failing the include           0.05s  
+  ✓ path like language values are rejected                               0.05s  
+  ✓ post takes precedence over query and accept language                 0.05s  
+  ✓ accept language is used when nothing is requested                    0.04s  
+
+   PASS  Tests\Unit\Install\ManagerAclBaselineRepairTest
+  ✓ system tasks migration is consolidated into single slice             0.01s  
+  ✓ user role seeder repairs missing baseline rows instead of skipping non empty tables
+  ✓ user permission seeder repairs missing baseline rows instead of skipping non empty tables
+  ✓ repair migration bootstraps missing manager acl baseline
+
+   PASS  Tests\Unit\Install\SiteContentParentMenuindexIndexTest
+  ✓ the migration indexes children in menu order, once
+  ✓ rolling the migration back drops only its index
+
+   PASS  Tests\Unit\Install\UpdatePathConsistencyTest
+  ✓ post-baseline install migrations are mirrored into core
+  ✓ the sid column fix is part of the authoritative core migration set
+  ✓ installer paths run the core migrate after seeding
+  ✓ make:site update applies the update seeders
+
+   PASS  Tests\Unit\Install\WebInstallConfigFailureTest
+  ✓ web installer stops before bootstrapping after config write failure
+  ✓ generated config is escaped in the failure response
+  ✓ installer locales retain the english fallback
+  ✓ every installer locale defines the config write messages             0.01s  
+  ✓ config failure layout handles long translated text
+  ✓ upgrade mode blocks an unreadable database config
+  ✓ summary cache writer does not use unchecked stream handles
+
+   PASS  Tests\Unit\Legacy\CacheDocumentRefreshTest
+  ✓ document refresh drops page caches, rebuilds listing and publishing… 0.28s  
+  ✓ only the full clear resets opcache and cleans user password setting… 0.17s  
+  ✓ moving a document keeps the closure table consistent and the rebuil… 0.42s  
+  ✓ tree drag-and-drop: moving a subtree to another parent, to root and… 0.58s  
+  ✓ tree move and menuindex sort persist through the model and refresh…  0.17s  
+  ✓ site cache rebuild waits for a concurrent builder holding the lock   1.74s  
+  ✓ concurrent managers saving documents all end up in the site cache    0.86s  
+  ✓ cache files are replaced atomically and stay includable              0.24s  
+  ✓ document processors use the document cache path and element process… 0.19s  
+
+   PASS  Tests\Unit\LegacyApiModeCompatibilityTest
+  ✓ front controller maps legacy modx api mode to evo api mode           0.03s  
+
+   PASS  Tests\Unit\MailInitTest
+  ✓ init keeps smtp password empty when legacy config returns null       0.01s  
+  ✓ init still decodes stored smtp password values
+  ✓ SMTP certificate verification remains enabled by default
+  ✓ SMTP certificate verification can be explicitly disabled
+  ✓ automatic SMTP sender uses an email-form SMTP username for From and envelope sender
+  ✓ explicit emailsender mode keeps emailsender as From and envelope sender for SMTP
+  ✓ automatic SMTP sender falls back safely when the SMTP username is not an email address with dataset "non-email authentication name"
+  ✓ automatic SMTP sender falls back safely when the SMTP username is not an email address with dataset "empty authentication name"
+  ✓ automatic SMTP sender falls back safely when the SMTP username is not an email address with dataset "invalid email-like name"
+  ✓ automatic non-SMTP sender retains the legacy mail transport fallback
+
+   PASS  Tests\Unit\Manager\BackupManagerTooltipMarkupTest
+  ✓ backup manager tooltip uses clean plain text lines                   0.01s  
+  ✓ backup manager delegates snapshots to database backup service
+
+   PASS  Tests\Unit\Manager\ChunkFileStoreGuardsTest
+  ✓ it writes the directory guard in both the 2.2 and the 2.4 dialect    0.01s  
+  ✓ it resolves the installation root without the bootstrap constants    0.09s  
+
+   PASS  Tests\Unit\Manager\ChunkFileStoreTest
+  ✓ it offers every declared format, and nothing else                    0.01s  
+  ✓ it keeps the dots that chunk names actually contain
+  ✓ it encodes a name rather than changing it
+  ✓ it cannot be talked out of the chunk directory
+  ✓ it refuses a format nobody declared
+  ✓ it writes, reads back and lists the file it made
+  ✓ it names the file relative to the installation, never absolutely
+  ✓ it reads the file when there is one, and the column when there is not
+  ✓ it forgets every file a chunk had, not just the winning one
+
+   PASS  Tests\Unit\Manager\ChunkFilenameEncodingTest
+  ✓ it round trips every name a chunk has ever had with dataset "a plai… 0.01s  
+  ✓ it round trips every name a chunk has ever had with dataset "mixed case and dashes"
+  ✓ it round trips every name a chunk has ever had with dataset "a space"
+  ✓ it round trips every name a chunk has ever had with dataset "a slash"
+  ✓ it round trips every name a chunk has ever had with dataset "a backslash"
+  ✓ it round trips every name a chunk has ever had with dataset "a colon"
+  ✓ it round trips every name a chunk has ever had with dataset "a quote"
+  ✓ it round trips every name a chunk has ever had with dataset "a star"
+  ✓ it round trips every name a chunk has ever had with dataset "a pipe"
+  ✓ it round trips every name a chunk has ever had with dataset "a question mark"
+  ✓ it round trips every name a chunk has ever had with dataset "angle brackets"
+  ✓ it round trips every name a chunk has ever had with dataset "a tab"
+  ✓ it round trips every name a chunk has ever had with dataset "dot dot"
+  ✓ it round trips every name a chunk has ever had with dataset "a single dot"
+  ✓ it round trips every name a chunk has ever had with dataset "a leading dot"
+  ✓ it round trips every name a chunk has ever had with dataset "a trailing dot"
+  ✓ it round trips every name a chunk has ever had with dataset "a trailing space"
+  ✓ it round trips every name a chunk has ever had with dataset "a reserved device name"
+  ✓ it round trips every name a chunk has ever had with dataset "a lowercase device name"
+  ✓ it round trips every name a chunk has ever had with dataset "a numbered device name"
+  ✓ it round trips every name a chunk has ever had with dataset "a percent sign"
+  ✓ it round trips every name a chunk has ever had with dataset "something that looks encoded"
+  ✓ it round trips every name a chunk has ever had with dataset "cyrillic"
+  ✓ it round trips every name a chunk has ever had with dataset "an em dash"
+  ✓ it produces a filename every platform accepts with dataset "a plain name"
+  ✓ it produces a filename every platform accepts with dataset "mixed case and dashes"
+  ✓ it produces a filename every platform accepts with dataset "a space"
+  ✓ it produces a filename every platform accepts with dataset "a slash"
+  ✓ it produces a filename every platform accepts with dataset "a backslash"
+  ✓ it produces a filename every platform accepts with dataset "a colon"
+  ✓ it produces a filename every platform accepts with dataset "a quote"
+  ✓ it produces a filename every platform accepts with dataset "a star"
+  ✓ it produces a filename every platform accepts with dataset "a pipe"
+  ✓ it produces a filename every platform accepts with dataset "a question mark"
+  ✓ it produces a filename every platform accepts with dataset "angle brackets"
+  ✓ it produces a filename every platform accepts with dataset "a tab"
+  ✓ it produces a filename every platform accepts with dataset "dot dot"
+  ✓ it produces a filename every platform accepts with dataset "a single dot"
+  ✓ it produces a filename every platform accepts with dataset "a leading dot"
+  ✓ it produces a filename every platform accepts with dataset "a trailing dot"
+  ✓ it produces a filename every platform accepts with dataset "a trailing space"
+  ✓ it produces a filename every platform accepts with dataset "a reserved device name"
+  ✓ it produces a filename every platform accepts with dataset "a lowercase device name"
+  ✓ it produces a filename every platform accepts with dataset "a numbered device name"
+  ✓ it produces a filename every platform accepts with dataset "a percent sign"
+  ✓ it produces a filename every platform accepts with dataset "something that looks encoded"
+  ✓ it produces a filename every platform accepts with dataset "cyrillic"
+  ✓ it produces a filename every platform accepts with dataset "an em dash"
+  ✓ it leaves a name that was already safe exactly as it is
+  ✓ it encodes the escape character first of all
+  ✓ it refuses to read a filename it would not have written
+  ✓ it refuses a name no encoding can rescue, and says why
+  ✓ it refuses a name macOS would fold into another one
+  ✓ it gives two names that share a file the same collision key
+
+   PASS  Tests\Unit\Manager\ChunkFilesWiringTest
+  ✓ both readers of a stored chunk go through one rule                   0.02s  
+  ✓ the file wins and the column is the fallback
+  ✓ nothing about a chunk is stored to say where its code is
+  ✓ the manager never offers the database as a place to keep a chunk     0.01s  
+  ✓ the form still says which file it will write
+  ✓ every save writes the file, and nothing is saved if it cannot
+  ✓ a name that cannot be a file is refused before the save, with a reason
+  ✓ a file is never left behind to be adopted by the next chunk
+  ✓ a duplicate carries the code, not the file
+  ✓ the format list is the only thing a plugin has to touch
+  ✓ the database path is marked as the deprecation it is
+  ✓ every deprecation says when it goes
+  ✓ the form measures filename bytes without a deprecated global
+  ✓ every language the CMS ships has the chunk file strings              0.01s  
+  ✓ the two strings that take an argument keep their placeholder         0.01s  
+
+   PASS  Tests\Unit\Manager\DocumentParserHookTest
+  ✓ the decision is a property a plugin can reach                        0.01s  
+  ✓ the decision is still open when OnLoadWebDocument fires
+  ✓ the whole pipeline follows one decision, not the storage
+  ✓ a file rendered document is not parsed unless something asks
+  ✓ nothing stores the decision any more
+  ✓ the template row is still read once per request
+
+   PASS  Tests\Unit\Manager\FileManagerAclSourceTest
+  ✓ classic manager source enforces acl on group save and view
+  ✓ kcfinder source does not bypass write acl for file manager permission
+  ✓ classic manager checks the resolved path of every named entry
+  ✓ kcfinder checks file groups on every read and change of a named entry
+  ✓ file groups are keyed by site root and follow every rename and delete
+  ✓ classic manager helpers expose acl enforcement hooks
+
+   PASS  Tests\Unit\Manager\FileManagerDirectoryZipTest
+  ✓ it adds guarded directory zip downloads to the classic file manager
+  ✓ it defines directory zip labels for every manager language           0.03s  
+  ✓ it keeps ambiguous upload labels distinct from zip download labels
+
+   PASS  Tests\Unit\Manager\FileManagerZipDownloadLoaderTest
+  ✓ it does not register an unload listener
+  ✓ it still clears the pending loader timer when the page really goes away
+  ✓ it bounds the loader when a navigation never commits
+  ✓ it consumes the worker suppression flag so it cannot silence later navigation
+  ✓ it suppresses the loader on the file manager zip download link
+  ✓ it keeps the zip download reachable in the main frame so errors stay visible
+
+   PASS  Tests\Unit\Manager\FrameLegacyTreeBootstrapTest
+  ✓ manager frame exposes legacy tree aliases for TinyMCE4 integrations
+
+   PASS  Tests\Unit\Manager\FrameMainTargetHelperIncludeTest
+  ✓ manager frame loads navigation and restoration helpers before versioned evo js
+
+   PASS  Tests\Unit\Manager\FrameManagerTitleContractTest
+  ✓ the site name cannot close the title element
+  ✓ an ordinary site name is shown as typed
+  ✓ the JavaScript copy of the title survives quotes and cannot break out of the script
+
+   PASS  Tests\Unit\Manager\GlobalTabsCsrfTokenTest
+  ✓ manager global tabs delegate token-free storage and audited restoration to the shared helper
+
+   PASS  Tests\Unit\Manager\KcfinderAclUiSourceTest
+  ✓ folder tree script keeps renamed subtree paths in sync
+  ✓ file pane script supports folder tiles and folder context menu
+  ✓ ordering and settings scripts protect acl ui behavior
+  ✓ uploader script uses file pane dropzone and skips folder tiles
+  ✓ folder tile assets exist for both themes
+
+   PASS  Tests\Unit\Manager\LightnessActiveMenuContrastTest
+  ✓ lightness theme keeps active menu items readable
+
+   PASS  Tests\Unit\Manager\LocalizationKeySyncTest
+  ✓ it keeps reported Ukrainian and Slovak manager localization keys in sync
+  ✓ it removes Ukrainian-only SEO indexing keys that are not used by the manager
+
+   PASS  Tests\Unit\Manager\LocalizationTypoCleanupTest
+  ✓ it fixes reported Ukrainian manager localization typos and escapes
+  ✓ it keeps Slovak manager localization strings free of escaping artifacts
+  ✓ it fixes reported English manager localization typos and grammar
+
+   PASS  Tests\Unit\Manager\LockoutHomeButtonLabelTest
+  ✓ it uses the site label for lockout home buttons instead of the dashboard label
+
+   PASS  Tests\Unit\Manager\LoginSiteNameEscapingTest
+  ✓ it defines escaped site name placeholders for manager auth templates
+  ✓ it uses escaped site name placeholders in login and lockout templates
+
+   PASS  Tests\Unit\Manager\MailTestMailerTest
+  ✓ it maps raw SMTP failures to sanitized feedback keys with dataset "authentication"
+  ✓ it maps raw SMTP failures to sanitized feedback keys with dataset "connection"
+  ✓ it maps raw SMTP failures to sanitized feedback keys with dataset "encryption"
+  ✓ it maps raw SMTP failures to sanitized feedback keys with dataset "recipient"
+  ✓ it maps raw SMTP failures to sanitized feedback keys with dataset "unknown"
+  ✓ it keeps credentials out of the user-facing failure classification
+  ✓ it maps PHP mail failures to generic feedback
+  ✓ it reports an expired SMTP certificate with its UTC expiry date
+  ✓ it retains stream diagnostics in the test-only SMTP transport
+  ✓ it registers a native one-time Manager mail action
+  ✓ it provides the HTML test-mail copy in every bundled locale
+
+   PASS  Tests\Unit\Manager\ManagerAcceptLanguageDefaultTest
+  ✓ it does not answer 404 when the Accept-Language header is missing
+  ✓ it defaults a missing Accept-Language header to English
+
+   PASS  Tests\Unit\Manager\ManagerThemeLocaleContractTest
+  ✓ it applies the ISO locale provided by the selected manager language file
+
+   PASS  Tests\Unit\Manager\ModuleRoleAccessTest
+  ✓ it leaves unrestricted modules available to every role
+  ✓ it only lets the listed roles run a restricted module
+  ✓ it always lets the administrator role run a restricted module
+  ✓ it compares role ids numerically, not by string shape
+  ✓ it drops junk and duplicates when normalizing role ids
+  ✓ it restricts the bundled Extras module to the administrator role by default
+  ✓ it leaves modules without a shipped default unrestricted
+  ✓ it keeps file based modules unrestricted unless they declare roles
+  ✓ it enforces the roles a file based module declares
+  ✓ it accepts a comma separated role list from a file based module
+  ✓ it treats an unusable roles declaration as unrestricted rather than locking everyone out
+
+   PASS  Tests\Unit\Manager\Page3ChildDocsVisibilityTest
+  ✓ non admin child visibility filters stay on the child query
+
+   PASS  Tests\Unit\Manager\ReferenceTypeSwitchFlowTest
+  ✓ it syncs the manager form when switching a resource to link
+  ✓ it routes new reference saves by selected type instead of the original mode
+
+   PASS  Tests\Unit\Manager\ResourcePublishDateFieldTest
+  ✓ it keeps scheduled and actual publish dates separate in the resource editor
+  ✓ it defines scheduled and actual publish date labels for every manager language
+  ✓ it keeps the English scheduled date label distinct from the actual publication timestamp
+
+   PASS  Tests\Unit\Manager\SiteTimezoneSettingContractTest
+  ✓ it renders the IANA timezone setting immediately before the legacy offset
+  ✓ it keeps timezone localization keys synchronized across manager locales
+  ✓ it persists the PHP server timezone only on fresh installation paths
+  ✓ it applies the timezone before OnLoadSettings and synchronizes Laravel config
+  ✓ it validates posted timezone values before persistence
+
+   PASS  Tests\Unit\Manager\StaleLockCleanupTest
+  ✓ expired lock cleanup removes locks for inactive session ids
+
+   PASS  Tests\Unit\Manager\TemplateFileEnginesTest
+  ✓ it offers every declared engine the view factory can render
+  ✓ it drops a declaration whose extension nothing can render
+  ✓ it orders engines the way the view factory resolves them
+  ✓ it preselects the engine belonging to the active chunk processor
+  ✓ it does not preselect an engine that belongs to another processor
+  ✓ it falls back to the first engine when every one is claimed
+  ✓ it has nothing to offer when no engine is declared
+  ✓ it accepts only registered extensions
+  ✓ it refuses to build a filename from an unregistered extension with dataset "unknown engine"
+  ✓ it refuses to build a filename from an unregistered extension with dataset "traversal"
+  ✓ it refuses to build a filename from an unregistered extension with dataset "trailing dot"
+  ✓ it refuses to build a filename from an unregistered extension with dataset "empty"
+  ✓ it refuses an alias that is not already a safe filename with dataset "traversal"
+  ✓ it refuses an alias that is not already a safe filename with dataset "slash"
+  ✓ it refuses an alias that is not already a safe filename with dataset "space"
+  ✓ it refuses an alias that is not already a safe filename with dataset "dot"
+  ✓ it refuses an alias that is not already a safe filename with dataset "empty"
+  ✓ it builds the filename for a safe alias
+  ✓ it reports the files already on disk, first one wins
+  ✓ it renders the engine the template pinned, whatever registered first
+  ✓ it falls back to the factory order when nothing is pinned
+  ✓ it falls back when the pinned file has been deleted
+  ✓ it reports no winner when the alias has no file at all
+
+   PASS  Tests\Unit\Manager\ThemeToggleIconMarkupTest
+  ✓ an SVG theme icon reaches the page unchanged                         0.01s  
+  ✓ a class list theme icon becomes an escaped class attribute
+  ✓ a missing theme icon renders an empty wrapper instead of the word Array
+
+   PASS  Tests\Unit\Manager\ThemeToggleLightHoverContrastTest
+  ✓ lightness theme keeps the theme toggle darker on hover
+
+   PASS  Tests\Unit\Manager\TrackVisitorsHideFromTreeLocalizationTest
+  ✓ it uses dedicated hide-from-tree lexicon keys in the resource editor
+  ✓ it keeps visitor tracking and hide-from-tree translations separate
+  ✓ it restores the English visitor tracking setting text
+
+   PASS  Tests\Unit\Manager\UkSettingFromFileLocalizationTest
+  ✓ it uses Ukrainian text for manager setting notices
+  ✓ it keeps SQL backup overhead translations unique and avoids stale mixed-language wording
+
+   PASS  Tests\Unit\Manager\ViewOptionsPanelLayoutTest
+  ✓ manage elements view options panel has scoped spacing rules
+
+   PASS  Tests\Unit\Manager\WebAccessPermissionsGroupIdsVisibilityTest
+  ✓ group summary labels include group ids
+  ✓ group link views include group ids
+  ✓ ukrainian and slovak labels use entity names
+
+   PASS  Tests\Unit\Manager\WebAlertAndQuitPlainTextTest
+  ✓ it passes web alert content to the native alert as plain text
+
+   PASS  Tests\Unit\Manager\WebUserEmailRequiredMarkerTest
+  ✓ it marks the web user email label as required in the form
+
+   PASS  Tests\Unit\ManagerPathConstantUsageTest
+  ✓ path trait exposes evo public and manager paths
+  ✓ manager actions full urls use evo manager url
+  ✓ manager theme path helpers use evo manager constants
+  ✓ settings trait stores evo path constants in config
+
+   PASS  Tests\Unit\ManagerPerUserLanguageTest
+  ✓ factory settings use the selected locale without resolving the theme
+  ✓ factory translations match the old lexicon across bundled languages
+  ✓ manager theme can reload its lexicon
+  ✓ core refreshes the manager theme after merging user settings
+  ✓ manager theme refresh only touches an already built backend theme
+
+   PASS  Tests\Unit\Models\EventLogListPresentationTest
+  ✓ it formats stored event timestamps in the IANA site timezone without a legacy offset
+  ✓ it escapes authenticated usernames and leaves system fallback to the localized view
+  ✓ it uses the same timezone presenter and universal user join in list and details
+  ✓ it records manager or web actors and uses System only when neither is authenticated
+  ✓ it provides a localized system actor label in every manager locale
+
+   PASS  Tests\Unit\Models\EventLogMailSentTest
+  ✓ it recognizes the mail-sent event type
+  ✓ it records only safe metadata for an accepted mail message
+  ✓ it restores an encoded mail body only for successful-mail events
+  ✓ it uses a safe bounded subject in the list with a legacy-compatible fallback
+  ✓ it bounds subjects and recipient groups in mail-sent events
+  ✓ it does not record the simulated PHP mail success used in debug mode
+  ✓ it logs only after the underlying mail send reports success
+  ✓ it does not treat mail-sent events as error-email triggers
+  ✓ it renders the mail-sent state in the event list and details
+
+   PASS  Tests\Unit\Models\ModelTableNamesTest
+  ✓ every core model declares its table name                             0.01s  
+  ✓ models that used to derive their table name keep that exact name     0.01s  
+
+   PASS  Tests\Unit\Models\SiteContentDeletedOnArrayTest
+  ✓ toArray keeps deletedon as the stored unix timestamp                 0.01s  
+  ✓ toArray keeps the column order and still casts the other attributes
+  ✓ reading deletedon as an attribute still returns a date
+  ✓ a deletion time set in memory is arrayed as a unix timestamp
+  ✓ arraying a document does not load Carbon                             0.11s  
+
+   PASS  Tests\Unit\Models\SiteContentToArraysTest
+  ✓ a listing of scalar columns is the same as get()->toArray()          0.01s  
+  ✓ whole rows with the deleted-at column are the same as get()->toArray()
+  ✓ global scopes and limits apply as they do to get()
+  ✓ an empty result is an empty array
+  ✓ a model with an accessor on a selected column still goes through the model
+
+   PASS  Tests\Unit\Models\SiteContentTvValuesTest
+  ✓ reads only the named TVs of every document in one query              0.01s  
+  ✓ without defaults a missing or empty value is an empty string
+  ✓ accepts TV ids and string document ids
+  ✓ returns nothing without documents, without names or when no TV matches
+  ✓ getTvList keeps its result shape on top of the bulk read
+
+   PASS  Tests\Unit\Models\SiteContentWithoutProtectedTest
+  ✓ a visitor without document groups gets public documents without the… 0.01s  
+  ✓ a visitor in a document group also gets the private documents of that group
+
+   PASS  Tests\Unit\MoveDocumentTargetGuardTest
+  ✓ move document target guard blocks missing or deleted parents
+  ✓ a document cannot be moved onto itself or into its own subtree
+  ✓ target permission check is skipped without udperms and passes for administrators
+  ✓ tree drag-and-drop and the move action both run the cycle and target permission guards
+
+   PASS  Tests\Unit\NiceCountHelperTest
+  ✓ niceCount keeps small quantities readable
+  ✓ niceCount compacts large quantities with SI suffixes
+  ✓ niceCount supports configurable precision
+
+   PASS  Tests\Unit\NiceEtaTest
+  ✓ niceEta keeps compact second minute and hour formats
+  ✓ niceEta decomposes long durations into days hours and minutes
+  ✓ niceEta translates unit abbreviations using the current locale
+  ✓ niceEta unit translations are synchronized across manager locales
+
+   PASS  Tests\Unit\NoSessionModeTest
+  ✓ NO_SESSION on the front end opens no store, writes nothing and drop… 0.09s  
+  ✓ the manager keeps its session under NO_SESSION                       0.09s  
+  ✓ sessions stay on when NO_SESSION is absent or false                  0.18s  
+  ✓ front-end entry points and bootstrap honour the NO_SESSION gate
+
+   PASS  Tests\Unit\ParserLazyBladeTest
+  ✓ the parser does not build its view until it is read                  0.01s  
+  ✓ the view is a copy of the factory, built once, with the template path given before
+  ✓ a template path set after the view is built still reaches it
+
+   PASS  Tests\Unit\PermissionsDocumentAccessTest
+  ✓ the document lookup is limited to the document being checked         0.01s  
+  ✓ private documents open up for the groups the user belongs to
+  ✓ trashed documents stay reachable so undelete and publish keep their target
+  ✓ the default parent is the topmost document the user can reach
+  ✓ trashed documents are never offered as a default parent
+  ✓ a document in several groups is not returned twice by the join
+
+   PASS  Tests\Unit\RemoveLocksConfirmMessageTest
+  ✓ remove locks confirm dialog normalizes escaped newlines in the default manager theme
+  ✓ uk manager lexicon keeps remove locks confirmation readable
+
+   PASS  Tests\Unit\ResourceParentSelectionTest
+  ✓ permission check reads the allow root setting and scopes the document lookup
+  ✓ a new resource without a requested parent falls back to the first allowed location
+  ✓ resource tree nodes publish whether they accept a new child
+  ✓ the site root node reports whether resources may be created in it
+  ✓ default manager theme refuses parent and move targets the user may not manage
+  ✓ the manager frame loads the parent guard helper and its message
+  ✓ every shipped language defines the parent denied message
+
+   WARN  Tests\Unit\Security\ApacheConfigHardeningTest
+  ✓ it refuses the same paths in the apache template as in the nginx one
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/.thumbs/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/backup/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/cache/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/cache/images/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/docs/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/export/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/files/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/images/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/import/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/js/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/js/fileapi/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/js/jeditable/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('assets/site/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('core/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('install/assets/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('install/src/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('manager/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('manager/media/browser/mcpuk/c…access')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('manager/media/browser/mcpuk/d…access')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('manager/media/browser/mcpuk/l…access') #1
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('manager/media/browser/mcpuk/l…access') #2
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('manager/media/browser/mcpuk/t…access')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('views/.htaccess')
+  ✓ it writes every shipped per-directory .htaccess in both the 2.2 and the 2.4 dialect with ('views/chunks/.htaccess')
+  ✓ it finds the shipped .htaccess files without git as well             0.01s  
+  - it finds the same .htaccess files through git and on disk in this checkout → no usable git checkout here
+  ✓ it does not ship an installer .htaccess that strips the CSP the installer sets
+  ✓ it no longer switches mod_security off for the manager
+  ✓ it marks the session cookie Secure on https unless told otherwise
+
+   PASS  Tests\Unit\Security\BackupManagerShellTest
+  ✓ pg client invocation → the password travels in the environment, not… 0.01s  
+  ✓ pg client invocation → an argument carrying shell metacharacters stays a single argument
+  ✓ pg client invocation → the connection settings are passed as separate arguments
+  ✓ deny rule for dump directories → covers both Apache generations
+  ✓ backup manager call sites → no shell is spawned any more
+  ✓ backup manager call sites → no dump is written under the web root
+  ✓ backup manager call sites → the snapshot to restore has to resolve inside the snapshot directory
+
+   PASS  Tests\Unit\Security\BladeStoredXssTest
+  ✓ the old raw echo really did execute a stored payload                 0.01s  
+  ✓ printing the sanitised description keeps the layout and disarms the payload
+  ✓ the error report ExceptionHandler stores still renders as a report
+  ✓ a payload hidden inside a stored error report is stripped, the report is not
+  ✓ the encoded mail body marker stays invisible after escaping
+  ✓ a stored element description can no longer script the element list
+  ✓ a stored module icon can no longer break out of the class attribute
+  ✓ a stored username cannot script the manager page title
+  ✓ Blade leaves Htmlable untouched, so a producer decides once what is safe
+  ✓ @js keeps a payload inside the script element it was written into
+  ✓ @js does not corrupt the text the way an escaped HTML echo does
+  ✓ js_json keeps the payload inside the JSON literal and still decodes to the original
+
+   PASS  Tests\Unit\Security\ChunkFileExposureTest
+  ✓ the default chunk directory is not under a served path               0.01s  
+  ✓ the directory it lives under ships denied
+  ✓ the root rewrite serves assets straight from disk
+  ✓ the store writes its own guards, wherever it is pointed
+  ✓ an existing guard is never overwritten
+  ✓ the shipped chunk directory carries its guards
+
+   PASS  Tests\Unit\Security\FileBrowserAccessTest
+  ✓ FileBrowserAccess::permissionFor() → image types need assets_images
+  ✓ FileBrowserAccess::permissionFor() → every other type, a missing one and an unknown one need assets_files with ('files')
+  ✓ FileBrowserAccess::permissionFor() → every other type, a missing one and an unknown one need assets_files with ('file')
+  ✓ FileBrowserAccess::permissionFor() → every other type, a missing one and an unknown one need assets_files with ('media')
+  ✓ FileBrowserAccess::permissionFor() → every other type, a missing one and an unknown one need assets_files with (null)
+  ✓ FileBrowserAccess::permissionFor() → every other type, a missing one and an unknown one need assets_files with ('')
+  ✓ FileBrowserAccess::permissionFor() → every other type, a missing one and an unknown one need assets_files with ('flash')
+  ✓ FileBrowserAccess::permissionFor() → every other type, a missing one and an unknown one need assets_files with ('Images')
+  ✓ FileBrowserAccess::permissionFor() → every other type, a missing one and an unknown one need assets_files with ('../images')
+  ✓ FileBrowserAccess::resolveUploadRoot() → no personal root means rb_base_dir
+  ✓ FileBrowserAccess::resolveUploadRoot() → a relative personal root lies below rb_base_dir, existing or not
+  ✓ FileBrowserAccess::resolveUploadRoot() → an absolute personal root inside the site gets a URL relative to the site
+  ✓ FileBrowserAccess::resolveUploadRoot() → a sibling sharing the prefix of rb_base_dir is not taken for a folder below it
+  ✓ FileBrowserAccess::resolveUploadRoot() → a personal root that cannot be used refuses instead of falling back to rb_base_dir with dataset "outside the site"
+  ✓ FileBrowserAccess::resolveUploadRoot() → a personal root that cannot be used refuses instead of falling back to rb_base_dir with dataset "filesystem root"
+  ✓ FileBrowserAccess::resolveUploadRoot() → a personal root that cannot be used refuses instead of falling back to rb_base_dir with dataset "climbing out, relative"
+  ✓ FileBrowserAccess::resolveUploadRoot() → a personal root that cannot be used refuses instead of falling back to rb_base_dir with dataset "climbing out, missing folder"
+  ✓ FileBrowserAccess::resolveUploadRoot() → a personal root that cannot be used refuses instead of falling back to rb_base_dir with dataset "climbing back in"
+  ✓ call sites → browse.php asks for a permission for every type
+  ✓ call sites → an unresolvable root disables the browser before it touches the disk
+
+   PASS  Tests\Unit\Security\FileManagerAndAlertHardeningTest
+  ✓ it builds the file manager token from random bytes and compares it…  0.01s  
+  ✓ it requires the session CSRF token for every media browser act except the page and its thumbnails
+  ✓ it escapes the message webAlertAndQuit writes into the alert page
+  ✓ it casts the stay parameter before echoing it into a redirect with ('manager/processors/save_conte…or.php')
+  ✓ it casts the stay parameter before echoing it into a redirect with ('manager/processors/save_htmls…or.php')
+  ✓ it casts the stay parameter before echoing it into a redirect with ('manager/processors/save_modul…or.php')
+  ✓ it casts the stay parameter before echoing it into a redirect with ('manager/processors/save_plugi…or.php')
+  ✓ it casts the stay parameter before echoing it into a redirect with ('manager/processors/save_setti…or.php')
+  ✓ it casts the stay parameter before echoing it into a redirect with ('manager/processors/save_snipp…or.php')
+  ✓ it casts the stay parameter before echoing it into a redirect with ('manager/processors/save_templ…or.php')
+  ✓ it casts the stay parameter before echoing it into a redirect with ('manager/processors/save_tmplv…or.php')
+  ✓ it casts the backup manager tab index before writing it into a script block
+  ✓ it ships upload defaults without scriptable or server-config extensions
+
+   PASS  Tests\Unit\Security\FileManagerPathContainmentTest
+  ✓ it treats only the protected folder and what is inside it as protec… 0.01s  
+  ✓ it counts a folder that contains a protected folder as touching it
+  ✓ it accepts write targets below the root and rejects ones that leave it
+  ✓ it rejects write targets that pass through a symlinked folder
+  ✓ it rejects a write target that is itself a symlink
+  ✓ it extracts ordinary entries, including names with a double dot before the extension
+  ✓ it decides each zip entry by its path segments, not by the characters in its name with dataset "double dot before the extension"
+  ✓ it decides each zip entry by its path segments, not by the characters in its name with dataset "double dot inside a folder"
+  ✓ it decides each zip entry by its path segments, not by the characters in its name with dataset "name starting with two dots"
+  ✓ it decides each zip entry by its path segments, not by the characters in its name with dataset "folder with a double dot"
+  ✓ it decides each zip entry by its path segments, not by the characters in its name with dataset "parent segment"
+  ✓ it decides each zip entry by its path segments, not by the characters in its name with dataset "nested parent segment"
+  ✓ it decides each zip entry by its path segments, not by the characters in its name with dataset "backslash parent segment"
+  ✓ it decides each zip entry by its path segments, not by the characters in its name with dataset "absolute path"
+  ✓ it decides each zip entry by its path segments, not by the characters in its name with dataset "drive letter"
+  ✓ it decides each zip entry by its path segments, not by the characters in its name with dataset "current folder prefix"
+  ✓ it decides each zip entry by its path segments, not by the characters in its name with dataset "doubled slash"
+  ✓ it extracts normally when the site root is reached through a symlink, like public_html
+  ✓ it matches protected folders when the site root is reached through a symlink
+  ✓ it skips entries that climb out of the destination
+  ✓ it skips entries that land in a protected folder below the destination
+  ✓ it does not follow a symlinked folder or file while extracting
+  ✓ it checks protected folders in every file manager write before anything runs
+
+   WARN  Tests\Unit\Security\FileManagerSymlinkWritesTest
+  ✓ it deletes a folder tree without following a nested folder symlink   0.01s  
+  ✓ it deletes a nested file symlink without touching its target
+  ✓ it removes only the link when the folder to delete is itself a symlink
+  ✓ it creates a new empty file
+  ✓ it refuses to create a file over an existing one
+  ✓ it refuses to create a file through a symlink, dangling or not
+  ✓ it refuses to create a file outside the root
+  ✓ it duplicates a file under a new name
+  ✓ it refuses to duplicate over an existing file or through a symlink
+  ✓ it treats an existing name or a symlinked folder name as no place for a new folder
+  ✓ it routes the classic manager create and duplicate actions through the new-target helpers
+  ✓ it prunes a media folder without following a nested folder symlink
+  ✓ it prunes only the link when the media folder is itself a symlink
+  ✓ it does not pick a dangling symlink as a free upload name
+  ✓ it accepts only a new name inside the type folder as an upload target
+  ✓ it checks the upload target before every write attempt
+  ✓ it tells links from plain entries, including dangling ones
+  - it sees a Windows junction as a link, although is_link() does not → junctions exist on Windows only
+  - it deletes a folder tree without following a nested junction → junctions exist on Windows only
+  - it deletes a folder tree holding a dangling junction → junctions exist on Windows only
+  - it prunes a media folder without following a nested junction → junctions exist on Windows only
+  ✓ it deletes a folder holding a symlink checked out as a plain file
+  ✓ it allows renaming to a new name only
+  ✓ it allows a rename that only changes the case of the name
+  ✓ it refuses a case-only rename onto a different file on a case-sensitive file system
+  ✓ it routes the classic manager file rename through the rename check
+  ✓ it allows renaming a folder to a new name only
+  - it refuses renaming a folder onto a junction → junctions exist on Windows only
+  ✓ it routes the classic manager folder rename through the rename check
+
+   PASS  Tests\Unit\Security\FileManagerWritePathChecksTest
+  ✓ it saves an ordinary file whose name has a double dot before the ex… 0.11s  
+  ✓ it refuses to save into a sibling folder that shares the root name…  0.09s  
+  ✓ it refuses to save a plugin file without save_plugin                 0.10s  
+  ✓ it saves a plugin file for a user with save_plugin                   0.09s  
+  ✓ it refuses to save manager files whatever the permissions            0.09s  
+  ✓ it refuses to delete a plugin file without save_plugin               0.09s  
+  ✓ it refuses to delete from a sibling folder that shares the root nam… 0.09s  
+  ✓ it deletes an ordinary file whose name has a double dot before the…  0.09s  
+  ✓ it refuses uploads into a protected folder, with a readable message  0.09s  
+  ✓ it refuses uploads into a sibling folder that shares the root name…  0.09s  
+  ✓ it accepts uploads into an ordinary folder                           0.09s  
+
+   PASS  Tests\Unit\Security\InstallerCompletionTest
+  ✓ only a fresh completion token from the same address authorizes inst… 0.03s  
+  ✓ a generic installer lock is not a removal capability
+  ✓ a completed installer lock exposes only removal authorization fields
+
+   PASS  Tests\Unit\Security\InstallerIdentifierValidationTest
+  ✓ validateDbName() → accepts ordinary database names
+  ✓ validateDbName() → rejects names that could leave their quotes with dataset "backtick"
+  ✓ validateDbName() → rejects names that could leave their quotes with dataset "double quote"
+  ✓ validateDbName() → rejects names that could leave their quotes with dataset "single quote"
+  ✓ validateDbName() → rejects names that could leave their quotes with dataset "space"
+  ✓ validateDbName() → rejects names that could leave their quotes with dataset "semicolon"
+  ✓ validateDbName() → rejects names that could leave their quotes with dataset "newline"
+  ✓ validateDbName() → rejects names that could leave their quotes with dataset "path"
+  ✓ validateDbName() → rejects names that could leave their quotes with dataset "empty"
+  ✓ validateDbName() → rejects names of 64 characters or more
+  ✓ validateDbCollation() → accepts MySQL, PostgreSQL and SQLite collations with ('utf8mb4_unicode_ci')
+  ✓ validateDbCollation() → accepts MySQL, PostgreSQL and SQLite collations with ('utf8mb4_0900_ai_ci')
+  ✓ validateDbCollation() → accepts MySQL, PostgreSQL and SQLite collations with ('en_US.UTF-8')
+  ✓ validateDbCollation() → accepts MySQL, PostgreSQL and SQLite collations with ('en_US.utf8')
+  ✓ validateDbCollation() → accepts MySQL, PostgreSQL and SQLite collations with ('C')
+  ✓ validateDbCollation() → accepts MySQL, PostgreSQL and SQLite collations with ('C.UTF-8')
+  ✓ validateDbCollation() → accepts MySQL, PostgreSQL and SQLite collations with ('en-US-x-icu')
+  ✓ validateDbCollation() → accepts MySQL, PostgreSQL and SQLite collations with ('sr_RS@latin')
+  ✓ validateDbCollation() → accepts MySQL, PostgreSQL and SQLite collations with ('utf8')
+  ✓ validateDbCollation() → accepts MySQL, PostgreSQL and SQLite collations with ('')
+  ✓ validateDbCollation() → rejects collations carrying SQL with dataset "unquoted clause"
+  ✓ validateDbCollation() → rejects collations carrying SQL with dataset "quote break"
+  ✓ validateDbCollation() → rejects collations carrying SQL with dataset "comment"
+  ✓ validateDbCollation() → rejects collations carrying SQL with dataset "leading digit"
+  ✓ validateTablePrefix() → accepts the prefixes the installer generates or allows
+  ✓ validateTablePrefix() → rejects prefixes that would change the statement or the config file with dataset "statement"
+  ✓ validateTablePrefix() → rejects prefixes that would change the statement or the config file with dataset "subquery"
+  ✓ validateTablePrefix() → rejects prefixes that would change the statement or the config file with dataset "quote"
+  ✓ validateTablePrefix() → rejects prefixes that would change the statement or the config file with dataset "php"
+  ✓ validateTablePrefix() → rejects prefixes that would change the statement or the config file with dataset "too long"
+  ✓ call sites → the database test validates the collation before it reaches CREATE DATABASE
+  ✓ call sites → the database test reports a rejected value instead of dying on it
+  ✓ call sites → the installer validates the prefix it writes into the connection config
+  ✓ call sites → the legacy store processor casts ids and escapes event names
+
+   PASS  Tests\Unit\Security\LoginPipelineTest
+  ✓ an empty pipeline changes nothing                                    0.02s  
+  ✓ two extras compose into one chain, in configured order
+  ✓ a pipe can veto the login, which an OnManagerAuthentication plugin cannot
+  ✓ the veto is reported by the existing login error handling
+  ✓ a social pipe can authenticate on its own and skip the password check
+  ✓ a pipe can post-process the authenticated user
+  ✓ the star stage covers every door into a session
+  ✓ star pipes run before the stage specific ones
+  ✓ a flat list is read as covering every stage
+  ✓ empty and malformed entries are ignored instead of fataling
+  ✓ every entry point into a session runs the pipeline
+  ✓ the pipeline ships enabled but empty, so behaviour is unchanged by default
+  ✓ the default provider keeps the container key the facade resolves
+  ✓ a site can put the plain package implementation back with one file
+  ✓ the user-manager package itself is not modified
+
+   PASS  Tests\Unit\Security\ManagerAuthorizationGapsTest
+  ✓ it checks the source document ACL in the move action, not only in t… 0.01s  
+  ✓ it gates the phpinfo and system info pages on the settings right with ('Phpinfo')
+  ✓ it gates the phpinfo and system info pages on the settings right with ('SystemInfo')
+
+   PASS  Tests\Unit\Security\ManagerCsrfCoverageTest
+  ✓ it emits a CSRF field in every state-changing manager form           0.10s  
+  ✓ it appends a token to every link that triggers a state-changing GET… 0.01s  
+  ✓ it guards every processor that mutates state straight from the query string
+  ✓ it guards the page controllers that mutate state from the request
+  ✓ it guards the page actions that delete when a query parameter is present
+  ✓ it appends a token to the OPcache reset link
+  ✓ it appends a token to the logout links built outside the templates
+  ✓ it appends a token to every role, permission and category delete li… 0.02s  
+  ✓ it guards the disable toggle branch of the element save processors
+  ✓ it does not persist the token as a system setting
+  ✓ it skips the token in the sort processors that walk the whole POST body
+  ✓ it keeps the session cookie off cross-site posts as defence in depth
+  ✓ it exposes the token to scripts that post without an enclosing form
+
+   DEPR  Tests\Unit\Security\ManagerCsrfMiddlewareTest
+  ✓ it rejects a state-changing POST that carries no token at all        0.02s  
+  ✓ it rejects a POST whose token does not match the session
+  ✓ it rejects a state-changing POST when the session holds no token
+  ✓ it accepts a POST carrying the session token
+  ✓ it rejects destructive GET actions without a token with (6)
+  ✓ it rejects destructive GET actions without a token with (8)
+  ✓ it rejects destructive GET actions without a token with (61)
+  ✓ it rejects destructive GET actions without a token with (94)
+  ✓ it rejects destructive GET actions without a token with (110)
+  ✓ it rejects destructive GET actions without a token with (112)
+  ✓ it rejects destructive GET actions without a token with (116)
+  ✓ it rejects destructive GET actions without a token with (303)
+  ✓ it rejects page actions whose delete parameter is sent without a token with dataset "role (a=35)"
+  ✓ it rejects page actions whose delete parameter is sent without a token with dataset "role (a=36)"
+  ✓ it rejects page actions whose delete parameter is sent without a token with dataset "role (a=38)"
+  ✓ it rejects page actions whose delete parameter is sent without a token with dataset "opcache reset (a=53)"
+  ✓ it rejects page actions whose delete parameter is sent without a token with dataset "module dependency add (a=113)"
+  ✓ it rejects page actions whose delete parameter is sent without a token with dataset "module dependency delete (a=113)"
+  ✓ it rejects page actions whose delete parameter is sent without a token with dataset "permission (a=135)"
+  ✓ it rejects page actions whose delete parameter is sent without a token with dataset "permission group (a=136)"
+  ✓ it rejects page actions whose delete parameter is sent without a token with dataset "category (a=120)"
+  ✓ it rejects page actions whose delete parameter is sent without a token with dataset "category (a=121)"
+  ✓ it accepts page action deletes carrying the session token with dataset "role"
+  ✓ it accepts page action deletes carrying the session token with dataset "opcache reset"
+  ✓ it accepts page action deletes carrying the session token with dataset "permission"
+  ✓ it accepts page action deletes carrying the session token with dataset "category"
+  ✓ it keeps the role, permission and category pages reachable without a token with dataset "edit role"
+  ✓ it keeps the role, permission and category pages reachable without a token with dataset "new role"
+  ✓ it keeps the role, permission and category pages reachable without a token with dataset "system info"
+  ✓ it keeps the role, permission and category pages reachable without a token with dataset "module dependencies"
+  ✓ it keeps the role, permission and category pages reachable without a token with dataset "edit permission"
+  ✓ it keeps the role, permission and category pages reachable without a token with dataset "edit permission group"
+  ✓ it keeps the role, permission and category pages reachable without a token with dataset "category manager"
+  ✓ it does not treat the delete parameter as destructive on unrelated pages
+  ✓ it accepts destructive GET actions carrying the session token
+  ✓ it leaves ordinary GET navigation alone with (2)
+  ✓ it leaves ordinary GET navigation alone with (3)
+  ✓ it leaves ordinary GET navigation alone with (27)
+  ✓ it leaves ordinary GET navigation alone with (76)
+  ✓ it leaves ordinary GET navigation alone with (107)
+  ✓ it does not require a token before the manager session is validated
+  ✓ it does not require a token when there is no session at all
+  ✓ it accepts the token from the X-CSRF-TOKEN header
+  ✓ it answers XHR callers with JSON and page requests with plain text with ('text/html')
+  ✓ it answers XHR callers with JSON and page requests with plain text with ('*/*')
+  ✓ it answers XHR callers with JSON and page requests with plain text with ('application/json')
+  ✓ it answers non-XHR JSON clients with a JSON rejection
+  ✓ it lets HEAD and OPTIONS through for ordinary navigation with ('HEAD')
+  ✓ it lets HEAD and OPTIONS through for ordinary navigation with ('OPTIONS')
+  ✓ it rejects destructive actions even through HEAD and OPTIONS with ('HEAD')
+  ✓ it rejects destructive actions even through HEAD and OPTIONS with ('OPTIONS')
+  ! it does not exempt a POST disguised with a safe method override → S… 0.01s  
+  ✓ it rejects an explicitly stale token even on ordinary navigation
+  ✓ it compares tokens in constant time
+
+   PASS  Tests\Unit\Security\ManagerOutputHelpersTest
+  ✓ icon_markup escapes a class list into the class attribute            0.02s  
+  ✓ icon_markup passes ready made markup through and drops empty values
+  ✓ icon_markup appends literal attributes supplied by the template
+  ✓ icon_html is the Htmlable form and is not encoded again by Blade
+  ✓ sanitize_sort_direction accepts only the two valid keywords
+  ✓ sanitize_sort_column accepts only a plain identifier
+  ✓ the request derived link fragment is inert once the parts are normalised
+  ✓ lexiconHtml keeps the markup of the entry and escapes what is substituted into it
+  ✓ lexiconHtml supports the positional entries that used sprintf
+  ✓ styleHtml returns theme markup as Htmlable and never an array
+  ✓ search result titles are escaped before the highlight markup is added
+
+   PASS  Tests\Unit\Security\ManagerReflectedXssTest
+  ✓ it casts the backup manager refresh count before writing it into a…  0.01s  
+  ✓ it constrains every resource selector parameter at the point it is read
+  ✓ it constrains the resource sort parameters that are concatenated into javascript
+  ✓ it casts reflected element ids written into javascript string literals with ('mutate_content.dynamic.php')
+  ✓ it casts reflected element ids written into javascript string literals with ('mutate_module.dynamic.php')
+  ✓ it escapes the manager log search filters
+  ✓ it escapes the manager log row, including the header controlled columns
+  ✓ it escapes the file manager path fields
+  ✓ it escapes the event log search box
+  ✓ it escapes every value attribute in the web user editor
+  ✓ it escapes database errors echoed by the installer
+  ✓ it escapes the manager log filters echoed back into the search form
+  ✓ it encodes the manager log filters carried into the pagination links
+  ✓ it escapes stored log values listed in the manager log filter dropdowns
+  ✓ it keeps a hostile extra query string inside the pagination href with dataset "raw"
+  ✓ it keeps a hostile extra query string inside the pagination href with dataset "url-encoded"
+  ✓ it keeps a hostile extra query string inside the pagination href with dataset "single quote"
+  ✓ it round-trips manager log filters through the pagination links
+  ✓ it casts the category manager id before building its form url
+  ✓ it escapes the web user list, including its reflected search box
+  ✓ it escapes the username in the web user editor header
+  ✓ it escapes document titles listed by the manager with dataset "menu index sort"
+  ✓ it escapes document titles listed by the manager with dataset "template in use"
+  ✓ it escapes document titles listed by the manager with dataset "template in use intro"
+  ✓ it escapes document titles listed by the manager with dataset "tv in use"
+  ✓ it escapes document titles listed by the manager with dataset "tv in use description"
+  ✓ it renders raw and legacy entity-encoded values as the same visible text with dataset "raw ampersand and quotes"
+  ✓ it renders raw and legacy entity-encoded values as the same visible text with dataset "legacy encoded ampersand"
+  ✓ it renders raw and legacy entity-encoded values as the same visible text with dataset "legacy encoded quotes"
+  ✓ it renders raw and legacy entity-encoded values as the same visible text with dataset "cyrillic"
+  ✓ it does not double-encode the web user list
+  ✓ it keeps the formatting of summaries listed by the delete screens
+
+   PASS  Tests\Unit\Security\MediaBrowserSymlinkContainmentTest
+  ✓ it accepts folders and new entries inside the type folder            0.01s  
+  ✓ it rejects a sibling folder that only shares the name prefix
+  ✓ it rejects a symlinked folder that points outside the type folder
+  ✓ it rejects a symlinked file and a dangling symlink
+  ✓ it works when the site root is reached through a symlink, like public_html
+  ✓ it works when the type folder itself is a symlink to a shared folder
+  ✓ it reports an ordinary folder below the type folder as writable
+  ✓ it routes every folder and entry check through the containment check
+
+   PASS  Tests\Unit\Security\ModuleExecutionAclTest
+  ✓ it refuses to execute a file based module that is not registered
+  ✓ it applies the role ACL to file based modules instead of skipping them
+  ✓ it still checks the database ACL before running a stored module
+  ✓ it reports module execution failures through the lexicon, with the id escaped
+  ✓ it carries the module execution messages in every bundled language
+  ✓ it filters the module menu by role, including file based modules
+  ✓ it applies the role axis in the shared module scope so every listing inherits it
+  ✓ it constrains the modules listed inside a category, not just the categories
+  ✓ it drops the Modules menu when the user may not run a single module
+  ✓ it cleans up role rows wherever module and role rows are removed or copied
+  ✓ it ships the role ACL table through every install and update path
+
+   PASS  Tests\Unit\Security\ParserEvalHardeningTest
+  ✓ conditional tags (<@IF:>) → a quote/backslash breakout neither executes nor fatals
+  ✓ conditional tags (<@IF:>) → legitimate numeric conditionals still resolve
+  ✓ conditional tags (<@IF:>) → nested conditionals resolve without index corruption
+  ✓ conditional tags (<@IF:>) → content with no conditional tag is returned untouched
+  ✓ superglobal reads ([[$_GET(x)]]) → a backtick payload is not executed
+  ✓ superglobal reads ([[$_GET(x)]]) → a statement-separator payload is refused
+  ✓ superglobal reads ([[$_GET(x)]]) → the documented accessor forms still read the value
+  ✓ superglobal reads ([[$_GET(x)]]) → a missing key yields empty string, not a notice
+  ✓ superglobal reads ([[$_GET(x)]]) → mgrFormValues and token stay hidden from $_SESSION dumps
+  ✓ superglobal reads ([[$_GET(x)]]) → a variable outside the allow list is refused
+  ✓ @FILE binding → directory traversal outside the base path is refused
+  ✓ @FILE binding → a php file inside the tree is still refused, including alternate extensions
+  ✓ @FILE binding → a permitted file inside the tree is read
+  ✓ @FILE binding → a traversal that resolves back inside the tree is still allowed
+  ✓ @INCLUDE binding → directory traversal outside the base path is refused
+  ✓ @INCLUDE binding → a traversal back into the manager directory is refused
+  ✓ @INCLUDE binding → a file inside the tree is still included
+  ✓ @INCLUDE binding → a missing file is refused rather than fatal
+  ✓ @INCLUDE binding → content with no binding is returned untouched
+  ✓ the shared binding path resolver → a directory is not a file a binding may name
+  ✓ the shared binding path resolver → search path prefixes are tried in order
+  ✓ the shared binding path resolver → a backslash separator is accepted and still contained
+
+   PASS  Tests\Unit\Security\PasswordGeneratorTest
+  ✓ it returns the requested length from the intended alphabet           0.01s  
+  ✓ it does not repeat itself within a single second
+  ✓ it spreads across the alphabet rather than a seeded sequence
+  ✓ guids are unique across calls in the same request
+
+   PASS  Tests\Unit\Security\PasswordHashFormatsTest
+  ✓ new hashes are password_hash() output, never phpass or md5           0.49s  
+  ✓ bcrypt is the default and is stretched beyond the PHP 8.3 default c… 0.17s  
+  ✓ argon2id is used when selected and supported                         0.38s  
+  ✓ pre-3.5 algorithm settings fall back to bcrypt instead of failing    2.62s  
+  ✓ every hash format the CMS has ever written still verifies            0.33s  
+  ✓ a "v1" hash is recognised but left to loginV1, which owns the salt seed
+  ✓ a plaintext password column can never authenticate anybody
+  ✓ unusable stored values are reported as such instead of silently failing
+  ✓ legacy formats are always scheduled for rehash on the next successful login
+  ✓ changing the configured algorithm schedules a rehash of current has… 0.33s  
+  ✓ hashing never returns a usable-looking value on failure
+
+   PASS  Tests\Unit\Security\PasswordHashTypeRoutingTest
+  ✓ each stored format is routed to the verifier that understands it     0.02s  
+  ✓ unusable stored values are routed to login(), which starts recovery
+  ✓ a 32 character password is not mistaken for an md5 hash
+  ✓ the new algorithms are offered only when PHP can produce them
+
+   PASS  Tests\Unit\Security\PasswordRecoveryTest
+  ✓ an unusable stored password starts recovery instead of failing the login forever
+  ✓ a successful login upgrades a hash that no longer matches the settings
+  ✓ the recovery exception is reported by the existing login error handling
+  ✓ the recovery service exposes the whole token lifecycle
+  ✓ the link lifetime comes from the system settings, and 0 means never expires
+  ✓ an unusable lifetime setting falls back to the default rather than to unlimited
+  ✓ the default lifetime is finite and short
+  ✓ the lifetime setting ships with a factory default and a settings field
+  ✓ repeated login attempts on a broken row do not send repeated mails
+  ✓ an expired recovery token is rejected and cleared before it can log anybody in
+  ✓ a token issued with an unlimited lifetime stores no deadline and never expires
+  ✓ the migration clears pre-existing tokens so an empty deadline is unambiguous
+  ✓ the recovery mail states the actual lifetime of the link it carries
+  ✓ the users table carries the token expiry on every install path
+  ✓ the forgot-password form survives an unknown e-mail address
+  ✓ the recovery messages are translated in every shipped language
+
+   PASS  Tests\Unit\Security\PasswordStorageTest
+  ✓ every write to a user password attribute stores a hash               0.03s  
+  ✓ no source stores md5 as a password                                   0.01s  
+  ✓ the admin seeder hashes the initial password
+  ✓ updateNewHash refuses to persist a failed hash over a working one
+  ✓ changeWebUserPassword verifies against the stored format and stores a hash
+  ✓ the generic credential comparison cannot be satisfied by a password attribute
+
+   PASS  Tests\Unit\Security\RedirectTargetTest
+  ✓ same-site and relative targets are allowed with dataset "relative p… 0.01s  
+  ✓ same-site and relative targets are allowed with dataset "root-relative path"
+  ✓ same-site and relative targets are allowed with dataset "root-relative path with a query"
+  ✓ same-site and relative targets are allowed with dataset "absolute url on this host"
+  ✓ same-site and relative targets are allowed with dataset "absolute url on this host over http"
+  ✓ same-site and relative targets are allowed with dataset "host casing differs"
+  ✓ cross-site targets are refused with dataset "absolute url on another host"
+  ✓ cross-site targets are refused with dataset "protocol-relative"
+  ✓ cross-site targets are refused with dataset "protocol-relative without a trailing slash"
+  ✓ cross-site targets are refused with dataset "backslash after the slash"
+  ✓ cross-site targets are refused with dataset "backslash before the slash"
+  ✓ cross-site targets are refused with dataset "both backslashes"
+  ✓ cross-site targets are refused with dataset "userinfo pointing at another host"
+  ✓ cross-site targets are refused with dataset "subdomain of a lookalike"
+  ✓ cross-site targets are refused with dataset "non-http scheme"
+  ✓ cross-site targets are refused with dataset "data url"
+  ✓ cross-site targets are refused with dataset "empty authority"
+  ✓ cross-site targets are refused with dataset "leading space before an authority"
+  ✓ cross-site targets are refused with dataset "leading tab before an authority"
+  ✓ cross-site targets are refused with dataset "leading tab before an absolute url"
+  ✓ a site url without a host never matches
+
+   PASS  Tests\Unit\Security\SafeHtmlTest
+  ✓ formatting written by the CMS survives, injected script markup does… 0.01s  
+  ✓ attributes cannot survive the allow list
+  ✓ an allow-listed tag name is only restored when it carries no attributes
+  ✓ closing and self-closing forms are restored, in any letter case
+  ✓ text is escaped exactly once
+  ✓ a custom allow list is honoured and an empty one escapes everything
+  ✓ a bogus tag name in the allow list cannot open a hole
+  ✓ non string input degrades to an empty value instead of leaking a type error
+  ✓ the result is Htmlable so Blade prints it without encoding it a second time
+  ✓ an already sanitised value is not sanitised twice
+  ✓ presentation attributes are kept
+  ✓ event handlers are removed while the element survives
+  ✓ executable and resource loading elements are removed with their content
+  ✓ an unknown element is unwrapped so its text stays visible
+  ✓ only safe link schemes survive
+  ✓ style declarations that can fetch or evaluate are dropped
+  ✓ comments are dropped so conditional markup cannot hide in them
+  ✓ already encoded entities are not encoded again
+  ✓ the result is Htmlable and empty input stays empty
+  ✓ sanitising twice changes nothing
+  ✓ no handler, scheme or CSS fetch survives any spelling
+  ✓ the sanitiser keeps the harmless parts of an attacked report
+  ✓ inline formatting an operator may have typed keeps working
+  ✓ block elements are unwrapped so a description cannot break the list layout
+  ✓ an unclosed tag cannot leak out of the cell it was rendered in
+  ✓ the inline profile still removes every scripting vector
+  ✓ a plain description is returned unchanged and encoded exactly once
+
+   PASS  Tests\Unit\Security\TableNameWhitelistTest
+  ✓ Database::isValidTableName() → accepts a bare prefixed identifier    0.01s  
+  ✓ Database::isValidTableName() → rejects a name outside the prefix
+  ✓ Database::isValidTableName() → rejects everything that could end the identifier
+  ✓ Database::isValidTableName() → rejects anything that is not a non-empty string
+  ✓ Database::isValidTableName() → still refuses metacharacters when no prefix is configured
+  ✓ Database::isValidTableName() → does not query the database
+  ✓ call sites → a=54 validates before optimizing or truncating
+  ✓ call sites → the backup manager drops invalid names from the checkbox list
+
+   PASS  Tests\Unit\Security\TvBindingFilePathTest
+  ✓ no TV binding builds a path by concatenation any more                0.01s  
+  ✓ both copies resolve @FILE and @INCLUDE through the shared rule
+  ✓ a refused binding no longer echoes the path it tried
+  ✓ the custom TV widget name cannot walk out of assets/tvs
+  ✓ a TV with no output option does not raise a notice
+  ✓ Core exposes one containment rule for every binding
+
+   PASS  Tests\Unit\Security\UnserializeAllowedClassesTest
+  ✓ page cache → an object in the cache file is not instantiated         0.01s  
+  ✓ page cache → the surrounding document fields still survive the round trip
+  ✓ system files checksum → an object in the stored checksum is not instantiated
+  ✓ system files checksum → a checksum that did not hold an array is treated as empty
+  ✓ system files checksum → a matching checksum still reports no modified files
+
+   PASS  Tests\Unit\Security\UpdaterMetadataTest
+  ✓ generated version file keeps hostile release metadata inert          0.01s  
+  ✓ generated version file keeps its explanatory comments
+  ✓ release metadata can neither forge nor escape a comment
+  ✓ updater generation never concatenates release metadata into php source
+  ✓ both updater paths verify tls when fetching release metadata
+  ✓ secure transport allows the github api host used by the updater
+
+   PASS  Tests\Unit\Security\UserManagerContractTest
+  ✓ the contract covers every operation the shipped implementation offe… 0.01s  
+  ✓ the contract matches the shipped signatures exactly
+  ✓ the contract declares no return types, so existing implementations stay valid
+  ✓ the default implementation satisfies the contract
+  ✓ resolving the contract and the string key yields the same instance
+  ✓ the contract lives in the core, not in the package it describes
+
+   PASS  Tests\Unit\Services\ComposerVersionSynchronizerTest
+  ✓ composer version synchronizer aligns package metadata and removes l… 0.01s  
+
+   PASS  Tests\Unit\Services\DocumentSaveServiceTest
+  ✓ a new document is created with its tvs, inherited groups, folder fl… 0.01s  
+  ✓ OnBeforeDocFormSave still announces the id docid_incrmnt_method pro… 0.01s  
+  ✓ a new document under a private parent inherits its groups and becomes private
+  ✓ without publish_document a new document is stored unpublished        0.01s  
+  ✓ editing writes the tv diff, moves the document and fixes both folde… 0.01s  
+  ✓ an unchanged edit does not touch the tv table
+  ✓ removing the last own group rolls the whole save back and fires no…  0.01s  
+  ✓ a duplicate alias is refused with the id of the other document
+  ✓ an automatic alias gets a counter while it collides                  0.01s  
+  ✓ the parent permission is checked for new documents and on a move only
+  ✓ an edit of a document the user cannot reach is refused even when th… 0.01s  
+  ✓ without use_udperms the edit is not checked against document groups  0.01s  
+  ✓ a non administrator cannot post a group list without one of their own groups
+  ✓ structural guards refuse a missing document, a self parent and a descendant parent
+  ✓ the save processor delegates to the service and keeps the redirect and cache logic
+
+   PASS  Tests\Unit\Services\ManagerActivityTest
+  ✓ nothing is written until flush                                       0.02s  
+  ✓ a session replaces the stale rows of the same user and of the same sid
+  ✓ an action keeps one active_users row per user and refreshes an existing lock in place
+  ✓ flush runs queued jobs once, in order, and is a no-op afterwards
+  ✓ a failing job rolls the whole batch back and surfaces the error when attached
+  ✓ the manager hands its bookkeeping to the service and flushes after the response is sent
+
+   PASS  Tests\Unit\SiteTimezoneTest
+  ✓ it lists selectable php timezone identifiers                         0.01s  
+  ✓ it resolves invalid site timezone to the server timezone
+  ✓ it applies the resolved timezone without breaking bootstrap
+
+   PASS  Tests\Unit\SiteUrlFromHostHeaderTest
+  ✓ site url keeps the port the browser asked for with dataset "publish… 0.09s  
+  ✓ site url keeps the port the browser asked for with dataset "ipv6 li… 0.08s  
+  ✓ site url keeps the port the browser asked for with dataset "plain h… 0.09s  
+  ✓ site url keeps the port the browser asked for with dataset "http on… 0.08s  
+  ✓ site url keeps the port the browser asked for with dataset "https o… 0.08s  
+  ✓ site url keeps the port the browser asked for with dataset "https o… 0.09s  
+  ✓ site url keeps the port the browser asked for with dataset "proxied… 0.08s  
+  ✓ site url keeps the port the browser asked for with dataset "proxied… 0.09s  
+  ✓ site url keeps the port the browser asked for with dataset "no host… 0.09s  
+  ✓ a host header that is not a bare host:port is refused with dataset…  0.09s  
+  ✓ a host header that is not a bare host:port is refused with dataset…  0.09s  
+  ✓ a host header that is not a bare host:port is refused with dataset…  0.10s  
+  ✓ a host header that is not a bare host:port is refused with dataset…  0.09s  
+  ✓ a host header that is not a bare host:port is refused with dataset…  0.09s  
+  ✓ a host header that is not a bare host:port is refused with dataset…  0.09s  
+  ✓ a host header that is not a bare host:port is refused with dataset…  0.09s  
+  ✓ a host header that is not a bare host:port is refused with dataset…  0.09s  
+  ✓ a host header that is not a bare host:port is refused with dataset…  0.09s  
+  ✓ host parsing does not blow up on a pathological header
+
+   PASS  Tests\Unit\Store\ComposerArtifactServiceTest
+  ✓ inspect reads a package from composer.json at the archive root       0.04s  
+  ✓ inspect finds composer.json inside the only top-level directory, as in a GitHub download
+  ✓ inspect reports an unknown version as empty instead of guessing
+  ✓ inspect leaves legacy extras with an install directory to the legacy installer
+  ✓ inspect ignores archives that are not shaped like a composer package with dataset "no composer.json"
+  ✓ inspect ignores archives that are not shaped like a composer package with dataset "composer.json below two top-level dirs"
+  ✓ inspect flags a composer package whose composer.json cannot be used with dataset "no name"
+  ✓ inspect flags a composer package whose composer.json cannot be used with dataset "invalid name"
+  ✓ inspect flags a composer package whose composer.json cannot be used with dataset "broken json"
+  ✓ a valid package is not flagged as invalid
+  ✓ store keeps the archive, writes a missing version into it and registers the repository once
+  ✓ registerRepository creates custom/composer.json when there is none
+  ✓ versionFromFileName reads common archive names with ('sgallery-1.5.2.zip', '1.5.2')
+  ✓ versionFromFileName reads common archive names with ('sgallery-v1.5.2.zip', '1.5.2')
+  ✓ versionFromFileName reads common archive names with ('seiger_sgallery_2.0.zip', '2.0')
+  ✓ versionFromFileName reads common archive names with ('sgallery-2.0.0-beta.1.zip', '2.0.0-beta.1')
+  ✓ versionFromFileName reads common archive names with ('/tmp/x/sgallery-1.0.0.ZIP', '1.0.0')
+  ✓ versionFromFileName reads common archive names with ('sgallery.zip', null)
+  ✓ versionFromFileName reads common archive names with ('sgallery-main.zip', null)
+  ✓ versionFromFileName reads common archive names with ('sgallery1.5.2.zip', null)
+
+   PASS  Tests\Unit\Store\StoreLanguageTest
+  ✓ the store has a language file for every manager language             0.01s  
+  ✓ every store language translates the composer archive messages with…  0.01s  
+  ✓ every store language translates the composer archive messages with ('install_file_artifact_no_version')
+  ✓ every store language translates the composer archive messages with ('install_file_artifact_failed')
+  ✓ every store language translates the composer archive messages with ('install_file_artifact_invalid')
+  ✓ a key missing from a translation falls back to english
+  ✓ an unknown manager language loads english
+  ✓ no store translation carries keys that english does not have
+
+   PASS  Tests\Unit\Store\StoreSelfUpdateBannerTest
+  ✓ store module does not expose legacy self update banner               0.01s  
+
+   PASS  Tests\Unit\Support\ArithmeticExpressionTest
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('1+1')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('2*3')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('10-4')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('7/2')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('6/3')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('10%3')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('2+3*4')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('(2+3)*4')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('((1+2)*(3+4))')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('-5+3')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('+5-3')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('2*-3')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('1.5+2.25')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('0.1*3')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('100/8')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('1<2')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('2<=2')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('3>4')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('4>=4')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('1==1')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('1!=2')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('1&&0')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('1||0')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('!0')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('!1')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('2+3>4')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('1&&1||0')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('10-2-3')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('100/10/2')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('2*3%4')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('0')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('42')
+  ✓ compatibility with the eval() it replaces → evaluates exactly as eval() did with ('-0')
+  ✓ operator handling → left associativity is preserved for subtraction and division
+  ✓ operator handling → unary minus binds tighter than multiplication but not than parentheses
+  ✓ operator handling → integer arithmetic stays integer
+  ✓ operator handling → division and modulo by zero fall back instead of raising
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "octal escaped call with an argument"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "octal escaped call without arguments"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "backtick shell operator"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "variable variable"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "statement separator"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "superglobal read"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "string concatenation"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "array literal"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "xor built string"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "heredoc-ish quoting"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "bare quote"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "backslash"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "dollar"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "braces"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "closing paren only"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "opening paren only"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "unbalanced parens"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "trailing operator"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "leading binary operator"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "empty"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "two numbers"
+  ✓ rejects everything that is not arithmetic → refuses the payload with dataset "implicit multiplication"
+  ✓ rejects everything that is not arithmetic → no payload reaches PHP even when it would be valid PHP
+  ✓ bounds → an over-long expression is refused rather than parsed
+  ✓ bounds → deeply nested parentheses are refused rather than recursed
+  ✓ bounds → a nesting depth a template might really use still works
+  ✓ bounds → non-scalar input is refused
+
+   PASS  Tests\Unit\Support\DocumentPrivacyTest
+  ✓ refresh sets both flags of one document from the linked user groups  0.03s  
+  ✓ refresh with a context leaves the other flag alone, as the legacy include did
+  ✓ refreshAll recomputes one flag for the whole site and leaves the other alone
+  ✓ the legacy include delegates to DocumentPrivacy
+
+   PASS  Tests\Unit\Support\DocumentSave\DocumentGroupSyncTest
+  ✓ posted pairs reduce to unique group ids
+  ✓ a user locks themselves out only when none of the chosen groups is theirs
+  ✓ without group permissions a new document inherits the groups of its parent
+  ✓ manage_groups attaches exactly the posted groups
+  ✓ manage_document_permissions keeps the parent groups the user cannot manage
+  ✓ a user who picks none of their own groups keeps all groups of the parent
+  ✓ editing inserts the new pairs and deletes the unchecked ones
+  ✓ a user without manage_groups cannot touch groups outside their own
+  ✓ removing the last own group is refused before anything is written
+  ✓ making the document public removes every group
+
+   PASS  Tests\Unit\Support\DocumentSave\PublishStateTest
+  ✓ a publish date decides the flag relative to now
+  ✓ a new document without publish_document is always unpublished with no dates
+  ✓ a new published document records the publisher and uses the publish date when set
+  ✓ editing without publish_document keeps the stored state and dates
+  ✓ editing tracks the publish transition
+
+   PASS  Tests\Unit\Support\DocumentSave\SaveResponseTest
+  ✓ after an edit the listing sort survives the redirect, after a create it does not
+  ✓ close goes to the resource overview and "add another" to the editor of the same type
+  ✓ the preview flow only exists for an existing resource
+  ✓ the JSON answer carries what the editor writes back plus where the form flow would go
+  ✓ the save processor answers JSON to the in-place save and redirects everyone else
+
+   PASS  Tests\Unit\Support\DocumentSave\TemplateVariableInputTest
+  ✓ a plain value is stored as posted
+  ✓ empty values, "0" and the default text mean "remove the row"
+  ✓ checkboxes and multiple selects are joined with the || delimiter
+  ✓ url fields get the chosen prefix after stripping any scheme the user typed
+  ✓ file fields ignore array input
+  ✓ values() keys the desired value by tv id for every tv of the template
+
+   PASS  Tests\Unit\Support\DocumentSave\TemplateVariableValuesTest
+  ✓ an administrator gets every tv of the template, ordered by rank, wi… 0.01s  
+  ✓ distinct tv lookup selects its sort column without leaking rank or duplicating tvs
+  ✓ a restricted tv is hidden from a user whose document is not in its group
+  ✓ sync writes only the differences and leaves other documents alone
+  ✓ a changed value is updated in place and an unchanged form costs no query
+
+   PASS  Tests\Unit\Support\MysqlDumperRowBatchSizeTest
+  ✓ mysql dumper keeps row batch size above zero for small tables with…  0.01s  
+
+   PASS  Tests\Unit\Support\ResourceParentGuardTest
+  ✓ administrators and disabled permissions skip the document group lookup
+  ✓ the site root follows the allow root setting instead of an undefined global
+  ✓ duplicating a root level resource is blocked only while the root is denied
+  ✓ document access combines the private flag with the document groups of the user
+  ✓ only reachable and untrashed nodes accept a new child
+  ✓ a new resource lands in the root only when the root is available
+
+   PASS  Tests\Unit\Support\SiteTimezoneTest
+  ✓ it accepts IANA timezone identifiers and rejects arbitrary values
+  ✓ it falls back to the configured PHP server timezone for missing or invalid values
+  ✓ it applies the resolved timezone without leaving global test state changed
+
+   PASS  Tests\Unit\SystemSettingPathNormalizerTest
+  ✓ it preserves the base path placeholder for portable storage values
+  ✓ it keeps external paths untouched
+
+   PASS  Tests\Unit\SystemTasks\ConsoleInstallFlowServiceTest
+  ✓ buildArtisanProcessArguments preserves positional args flags and key value options
+  ✓ extractProviders merges laravel and evolution providers without duplicates
+  ✓ summarizeOutput reads the failure from the tail when asked
+  ✓ an uploaded archive is installed without updating installed dependencies
+  ✓ a catalog package still updates its dependencies
+
+   PASS  Tests\Unit\SystemTasks\ConsoleUninstallFlowServiceTest
+  ✓ console uninstall artisan args preserve positional command structure
+  ✓ console uninstall resolves generated provider config files from package composer metadata
+  ✓ console uninstall resolves generated alias config files from package composer metadata
+  ✓ console uninstall captures cleanup files from snapshot even when co… 0.01s  
+  ✓ console uninstall purges stale provider and alias artifacts before composer remove
+
+   PASS  Tests\Unit\SystemTasks\ConsoleUninstallRegistryTest
+  ✓ console uninstall registry normalizes package names and resolves cl… 0.01s  
+  ✓ console uninstall registry delegates preview and apply to registered handlers
+  ✓ console uninstall registry returns explicit unsupported payloads for unknown packages
+
+   PASS  Tests\Unit\SystemTasks\HealthServicesTest
+  ✓ scheduler health thresholds derive healthy degraded and unhealthy states
+  ✓ worker health is unknown when scheduler is not healthy
+  ✓ worker health is healthy when last run is fresh and no newer failure exists
+  ✓ worker health degrades when a newer failure exists even with a recent run
+  ✓ worker health becomes unhealthy when the worker run is stale
+
+   PASS  Tests\Unit\SystemTasks\ModuleActionServiceTest
+  ✓ an uploaded composer package is stored and queued as a console install
+  ✓ a legacy upload is left to the legacy installer
+  ✓ an invalid composer package is refused instead of being copied into the web root
+  ✓ a composer package without a version asks for one and queues nothing
+  ✓ a refused task removes the stored archive again
+  ✓ scheduler status endpoint denies access without system task view permission
+  ✓ worker status endpoint returns payload for users with system task view permission
+  ✓ combined system task health endpoint returns scheduler and worker payloads
+  ✓ system task status endpoint forwards requester snapshot and super admin context
+
+   PASS  Tests\Unit\SystemTasks\RemoteTransportServiceTest
+  ✓ remote transport only allows https urls from allowlisted hosts
+  ✓ store transport services keep remote access delegated through secure transport
+  ✓ remote transport source keeps ssl verification enabled for stream and curl paths
+
+   PASS  Tests\Unit\SystemTasks\SiteUpdateFlowServiceTest
+  ✓ site update flow builds make site update artisan command with target ref
+  ✓ site update flow passes custom update repository to artisan command
+  ✓ site update flow resolves target ref from payload before requested version
+  ✓ site update flow resolves custom repository from payload
+  ✓ site update flow creates database backup by default
+  ✓ site update flow can skip database backup from task payload
+
+   PASS  Tests\Unit\SystemTasks\SystemTaskRegistryTest
+  ✓ the three built-in task types stay registered and exclusive
+  ✓ built-in permissions match the checks the registry replaced
+  ✓ an unknown type is unregistered and assumed exclusive
+  ✓ a malformed task type is refused
+  ✓ an unknown concurrency mode is refused
+  ✓ a built-in type cannot be redefined or forgotten
+  ✓ an exclusive registration cannot claim a parallelism
+  ✓ a handler resolves from a class string, an instance or a factory
+  ✓ a registered class that is not a handler is refused when resolved
+  ✓ exclusiveTypes omits concurrent registrations
+  ✓ a concurrent task is picked while an exclusive one is running
+  ✓ an exclusive task waits while another exclusive one is running
+  ✓ a blocked exclusive task does not stall a concurrent one behind it
+  ✓ an expired lease stops holding the queue
+  ✓ parallelism caps how many tasks of one concurrent type run at once
+  ✓ a free slot under the parallelism cap is used
+  ✓ a task whose package is gone is still picked, so the worker can fail it
+  ✓ only one worker can claim a task
+  ✓ an unknown type is refused before any health verdict is disclosed
+  ✓ a package type is gated by the permission it declared
+  ✓ a queued exclusive task still blocks another exclusive one
+  ✓ an exclusive task no longer blocks a concurrent one
+  ✓ a running concurrent task no longer blocks an exclusive one
+
+   PASS  Tests\Unit\SystemTasks\SystemTaskServiceTest
+  ✓ console install snapshot normalizes default branch version for comp… 0.01s  
+  ✓ console install snapshot keeps explicit dev versions unchanged
+  ✓ task status payload exposes refresh only for finished like states
+  ✓ task status payload prefers display title over package name
+  ✓ task creation is denied without module execution permission
+  ✓ console install task creation is denied without system task package permission
+  ✓ console uninstall task creation requires system task package permission
+  ✓ console uninstall task creation persists composer remove snapshot
+  ✓ task creation is blocked when scheduler health is unhealthy
+  ✓ task creation is blocked while another mutating task is already active
+  ✓ console install task creation returns warnings when worker health is not fully healthy
+  ✓ site update task creation requires dedicated site update permission
+  ✓ site update task creation remains limited to super administrators
+  ✓ site update task creation is blocked when worker health is unhealthy
+  ✓ site update task snapshot keeps custom update repository
+  ✓ site update task snapshot keeps database backup choice
+  ✓ site update task rejects invalid custom update repository
+  ✓ task status payload denies access to another manager user
+  ✓ task status payload allows owner session with system task view permission
+  ✓ task status payload requires system task view permission even for owner session
+  ✓ task worker executes registered extension task handlers              0.01s  
+  ✓ artifact install task pins the uploaded package and version
+  ✓ artifact install task passes the same preflight as a catalog install
+to-stderr
+   PASS  Tests\Unit\TestProcessHelpersTest
+  ✓ it tells direct process calls from methods, comments and strings     0.02s  
+  ✓ it returns the output and the exit code of a command                 0.04s  
+  ✓ it passes each argument to the PHP script as one argument, however…  0.06s  
+  ✓ it includes stderr in the output unless told not to                  0.09s  
+  ✓ it leaves no direct shell_exec or exec calls in the tests            0.03s  
+
+   PASS  Tests\Unit\TransAliasManagerLanguageTest
+  ✓ manager language resolves known transliteration tables               0.01s  
+  ✓ core passes manager language into strip alias plugin event
+  ✓ automatic alias message no longer mentions legacy trans alias setup
+
+   PASS  Tests\Unit\TreeSortButtonContextTest
+  ✓ tree sort button uses contextual JS handler instead of hardcoded ro… 0.01s  
+  ✓ default manager theme resolves sort menu index target from current tree context
+
+   PASS  Tests\Unit\UpdaterManagerUiTest
+  ✓ updater manager modal reloads after successful live update           0.01s  
+
+   PASS  Tests\Unit\UrlProcessorAliasListingTest
+  ✓ primed alias listings build friendly tree URLs without per-node que… 0.02s  
+  ✓ primed alias listings skip a parent folder whose alias is hidden
+  ✓ primed alias listings keep entries that are already loaded
+  ✓ a parent that was not primed is loaded once and then reused
+  ✓ lazy alias listing is used only when an alias listing mode requires it
+  ✓ tree node rows get the SiteContent cast types without touching strings or nulls
+
+   PASS  Tests\Unit\UrlProcessorAliasPathTest
+  ✓ an alias path is resolved with one query                             0.01s  
+  ✓ a path that is not made of live aliases from the root is not resolved
+  ✓ getIdFromAlias still walks aliases and ids and returns integers
+
+  Tests:    1 deprecated, 4 warnings, 8 skipped, 1241 passed (5962 assertions)
+  Duration: 16.39s
+

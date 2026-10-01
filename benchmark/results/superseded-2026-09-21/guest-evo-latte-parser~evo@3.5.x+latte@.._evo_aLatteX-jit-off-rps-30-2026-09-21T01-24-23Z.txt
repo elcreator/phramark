@@ -1,0 +1,75 @@
+Running 15s test @ http://nginx-latte-parser:80
+  4 threads and 32 connections
+  Thread calibration: mean lat.: 347.029ms, rate sampling interval: 1091ms
+  Thread calibration: mean lat.: 366.451ms, rate sampling interval: 1168ms
+  Thread calibration: mean lat.: 360.970ms, rate sampling interval: 1135ms
+  Thread calibration: mean lat.: 372.590ms, rate sampling interval: 1148ms
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   381.82ms  159.79ms 620.03ms   53.57%
+    Req/Sec     7.00      0.79     9.00     93.75%
+  Latency Distribution (HdrHistogram - Recorded Latency)
+ 50.000%  400.89ms
+ 75.000%  528.38ms
+ 90.000%  580.61ms
+ 99.000%  618.49ms
+ 99.900%  620.54ms
+ 99.990%  620.54ms
+ 99.999%  620.54ms
+100.000%  620.54ms
+
+  Detailed Percentile spectrum:
+       Value   Percentile   TotalCount 1/(1-Percentile)
+
+      58.239     0.000000            1         1.00
+     151.935     0.100000           14         1.11
+     193.791     0.200000           28         1.25
+     283.647     0.300000           42         1.43
+     335.615     0.400000           56         1.67
+     400.895     0.500000           70         2.00
+     436.479     0.550000           77         2.22
+     463.615     0.600000           84         2.50
+     489.727     0.650000           91         2.86
+     511.743     0.700000           98         3.33
+     528.383     0.750000          105         4.00
+     532.479     0.775000          109         4.44
+     551.423     0.800000          112         5.00
+     558.591     0.825000          116         5.71
+     561.663     0.850000          119         6.67
+     567.807     0.875000          123         8.00
+     573.439     0.887500          125         8.89
+     580.607     0.900000          127        10.00
+     581.119     0.912500          128        11.43
+     584.703     0.925000          131        13.33
+     586.751     0.937500          133        16.00
+     586.751     0.943750          133        17.78
+     586.751     0.950000          133        20.00
+     599.551     0.956250          134        22.86
+     602.111     0.962500          135        26.67
+     605.695     0.968750          136        32.00
+     609.791     0.971875          137        35.56
+     609.791     0.975000          137        40.00
+     609.791     0.978125          137        45.71
+     617.983     0.981250          138        53.33
+     617.983     0.984375          138        64.00
+     618.495     0.985938          139        71.11
+     618.495     0.987500          139        80.00
+     618.495     0.989062          139        91.43
+     618.495     0.990625          139       106.67
+     618.495     0.992188          139       128.00
+     620.543     0.992969          140       142.22
+     620.543     1.000000          140          inf
+#[Mean    =      381.818, StdDeviation   =      159.792]
+#[Max     =      620.032, Total count    =          140]
+#[Buckets =           27, SubBuckets     =         2048]
+----------------------------------------------------------
+  452 requests in 15.10s, 7.04MB read
+Requests/sec:     29.93
+Transfer/sec:    477.26KB
+
+---- memory ----
+PHP memory (per request, allocator peak): median 4.0 MiB, p95 4.0 MiB, max 4.0 MiB over 477 requests (0 non-2xx); script peak median 1.8 MiB
+PHP-FPM container peak RSS: 79.8 MiB (docker stats, 1 s samples)
+
+---- versions ----
+label: evo@3.5.x+latte@../evo/aLatteX
+[{"name":"PHP","version":"8.4.25","source":"https://github.com/php/php-src"},{"name":"Evolution CMS","version":"3.5.9 (branch 3.5.x@851c705, 2026-09-10)","source":"https://github.com/evolution-cms/evolution"},{"name":"elcreator/alattex","version":"dev-local (evo/aLatteX@3cd59aae7232ddf7)","source":"https://github.com/elcreator/aLatteX"},{"name":"illuminate/database","version":"v12.69.2","source":"https://github.com/illuminate/database"},{"name":"latte/latte","version":"v3.1.6","source":"https://github.com/nette/latte"}]

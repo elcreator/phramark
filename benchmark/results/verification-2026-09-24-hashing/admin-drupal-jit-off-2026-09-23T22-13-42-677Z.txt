@@ -1,0 +1,11 @@
+Phramark admin workload: stack=drupal jit=off base=http://nginx-drupal:80 rounds=1 pages=5
+Total wall time: 5661.72 ms over 22 steps
+PHP-FPM container peak RSS during the run: 53.1 MiB
+
+action        n    wall p50    wall p95    wall max    server p50     hashing p50    php peak p50   js heap p50    dom nodes p50  
+login         1    247.35 ms   247.35 ms   247.35 ms   141.32 ms      168.93 ms      3.11 MiB       11.9 MiB       2498           
+open-edit     5    165.31 ms   247.84 ms   247.84 ms   112.16 ms      -              4.82 MiB       19.84 MiB      4799           
+save-edit     5    393.53 ms   417.45 ms   417.45 ms   320.39 ms      -              4.23 MiB       21.01 MiB      5015           
+open-create   5    95.07 ms    100.02 ms   100.02 ms   48.07 ms       -              4.69 MiB       35.1 MiB       8859           
+save-create   5    373.39 ms   387.43 ms   387.43 ms   309.61 ms      -              4.23 MiB       36.2 MiB       9078           
+logout        1    257.02 ms   257.02 ms   257.02 ms   129.39 ms      -              2.83 MiB       44.29 MiB      11093          

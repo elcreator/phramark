@@ -1,0 +1,98 @@
+{"t":1790201738.246,"step":"warmup","method":"GET","uri":"/wp-login.php","status":200,"ms":737.75,"peak":7723904,"peak_real":10485760,"hash_ms":0}
+{"t":1790201738.262,"step":"warmup","method":"GET","uri":"/wp-admin/load-styles.php?c=1&dir=ltr&load%5Bchunk_0%5D=dashicons,buttons,forms,l10n,wp-base-styles,wp-tooltip,login&ver=7.1.1","status":200,"ms":7.55,"peak":584048,"peak_real":2097152,"hash_ms":0}
+{"t":1790201738.269,"step":"warmup","method":"GET","uri":"/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=clipboard,jquery-core,jquery-migrate,zxcvbn-async,wp-hooks&ver=7.1.1","status":200,"ms":7.47,"peak":659584,"peak_real":2097152,"hash_ms":0}
+{"t":1790201738.679,"step":"warmup","method":"POST","uri":"/wp-login.php","status":302,"ms":202.31,"peak":3099488,"peak_real":4194304,"hash_ms":163.27}
+{"t":1790201738.944,"step":"warmup","method":"GET","uri":"/wp-admin/","status":200,"ms":262.59,"peak":4641248,"peak_real":6291456,"hash_ms":0}
+{"t":1790201738.97,"step":"warmup","method":"GET","uri":"/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,utils&ver=7.1.1","status":200,"ms":3.66,"peak":587696,"peak_real":2097152,"hash_ms":0}
+{"t":1790201738.976,"step":"warmup","method":"GET","uri":"/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=hoverIntent,wp-dom-ready,wp-hooks&ver=7.1.1","status":200,"ms":9.08,"peak":488424,"peak_real":2097152,"hash_ms":0}
+{"t":1790201738.981,"step":"warmup","method":"GET","uri":"/wp-admin/load-styles.php?c=1&dir=ltr&load%5Bchunk_0%5D=dashicons,admin-bar,site-health,common,forms,admin-menu,dashboard,list-tables,edit,revisions,media,themes,about,nav-menus,wp-poi&load%5Bchunk_1%5D=nter,widgets,site-icon,l10n,wp-base-styles,wp-tooltip,buttons,wp-auth-check,wp-theme,wp-components,wp-commands&ver=7.1.1","status":200,"ms":29.53,"peak":1097168,"peak_real":2097152,"hash_ms":0}
+{"t":1790201739.297,"step":"warmup","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":22.04,"peak":4793672,"peak_real":6291456,"hash_ms":0}
+{"t":1790201739.59,"step":"warmup","method":"GET","uri":"/wp-admin/post.php?post=10104&action=edit","status":200,"ms":102.97,"peak":4807536,"peak_real":6291456,"hash_ms":0}
+{"t":1790201739.609,"step":"warmup","method":"GET","uri":"/wp-admin/load-styles.php?c=1&dir=ltr&load%5Bchunk_0%5D=dashicons,admin-bar,buttons,media-views,common,forms,admin-menu,dashboard,list-tables,edit,revisions,media,themes,about,nav-menu&load%5Bchunk_1%5D=s,wp-pointer,widgets,site-icon,l10n,wp-base-styles,wp-tooltip,wp-auth-check,wp-theme,wp-components,wp-commands&ver=7.1.1","status":200,"ms":4.47,"peak":1138176,"peak_real":2097152,"hash_ms":0}
+{"t":1790201739.636,"step":"warmup","method":"GET","uri":"/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,utils,moxiejs,plupload&ver=7.1.1","status":200,"ms":2.78,"peak":751784,"peak_real":2097152,"hash_ms":0}
+{"t":1790201739.85,"step":"warmup","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":21.51,"peak":4791856,"peak_real":6291456,"hash_ms":0}
+{"t":1790201740.139,"step":"warmup","method":"POST","uri":"/wp-admin/post.php","status":302,"ms":94.8,"peak":3532192,"peak_real":4194304,"hash_ms":0}
+{"t":1790201740.188,"step":"warmup","method":"GET","uri":"/wp-admin/post.php?post=10104&action=edit&message=1","status":200,"ms":47.04,"peak":4549944,"peak_real":6291456,"hash_ms":0}
+{"t":1790201740.324,"step":"warmup","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":29.79,"peak":4791856,"peak_real":6291456,"hash_ms":0}
+{"t":1790201740.435,"step":"warmup","method":"GET","uri":"/wp-admin/admin-ajax.php?action=oembed-cache&post=10104","status":200,"ms":26.74,"peak":4757776,"peak_real":6291456,"hash_ms":0}
+{"t":1790201740.585,"step":"warmup","method":"GET","uri":"/wp-admin/post-new.php?post_type=page","status":200,"ms":65.49,"peak":4571696,"peak_real":6291456,"hash_ms":0}
+{"t":1790201740.634,"step":null,"method":"POST","uri":"/wp-admin/admin-ajax.php","status":200,"ms":35.85,"peak":3105920,"peak_real":4194304,"hash_ms":0}
+{"t":1790201740.7,"step":"warmup","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":20.99,"peak":4791760,"peak_real":6291456,"hash_ms":0}
+{"t":1790201740.857,"step":"warmup","method":"GET","uri":"/wp-login.php?action=logout&_wpnonce=bbb10e78a5","status":302,"ms":31.24,"peak":3074504,"peak_real":4194304,"hash_ms":0}
+{"t":1790201740.878,"step":"warmup","method":"GET","uri":"/wp-login.php?loggedout=true&wp_lang=en_US","status":200,"ms":19.13,"peak":3312016,"peak_real":4194304,"hash_ms":0}
+{"t":1790201740.995,"step":"login:round 1","method":"GET","uri":"/wp-login.php","status":200,"ms":20.59,"peak":3308352,"peak_real":4194304,"hash_ms":0}
+{"t":1790201741.352,"step":"login:round 1","method":"POST","uri":"/wp-login.php","status":302,"ms":190.61,"peak":3099392,"peak_real":4194304,"hash_ms":163.72}
+{"t":1790201741.388,"step":"login:round 1","method":"GET","uri":"/wp-admin/","status":200,"ms":33.65,"peak":4347944,"peak_real":6291456,"hash_ms":0}
+{"t":1790201741.476,"step":"login:round 1","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":21.55,"peak":4791824,"peak_real":6291456,"hash_ms":0}
+{"t":1790201741.603,"step":"open-edit:page 10104","method":"GET","uri":"/wp-admin/post.php?post=10104&action=edit","status":200,"ms":55.66,"peak":4554456,"peak_real":6291456,"hash_ms":0}
+{"t":1790201741.704,"step":"open-edit:page 10104","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":20.49,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201742.061,"step":"save-edit:page 10104","method":"POST","uri":"/wp-admin/post.php","status":302,"ms":132.59,"peak":3539080,"peak_real":4194304,"hash_ms":0}
+{"t":1790201742.107,"step":"save-edit:page 10104","method":"GET","uri":"/wp-admin/post.php?post=10104&action=edit&message=1","status":200,"ms":44.19,"peak":4552752,"peak_real":6291456,"hash_ms":0}
+{"t":1790201742.27,"step":"save-edit:page 10104","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":36.2,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201742.368,"step":"save-edit:page 10104","method":"GET","uri":"/wp-admin/admin-ajax.php?action=oembed-cache&post=10104","status":200,"ms":20.67,"peak":3040952,"peak_real":4194304,"hash_ms":0}
+{"t":1790201742.569,"step":"open-edit:page 10105","method":"GET","uri":"/wp-admin/post.php?post=10105&action=edit","status":200,"ms":83.58,"peak":4550560,"peak_real":6291456,"hash_ms":0}
+{"t":1790201742.632,"step":null,"method":"POST","uri":"/wp-admin/admin-ajax.php","status":200,"ms":38.99,"peak":3106072,"peak_real":4194304,"hash_ms":0}
+{"t":1790201742.731,"step":"open-edit:page 10105","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":23.12,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201742.979,"step":"save-edit:page 10105","method":"POST","uri":"/wp-admin/post.php","status":302,"ms":67.37,"peak":3532400,"peak_real":4194304,"hash_ms":0}
+{"t":1790201743.021,"step":"save-edit:page 10105","method":"GET","uri":"/wp-admin/post.php?post=10105&action=edit&message=1","status":200,"ms":39.97,"peak":4550080,"peak_real":6291456,"hash_ms":0}
+{"t":1790201743.161,"step":"save-edit:page 10105","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":35.95,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201743.238,"step":"save-edit:page 10105","method":"GET","uri":"/wp-admin/admin-ajax.php?action=oembed-cache&post=10105","status":200,"ms":17.16,"peak":3040952,"peak_real":4194304,"hash_ms":0}
+{"t":1790201743.422,"step":"open-edit:page 10106","method":"GET","uri":"/wp-admin/post.php?post=10106&action=edit","status":200,"ms":60.74,"peak":4550584,"peak_real":6291456,"hash_ms":0}
+{"t":1790201743.458,"step":null,"method":"POST","uri":"/wp-admin/admin-ajax.php","status":200,"ms":31.1,"peak":3106072,"peak_real":6291456,"hash_ms":0}
+{"t":1790201743.53,"step":"open-edit:page 10106","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":20.54,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201743.78,"step":"save-edit:page 10106","method":"POST","uri":"/wp-admin/post.php","status":302,"ms":69.49,"peak":3532400,"peak_real":4194304,"hash_ms":0}
+{"t":1790201743.831,"step":"save-edit:page 10106","method":"GET","uri":"/wp-admin/post.php?post=10106&action=edit&message=1","status":200,"ms":47.96,"peak":4550104,"peak_real":6291456,"hash_ms":0}
+{"t":1790201743.98,"step":"save-edit:page 10106","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":22.68,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201744.07,"step":"save-edit:page 10106","method":"GET","uri":"/wp-admin/admin-ajax.php?action=oembed-cache&post=10106","status":200,"ms":14.85,"peak":3040952,"peak_real":4194304,"hash_ms":0}
+{"t":1790201744.215,"step":"open-edit:page 10107","method":"GET","uri":"/wp-admin/post.php?post=10107&action=edit","status":200,"ms":59.29,"peak":4550608,"peak_real":6291456,"hash_ms":0}
+{"t":1790201744.254,"step":null,"method":"POST","uri":"/wp-admin/admin-ajax.php","status":200,"ms":30.57,"peak":3106072,"peak_real":4194304,"hash_ms":0}
+{"t":1790201744.334,"step":"open-edit:page 10107","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":26.83,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201744.582,"step":"save-edit:page 10107","method":"POST","uri":"/wp-admin/post.php","status":302,"ms":71.4,"peak":3532400,"peak_real":4194304,"hash_ms":0}
+{"t":1790201744.627,"step":"save-edit:page 10107","method":"GET","uri":"/wp-admin/post.php?post=10107&action=edit&message=1","status":200,"ms":42.38,"peak":4550128,"peak_real":6291456,"hash_ms":0}
+{"t":1790201744.769,"step":"save-edit:page 10107","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":30.72,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201744.853,"step":"save-edit:page 10107","method":"GET","uri":"/wp-admin/admin-ajax.php?action=oembed-cache&post=10107","status":200,"ms":19.35,"peak":3040952,"peak_real":4194304,"hash_ms":0}
+{"t":1790201745.005,"step":"open-edit:page 10108","method":"GET","uri":"/wp-admin/post.php?post=10108&action=edit","status":200,"ms":65.55,"peak":4550632,"peak_real":6291456,"hash_ms":0}
+{"t":1790201745.046,"step":null,"method":"POST","uri":"/wp-admin/admin-ajax.php","status":200,"ms":33.14,"peak":3106072,"peak_real":4194304,"hash_ms":0}
+{"t":1790201745.144,"step":"open-edit:page 10108","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":38.42,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201745.468,"step":"save-edit:page 10108","method":"POST","uri":"/wp-admin/post.php","status":302,"ms":115.03,"peak":3532400,"peak_real":4194304,"hash_ms":0}
+{"t":1790201745.51,"step":"save-edit:page 10108","method":"GET","uri":"/wp-admin/post.php?post=10108&action=edit&message=1","status":200,"ms":39.71,"peak":4550152,"peak_real":6291456,"hash_ms":0}
+{"t":1790201745.696,"step":"save-edit:page 10108","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":40.28,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201745.817,"step":"save-edit:page 10108","method":"GET","uri":"/wp-admin/admin-ajax.php?action=oembed-cache&post=10108","status":200,"ms":48.34,"peak":3040952,"peak_real":4194304,"hash_ms":0}
+{"t":1790201745.992,"step":"open-create:page 1","method":"GET","uri":"/wp-admin/post-new.php?post_type=page","status":200,"ms":86.61,"peak":4567088,"peak_real":6291456,"hash_ms":0}
+{"t":1790201746.036,"step":null,"method":"POST","uri":"/wp-admin/admin-ajax.php","status":200,"ms":39.38,"peak":3106072,"peak_real":4194304,"hash_ms":0}
+{"t":1790201746.115,"step":"open-create:page 1","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":33.3,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201746.441,"step":"save-create:page 1","method":"POST","uri":"/wp-admin/post.php","status":302,"ms":111.14,"peak":3532016,"peak_real":4194304,"hash_ms":0}
+{"t":1790201746.489,"step":"save-create:page 1","method":"GET","uri":"/wp-admin/post.php?post=10189&action=edit&message=6","status":200,"ms":46.64,"peak":4553424,"peak_real":6291456,"hash_ms":0}
+{"t":1790201746.67,"step":"save-create:page 1","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":23.59,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201746.756,"step":"save-create:page 1","method":"GET","uri":"/wp-admin/admin-ajax.php?action=oembed-cache&post=10189","status":200,"ms":17.33,"peak":3040952,"peak_real":4194304,"hash_ms":0}
+{"t":1790201746.937,"step":"open-create:page 2","method":"GET","uri":"/wp-admin/post-new.php?post_type=page","status":200,"ms":82.03,"peak":4569952,"peak_real":6291456,"hash_ms":0}
+{"t":1790201746.976,"step":null,"method":"POST","uri":"/wp-admin/admin-ajax.php","status":200,"ms":33.32,"peak":3106112,"peak_real":4194304,"hash_ms":0}
+{"t":1790201747.063,"step":"open-create:page 2","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":23.7,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201747.366,"step":"save-create:page 2","method":"POST","uri":"/wp-admin/post.php","status":302,"ms":105.86,"peak":3532016,"peak_real":4194304,"hash_ms":0}
+{"t":1790201747.415,"step":"save-create:page 2","method":"GET","uri":"/wp-admin/post.php?post=10191&action=edit&message=6","status":200,"ms":46.29,"peak":4556288,"peak_real":6291456,"hash_ms":0}
+{"t":1790201747.548,"step":"save-create:page 2","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":29.75,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201747.64,"step":"save-create:page 2","method":"GET","uri":"/wp-admin/admin-ajax.php?action=oembed-cache&post=10191","status":200,"ms":26.31,"peak":3040952,"peak_real":4194304,"hash_ms":0}
+{"t":1790201747.822,"step":"open-create:page 3","method":"GET","uri":"/wp-admin/post-new.php?post_type=page","status":200,"ms":84.8,"peak":4572816,"peak_real":6291456,"hash_ms":0}
+{"t":1790201747.872,"step":null,"method":"POST","uri":"/wp-admin/admin-ajax.php","status":200,"ms":42.47,"peak":3106112,"peak_real":4194304,"hash_ms":0}
+{"t":1790201747.959,"step":"open-create:page 3","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":23.76,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201748.259,"step":"save-create:page 3","method":"POST","uri":"/wp-admin/post.php","status":302,"ms":112.21,"peak":3532016,"peak_real":4194304,"hash_ms":0}
+{"t":1790201748.303,"step":"save-create:page 3","method":"GET","uri":"/wp-admin/post.php?post=10193&action=edit&message=6","status":200,"ms":42.52,"peak":4559152,"peak_real":6291456,"hash_ms":0}
+{"t":1790201748.444,"step":"save-create:page 3","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":21.11,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201748.562,"step":"save-create:page 3","method":"GET","uri":"/wp-admin/admin-ajax.php?action=oembed-cache&post=10193","status":200,"ms":30.29,"peak":3040952,"peak_real":4194304,"hash_ms":0}
+{"t":1790201748.735,"step":"open-create:page 4","method":"GET","uri":"/wp-admin/post-new.php?post_type=page","status":200,"ms":86.74,"peak":4575680,"peak_real":6291456,"hash_ms":0}
+{"t":1790201748.779,"step":null,"method":"POST","uri":"/wp-admin/admin-ajax.php","status":200,"ms":29.11,"peak":3106112,"peak_real":4194304,"hash_ms":0}
+{"t":1790201748.923,"step":"open-create:page 4","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":43.98,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201749.261,"step":"save-create:page 4","method":"POST","uri":"/wp-admin/post.php","status":302,"ms":99.76,"peak":3532016,"peak_real":4194304,"hash_ms":0}
+{"t":1790201749.312,"step":"save-create:page 4","method":"GET","uri":"/wp-admin/post.php?post=10195&action=edit&message=6","status":200,"ms":49.02,"peak":4562016,"peak_real":6291456,"hash_ms":0}
+{"t":1790201749.479,"step":"save-create:page 4","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":35.01,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201749.571,"step":"save-create:page 4","method":"GET","uri":"/wp-admin/admin-ajax.php?action=oembed-cache&post=10195","status":200,"ms":18.93,"peak":3040952,"peak_real":4194304,"hash_ms":0}
+{"t":1790201749.743,"step":"open-create:page 5","method":"GET","uri":"/wp-admin/post-new.php?post_type=page","status":200,"ms":77.58,"peak":4578544,"peak_real":6291456,"hash_ms":0}
+{"t":1790201749.785,"step":null,"method":"POST","uri":"/wp-admin/admin-ajax.php","status":200,"ms":32.96,"peak":3106112,"peak_real":4194304,"hash_ms":0}
+{"t":1790201749.89,"step":"open-create:page 5","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":24.6,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201750.18,"step":"save-create:page 5","method":"POST","uri":"/wp-admin/post.php","status":302,"ms":85.22,"peak":3532016,"peak_real":4194304,"hash_ms":0}
+{"t":1790201750.23,"step":"save-create:page 5","method":"GET","uri":"/wp-admin/post.php?post=10197&action=edit&message=6","status":200,"ms":48.47,"peak":4565136,"peak_real":6291456,"hash_ms":0}
+{"t":1790201750.39,"step":"save-create:page 5","method":"GET","uri":"/wp-json/wp/v2/users/me?context=edit&_locale=user","status":200,"ms":28.74,"peak":4791984,"peak_real":6291456,"hash_ms":0}
+{"t":1790201750.509,"step":"save-create:page 5","method":"GET","uri":"/wp-admin/admin-ajax.php?action=oembed-cache&post=10197","status":200,"ms":20.92,"peak":3040952,"peak_real":4194304,"hash_ms":0}
+{"t":1790201750.662,"step":"logout:round 1","method":"GET","uri":"/wp-login.php?action=logout&_wpnonce=01df0f769f","status":302,"ms":46.24,"peak":3074688,"peak_real":4194304,"hash_ms":0}
+{"t":1790201750.696,"step":"logout:round 1","method":"GET","uri":"/wp-login.php?loggedout=true&wp_lang=en_US","status":200,"ms":31.6,"peak":3312248,"peak_real":4194304,"hash_ms":0}
+{"t":1790201750.725,"step":null,"method":"POST","uri":"/wp-admin/admin-ajax.php","status":400,"ms":14.26,"peak":3015448,"peak_real":4194304,"hash_ms":0}

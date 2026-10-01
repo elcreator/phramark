@@ -1,0 +1,33 @@
+== building trees
+  old differs from new in 23 files
+== packaging the new tree like a GitHub archive (one root folder)
+  zip 30457958 bytes
+== 5. CLI: artisan make:site update (old site updates itself to the new archive)
+  seam patched: download=1 metadata=1
+  PASS make:site: exits 0 (0)
+  PASS make:site: reports the new version
+  PASS make:site: new files are in place
+  PASS make:site: Composer ran without dev packages
+  PASS make_upd: front page answers 200 (200)
+  PASS make_upd: no PHP error on the page
+  PASS make_upd: (parent, menuindex) index exists (2 columns)
+  PASS make_upd: migration recorded once
+  PASS make_upd: site cache holds the translated text defaults
+  PASS make_upd: existing connection config left as it was (0u)
+  PASS make_upd: no errors in the core log
+== 6. Admin panel: update button -> queued site_update task -> system:task-worker
+  seam patched: download=1 metadata=1
+  PASS admin: task queued ({"ok":true,"status":"queued","error":null})
+  PASS admin: worker exits 0 (0)
+  PASS admin: task succeeded (succeeded)
+  PASS admin: database backup was made first
+  PASS admin: new files are in place
+  PASS admin_upd: front page answers 200 (200)
+  PASS admin_upd: no PHP error on the page
+  PASS admin_upd: (parent, menuindex) index exists (2 columns)
+  PASS admin_upd: migration recorded once
+  PASS admin_upd: site cache holds the translated text defaults
+  PASS admin_upd: existing connection config left as it was (0u)
+  PASS admin_upd: no errors in the core log
+== cleanup
+RESULT pass=23 fail=0

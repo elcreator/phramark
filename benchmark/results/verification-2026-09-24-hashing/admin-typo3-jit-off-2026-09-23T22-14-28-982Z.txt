@@ -1,0 +1,11 @@
+Phramark admin workload: stack=typo3 jit=off base=http://nginx-typo3:80 rounds=1 pages=5
+Total wall time: 19150.26 ms over 22 steps
+PHP-FPM container peak RSS during the run: 121 MiB
+
+action        n    wall p50    wall p95    wall max    server p50     hashing p50    php peak p50   js heap p50    dom nodes p50  
+login         1    1015.24 ms  1015.24 ms  1015.24 ms  449.23 ms      623.19 ms      6.27 MiB       31.28 MiB      31666          
+open-edit     5    533.97 ms   569.2 ms    569.2 ms    169.81 ms      -              7.28 MiB       70.74 MiB      70213          
+save-edit     5    831.89 ms   855.46 ms   855.46 ms   390.35 ms      -              7.34 MiB       71.01 MiB      78890          
+open-create   5    301.13 ms   403.59 ms   403.59 ms   106.56 ms      -              6.53 MiB       136.12 MiB     155623         
+save-create   5    1900.78 ms  2025.76 ms  2025.76 ms  815.18 ms      -              6.93 MiB       141.88 MiB     174654         
+logout        1    324.12 ms   324.12 ms   324.12 ms   169.87 ms      -              4.5 MiB        18.36 MiB      77814          

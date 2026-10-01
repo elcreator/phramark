@@ -1,0 +1,93 @@
+Running 1m test @ http://nginx-phalcon:80
+  4 threads and 32 connections
+  Thread calibration: mean lat.: 48.225ms, rate sampling interval: 153ms
+  Thread calibration: mean lat.: 45.792ms, rate sampling interval: 149ms
+  Thread calibration: mean lat.: 50.096ms, rate sampling interval: 156ms
+  Thread calibration: mean lat.: 49.288ms, rate sampling interval: 157ms
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    47.36ms   27.26ms 228.35ms   75.40%
+    Req/Sec     7.43     15.60    54.00     84.06%
+  Latency Distribution (HdrHistogram - Recorded Latency)
+ 50.000%   43.58ms
+ 75.000%   57.85ms
+ 90.000%   78.53ms
+ 99.000%  139.65ms
+ 99.900%  220.03ms
+ 99.990%  228.48ms
+ 99.999%  228.48ms
+100.000%  228.48ms
+
+  Detailed Percentile spectrum:
+       Value   Percentile   TotalCount 1/(1-Percentile)
+
+       8.679     0.000000            1         1.00
+      18.863     0.100000          151         1.11
+      25.135     0.200000          302         1.25
+      31.343     0.300000          452         1.43
+      37.471     0.400000          602         1.67
+      43.583     0.500000          752         2.00
+      46.719     0.550000          830         2.22
+      49.407     0.600000          903         2.50
+      52.479     0.650000          980         2.86
+      55.391     0.700000         1053         3.33
+      57.855     0.750000         1128         4.00
+      60.095     0.775000         1166         4.44
+      62.623     0.800000         1204         5.00
+      66.239     0.825000         1243         5.71
+      69.439     0.850000         1279         6.67
+      74.047     0.875000         1316         8.00
+      76.351     0.887500         1335         8.89
+      78.527     0.900000         1354        10.00
+      82.815     0.912500         1373        11.43
+      85.567     0.925000         1392        13.33
+      88.831     0.937500         1410        16.00
+      91.135     0.943750         1420        17.78
+      94.463     0.950000         1429        20.00
+      98.687     0.956250         1440        22.86
+     101.631     0.962500         1448        26.67
+     107.967     0.968750         1457        32.00
+     109.439     0.971875         1462        35.56
+     112.255     0.975000         1467        40.00
+     122.495     0.978125         1472        45.71
+     126.591     0.981250         1476        53.33
+     133.375     0.984375         1481        64.00
+     135.167     0.985938         1483        71.11
+     137.599     0.987500         1486        80.00
+     139.391     0.989062         1488        91.43
+     141.823     0.990625         1490       106.67
+     146.175     0.992188         1493       128.00
+     147.839     0.992969         1494       142.22
+     185.599     0.993750         1495       160.00
+     188.031     0.994531         1496       182.86
+     192.511     0.995313         1497       213.33
+     196.095     0.996094         1499       256.00
+     196.095     0.996484         1499       284.44
+     196.991     0.996875         1500       320.00
+     196.991     0.997266         1500       365.71
+     198.399     0.997656         1501       426.67
+     220.031     0.998047         1502       512.00
+     220.031     0.998242         1502       568.89
+     220.031     0.998437         1502       640.00
+     220.031     0.998633         1502       731.43
+     226.815     0.998828         1503       853.33
+     226.815     0.999023         1503      1024.00
+     226.815     0.999121         1503      1137.78
+     226.815     0.999219         1503      1280.00
+     226.815     0.999316         1503      1462.86
+     228.479     0.999414         1504      1706.67
+     228.479     1.000000         1504          inf
+#[Mean    =       47.364, StdDeviation   =       27.264]
+#[Max     =      228.352, Total count    =         1504]
+#[Buckets =           27, SubBuckets     =         2048]
+----------------------------------------------------------
+  1824 requests in 1.00m, 28.38MB read
+Requests/sec:     30.38
+Transfer/sec:    484.02KB
+
+---- memory ----
+PHP memory (per request, allocator peak): median 2.0 MiB, p95 2.0 MiB, max 2.0 MiB over 1824 requests (0 non-2xx); script peak median 1.0 MiB
+PHP-FPM container peak RSS: 60.3 MiB (docker stats, 1 s samples)
+
+---- versions ----
+label: evo@../evolution
+[{"name":"PHP","version":"8.4.25","source":"https://github.com/php/php-src"},{"name":"Evolution CMS","version":"3.5.9 (path /host/evolution@3f9ea9220 2026-09-21, files 82685d73f20be0b3)","source":"https://github.com/evolution-cms/evolution"},{"name":"elcreator/alattex","version":"0.5.0","source":"https://github.com/elcreator/aLatteX"},{"name":"elcreator/aphalcon","version":"0.1.0","source":"https://github.com/elcreator/aPhalcon"},{"name":"illuminate/database","version":"v12.69.2","source":"https://github.com/illuminate/database"},{"name":"latte/latte","version":"v3.1.6","source":"https://github.com/nette/latte"},{"name":"phalcon (extension)","version":"5.9.3","source":"https://github.com/phalcon/cphalcon"},{"name":"front-end session","version":"off (NO_SESSION)"}]

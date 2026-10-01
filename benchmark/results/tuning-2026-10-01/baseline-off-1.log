@@ -1,0 +1,20 @@
+ Container phramark-php-parser-1 Recreate 
+ Container phramark-php-parser-1 Recreated 
+ Container phramark-nginx-parser-1 Recreate 
+ Container phramark-nginx-parser-1 Recreated 
+ Container phramark-php-parser-1 Starting 
+ Container phramark-php-parser-1 Started 
+ Container phramark-nginx-parser-1 Starting 
+ Container phramark-nginx-parser-1 Started 
+port 8080: warm
+evo-parser   ok   http://127.0.0.1:8080/articles/category-042 (14019 bytes)
+evo-parser   ok   http://127.0.0.1:8080/articles/category-001 (14035 bytes)
+evo-parser   ok   http://127.0.0.1:8080/articles/category-100 (14035 bytes)
+evo-parser   ok   http://nginx-parser:80/articles/category-042 (14019 bytes)
+guest workload: stack=evo-parser jit=off rate=30 duration=60s connections=32
+ 50.000%   74.43ms
+ 99.000%  173.70ms
+Requests/sec:     30.38
+PHP memory (per request, allocator peak): median 2.0 MiB, p95 2.0 MiB, max 2.0 MiB over 1824 requests (0 non-2xx); script peak median 1.0 MiB
+PHP-FPM peak RSS: 24.6 MiB (cgroup anon, 1 s samples)
+Results: benchmark/results/tuning-2026-10-01/baseline-off-1.txt

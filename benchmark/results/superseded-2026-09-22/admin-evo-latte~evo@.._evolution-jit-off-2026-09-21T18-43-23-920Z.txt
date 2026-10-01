@@ -1,0 +1,11 @@
+Phramark admin workload: stack=evo-latte jit=off base=http://nginx-latte:80 rounds=1 pages=5
+Total wall time: 8508.73 ms over 22 steps
+PHP-FPM container peak RSS during the run: 84.4 MiB
+
+action        n    wall p50    wall p95    wall max    server p50     php peak p50   js heap p50    dom nodes p50  
+login         1    1829.23 ms  1829.23 ms  1829.23 ms  204.79 ms      2.49 MiB       13.18 MiB      25995          
+open-edit     5    157.56 ms   165.5 ms    165.5 ms    99.08 ms       1.23 MiB       16.33 MiB      28759          
+save-edit     5    382.3 ms    402.21 ms   402.21 ms   93.19 ms       1.25 MiB       16.81 MiB      28832          
+open-create   5    145.5 ms    156.16 ms   156.16 ms   84.55 ms       1.24 MiB       9.4 MiB        3602           
+save-create   5    592.52 ms   689.54 ms   689.54 ms   252.37 ms      1.23 MiB       9.72 MiB       3925           
+logout        1    154.71 ms   154.71 ms   154.71 ms   100.2 ms       1.05 MiB       10.13 MiB      4065           

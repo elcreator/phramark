@@ -1,0 +1,11 @@
+Phramark admin workload: stack=wordpress-gantry jit=off base=http://nginx-wordpress-gantry:80 rounds=1 pages=5
+Total wall time: 9338.1 ms over 22 steps
+PHP-FPM container peak RSS during the run: 55.5 MiB
+
+action        n    wall p50    wall p95    wall max    server p50     hashing p50    php peak p50   js heap p50    dom nodes p50  
+login         1    410.46 ms   410.46 ms   410.46 ms   93.59 ms       163.72 ms      4.57 MiB       104.02 MiB     13369          
+open-edit     5    295.56 ms   364.12 ms   364.12 ms   66.72 ms       -              4.57 MiB       200.23 MiB     32088          
+save-edit     5    480.21 ms   586.51 ms   586.51 ms   124.86 ms      -              4.57 MiB       174.13 MiB     28431          
+open-create   5    348.23 ms   440.65 ms   440.65 ms   90.33 ms       -              4.57 MiB       85.02 MiB      10737          
+save-create   5    549.67 ms   575.11 ms   575.11 ms   160.32 ms      -              4.57 MiB       112.5 MiB      14559          
+logout        1    211.73 ms   211.73 ms   211.73 ms   84.88 ms       -              3.16 MiB       108.48 MiB     14937          

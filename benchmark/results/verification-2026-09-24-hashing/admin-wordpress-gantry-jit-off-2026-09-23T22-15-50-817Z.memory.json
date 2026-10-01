@@ -1,0 +1,434 @@
+{
+    "requests": 98,
+    "peak_real": {
+        "count": 98,
+        "median": 6291456,
+        "p95": 6291456,
+        "max": 10485760,
+        "mean": 5221480.49
+    },
+    "peak": {
+        "count": 98,
+        "median": 4550080,
+        "p95": 4791984,
+        "max": 7723904,
+        "mean": 3850051.67
+    },
+    "non_2xx": 16,
+    "steps": {
+        "warmup": {
+            "requests": 21,
+            "peak_real": {
+                "count": 21,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 10485760,
+                "mean": 4693625.9
+            },
+            "peak": {
+                "count": 21,
+                "median": 3532192,
+                "p95": 4807536,
+                "max": 7723904,
+                "mean": 3264110.86
+            },
+            "hash_ms": 163.27
+        },
+        "login:round 1": {
+            "requests": 4,
+            "peak_real": {
+                "count": 4,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 5242880
+            },
+            "peak": {
+                "count": 4,
+                "median": 3308352,
+                "p95": 4791824,
+                "max": 4791824,
+                "mean": 3886878
+            },
+            "hash_ms": 163.72
+        },
+        "open-edit:page 10104": {
+            "requests": 2,
+            "peak_real": {
+                "count": 2,
+                "median": 6291456,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 6291456
+            },
+            "peak": {
+                "count": 2,
+                "median": 4554456,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 4673220
+            },
+            "hash_ms": 0
+        },
+        "save-edit:page 10104": {
+            "requests": 4,
+            "peak_real": {
+                "count": 4,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 5242880
+            },
+            "peak": {
+                "count": 4,
+                "median": 3539080,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 3981192
+            },
+            "hash_ms": 0
+        },
+        "open-edit:page 10105": {
+            "requests": 2,
+            "peak_real": {
+                "count": 2,
+                "median": 6291456,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 6291456
+            },
+            "peak": {
+                "count": 2,
+                "median": 4550560,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 4671272
+            },
+            "hash_ms": 0
+        },
+        "save-edit:page 10105": {
+            "requests": 4,
+            "peak_real": {
+                "count": 4,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 5242880
+            },
+            "peak": {
+                "count": 4,
+                "median": 3532400,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 3978854
+            },
+            "hash_ms": 0
+        },
+        "open-edit:page 10106": {
+            "requests": 2,
+            "peak_real": {
+                "count": 2,
+                "median": 6291456,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 6291456
+            },
+            "peak": {
+                "count": 2,
+                "median": 4550584,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 4671284
+            },
+            "hash_ms": 0
+        },
+        "save-edit:page 10106": {
+            "requests": 4,
+            "peak_real": {
+                "count": 4,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 5242880
+            },
+            "peak": {
+                "count": 4,
+                "median": 3532400,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 3978860
+            },
+            "hash_ms": 0
+        },
+        "open-edit:page 10107": {
+            "requests": 2,
+            "peak_real": {
+                "count": 2,
+                "median": 6291456,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 6291456
+            },
+            "peak": {
+                "count": 2,
+                "median": 4550608,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 4671296
+            },
+            "hash_ms": 0
+        },
+        "save-edit:page 10107": {
+            "requests": 4,
+            "peak_real": {
+                "count": 4,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 5242880
+            },
+            "peak": {
+                "count": 4,
+                "median": 3532400,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 3978866
+            },
+            "hash_ms": 0
+        },
+        "open-edit:page 10108": {
+            "requests": 2,
+            "peak_real": {
+                "count": 2,
+                "median": 6291456,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 6291456
+            },
+            "peak": {
+                "count": 2,
+                "median": 4550632,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 4671308
+            },
+            "hash_ms": 0
+        },
+        "save-edit:page 10108": {
+            "requests": 4,
+            "peak_real": {
+                "count": 4,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 5242880
+            },
+            "peak": {
+                "count": 4,
+                "median": 3532400,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 3978872
+            },
+            "hash_ms": 0
+        },
+        "open-create:page 1": {
+            "requests": 2,
+            "peak_real": {
+                "count": 2,
+                "median": 6291456,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 6291456
+            },
+            "peak": {
+                "count": 2,
+                "median": 4567088,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 4679536
+            },
+            "hash_ms": 0
+        },
+        "save-create:page 1": {
+            "requests": 4,
+            "peak_real": {
+                "count": 4,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 5242880
+            },
+            "peak": {
+                "count": 4,
+                "median": 3532016,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 3979594
+            },
+            "hash_ms": 0
+        },
+        "open-create:page 2": {
+            "requests": 2,
+            "peak_real": {
+                "count": 2,
+                "median": 6291456,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 6291456
+            },
+            "peak": {
+                "count": 2,
+                "median": 4569952,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 4680968
+            },
+            "hash_ms": 0
+        },
+        "save-create:page 2": {
+            "requests": 4,
+            "peak_real": {
+                "count": 4,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 5242880
+            },
+            "peak": {
+                "count": 4,
+                "median": 3532016,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 3980310
+            },
+            "hash_ms": 0
+        },
+        "open-create:page 3": {
+            "requests": 2,
+            "peak_real": {
+                "count": 2,
+                "median": 6291456,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 6291456
+            },
+            "peak": {
+                "count": 2,
+                "median": 4572816,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 4682400
+            },
+            "hash_ms": 0
+        },
+        "save-create:page 3": {
+            "requests": 4,
+            "peak_real": {
+                "count": 4,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 5242880
+            },
+            "peak": {
+                "count": 4,
+                "median": 3532016,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 3981026
+            },
+            "hash_ms": 0
+        },
+        "open-create:page 4": {
+            "requests": 2,
+            "peak_real": {
+                "count": 2,
+                "median": 6291456,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 6291456
+            },
+            "peak": {
+                "count": 2,
+                "median": 4575680,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 4683832
+            },
+            "hash_ms": 0
+        },
+        "save-create:page 4": {
+            "requests": 4,
+            "peak_real": {
+                "count": 4,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 5242880
+            },
+            "peak": {
+                "count": 4,
+                "median": 3532016,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 3981742
+            },
+            "hash_ms": 0
+        },
+        "open-create:page 5": {
+            "requests": 2,
+            "peak_real": {
+                "count": 2,
+                "median": 6291456,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 6291456
+            },
+            "peak": {
+                "count": 2,
+                "median": 4578544,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 4685264
+            },
+            "hash_ms": 0
+        },
+        "save-create:page 5": {
+            "requests": 4,
+            "peak_real": {
+                "count": 4,
+                "median": 4194304,
+                "p95": 6291456,
+                "max": 6291456,
+                "mean": 5242880
+            },
+            "peak": {
+                "count": 4,
+                "median": 3532016,
+                "p95": 4791984,
+                "max": 4791984,
+                "mean": 3982522
+            },
+            "hash_ms": 0
+        },
+        "logout:round 1": {
+            "requests": 2,
+            "peak_real": {
+                "count": 2,
+                "median": 4194304,
+                "p95": 4194304,
+                "max": 4194304,
+                "mean": 4194304
+            },
+            "peak": {
+                "count": 2,
+                "median": 3074688,
+                "p95": 3312248,
+                "max": 3312248,
+                "mean": 3193468
+            },
+            "hash_ms": 0
+        }
+    }
+}

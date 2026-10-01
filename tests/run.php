@@ -150,6 +150,13 @@ expect(str_contains($setup, "file_get_contents(\$marker) === \$wanted"), true, '
 expect(str_contains($setup, "['git', 'clone', '--depth=1', '--branch', \$ref"), true, 'Evolution is cloned from the resolved tag or branch, never a hardcoded one.');
 expect(str_contains($setup, "/core/storage/bootstrap/services.php'"), true, 'The service cache written during a package install is dropped, so every installed provider boots (aPhalcon without its provider answers 500).');
 expect(preg_match("/--branch', '\\d/", $setup), 0, 'No hardcoded Evolution branch in the setup.');
+// The snippet stacks' template keeps its code in the database ("db", what the
+// manager stores for a template it creates), so the core does not look for a
+// view file named after it on every request. Only where the column exists, and
+// only with a snippet: the Latte stacks render that alias from a file.
+$snippetBlock = strpos($setup, 'if ($snippetCode !== null) {');
+$columnCheck = strpos($setup, "if (in_array('templatesource', columns(\$pdo, \$templates), true)) {");
+expect($snippetBlock !== false && $columnCheck > $snippetBlock && strpos($setup, "WHERE id = 10')->execute(['db']);", (int) $columnCheck) > $columnCheck, true, 'The snippet template of evo-parser and evo-sArticles is marked as a database template where the column exists.');
 $cross = repositoryFile('benchmark/fixtures/setup-cross-cms.sh');
 foreach (['drupal', 'typo3', 'winter', 'modx', 'wordpress gantry classic-editor'] as $products) {
     expect(str_contains($cross, 'wanted_versions ' . $products . ')'), true, sprintf('The cross-CMS setup must resolve the versions of "%s" before installing.', $products));

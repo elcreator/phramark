@@ -1,0 +1,1049 @@
+{
+    "workload": "admin",
+    "stack": "evo-parser",
+    "version": "evo@../evolution",
+    "jit": "tracing",
+    "baseUrl": "http://nginx-parser:80",
+    "rounds": 1,
+    "pages": 5,
+    "recordedAt": "2026-09-21T12:04:20.440Z",
+    "createdIds": [
+        10114,
+        10115,
+        10116,
+        10117,
+        10118
+    ],
+    "warmup": true,
+    "summary": {
+        "ms": {
+            "login": {
+                "count": 1,
+                "total": 1842.3,
+                "mean": 1842.3,
+                "median": 1842.3,
+                "p95": 1842.3,
+                "min": 1842.3,
+                "max": 1842.3
+            },
+            "open-edit": {
+                "count": 5,
+                "total": 826.75,
+                "mean": 165.35,
+                "median": 165.31,
+                "p95": 180.27,
+                "min": 153,
+                "max": 180.27
+            },
+            "save-edit": {
+                "count": 5,
+                "total": 2731.72,
+                "mean": 546.34,
+                "median": 553.4,
+                "p95": 567.26,
+                "min": 506.03,
+                "max": 567.26
+            },
+            "open-create": {
+                "count": 5,
+                "total": 787.99,
+                "mean": 157.6,
+                "median": 140.22,
+                "p95": 235.43,
+                "min": 132.65,
+                "max": 235.43
+            },
+            "save-create": {
+                "count": 5,
+                "total": 3588.29,
+                "mean": 717.66,
+                "median": 748.71,
+                "p95": 819.19,
+                "min": 605.44,
+                "max": 819.19
+            },
+            "logout": {
+                "count": 1,
+                "total": 205.62,
+                "mean": 205.62,
+                "median": 205.62,
+                "p95": 205.62,
+                "min": 205.62,
+                "max": 205.62
+            }
+        },
+        "serverMs": {
+            "login": {
+                "count": 1,
+                "total": 214.48,
+                "mean": 214.48,
+                "median": 214.48,
+                "p95": 214.48,
+                "min": 214.48,
+                "max": 214.48
+            },
+            "open-edit": {
+                "count": 5,
+                "total": 541.62,
+                "mean": 108.32,
+                "median": 109.29,
+                "p95": 120.71,
+                "min": 94.99,
+                "max": 120.71
+            },
+            "save-edit": {
+                "count": 5,
+                "total": 997.59,
+                "mean": 199.52,
+                "median": 205.12,
+                "p95": 211.58,
+                "min": 175.22,
+                "max": 211.58
+            },
+            "open-create": {
+                "count": 5,
+                "total": 487.01,
+                "mean": 97.4,
+                "median": 83.44,
+                "p95": 159.52,
+                "min": 78.5,
+                "max": 159.52
+            },
+            "save-create": {
+                "count": 5,
+                "total": 1812.83,
+                "mean": 362.57,
+                "median": 296.69,
+                "p95": 493.42,
+                "min": 280.48,
+                "max": 493.42
+            },
+            "logout": {
+                "count": 1,
+                "total": 164.41,
+                "mean": 164.41,
+                "median": 164.41,
+                "p95": 164.41,
+                "min": 164.41,
+                "max": 164.41
+            }
+        },
+        "phpPeakMb": {
+            "login": {
+                "count": 1,
+                "total": 2.65,
+                "mean": 2.65,
+                "median": 2.65,
+                "p95": 2.65,
+                "min": 2.65,
+                "max": 2.65
+            },
+            "open-edit": {
+                "count": 5,
+                "total": 6.09,
+                "mean": 1.22,
+                "median": 1.22,
+                "p95": 1.22,
+                "min": 1.21,
+                "max": 1.22
+            },
+            "save-edit": {
+                "count": 5,
+                "total": 6.33,
+                "mean": 1.27,
+                "median": 1.27,
+                "p95": 1.27,
+                "min": 1.26,
+                "max": 1.27
+            },
+            "open-create": {
+                "count": 5,
+                "total": 6.1,
+                "mean": 1.22,
+                "median": 1.22,
+                "p95": 1.22,
+                "min": 1.22,
+                "max": 1.22
+            },
+            "save-create": {
+                "count": 5,
+                "total": 6.29,
+                "mean": 1.26,
+                "median": 1.24,
+                "p95": 1.33,
+                "min": 1.24,
+                "max": 1.33
+            },
+            "logout": {
+                "count": 1,
+                "total": 1.08,
+                "mean": 1.08,
+                "median": 1.08,
+                "p95": 1.08,
+                "min": 1.08,
+                "max": 1.08
+            }
+        },
+        "jsHeapUsedMb": {
+            "login": {
+                "count": 1,
+                "total": 13.98,
+                "mean": 13.98,
+                "median": 13.98,
+                "p95": 13.98,
+                "min": 13.98,
+                "max": 13.98
+            },
+            "open-edit": {
+                "count": 5,
+                "total": 81.73,
+                "mean": 16.35,
+                "median": 16.04,
+                "p95": 18.15,
+                "min": 14.2,
+                "max": 18.15
+            },
+            "save-edit": {
+                "count": 5,
+                "total": 86.77,
+                "mean": 17.35,
+                "median": 16.95,
+                "p95": 19.05,
+                "min": 15.51,
+                "max": 19.05
+            },
+            "open-create": {
+                "count": 5,
+                "total": 59.03,
+                "mean": 11.81,
+                "median": 10.16,
+                "p95": 19.61,
+                "min": 8.08,
+                "max": 19.61
+            },
+            "save-create": {
+                "count": 5,
+                "total": 58.63,
+                "mean": 11.73,
+                "median": 10.25,
+                "p95": 20.5,
+                "min": 8.11,
+                "max": 20.5
+            },
+            "logout": {
+                "count": 1,
+                "total": 10.58,
+                "mean": 10.58,
+                "median": 10.58,
+                "p95": 10.58,
+                "min": 10.58,
+                "max": 10.58
+            }
+        },
+        "domNodes": {
+            "login": {
+                "count": 1,
+                "total": 27308,
+                "mean": 27308,
+                "median": 27308,
+                "p95": 27308,
+                "min": 27308,
+                "max": 27308
+            },
+            "open-edit": {
+                "count": 5,
+                "total": 105754,
+                "mean": 21150.8,
+                "median": 18092,
+                "p95": 31328,
+                "min": 12446,
+                "max": 31328
+            },
+            "save-edit": {
+                "count": 5,
+                "total": 113008,
+                "mean": 22601.6,
+                "median": 19546,
+                "p95": 32837,
+                "min": 13894,
+                "max": 32837
+            },
+            "open-create": {
+                "count": 5,
+                "total": 39085,
+                "mean": 7817,
+                "median": 4917,
+                "p95": 20732,
+                "min": 2457,
+                "max": 20732
+            },
+            "save-create": {
+                "count": 5,
+                "total": 39235,
+                "mean": 7847,
+                "median": 4879,
+                "p95": 22009,
+                "min": 2419,
+                "max": 22009
+            },
+            "logout": {
+                "count": 1,
+                "total": 5019,
+                "mean": 5019,
+                "median": 5019,
+                "p95": 5019,
+                "min": 5019,
+                "max": 5019
+            }
+        }
+    },
+    "steps": [
+        {
+            "action": "login",
+            "label": "round 1",
+            "ms": 1842.3,
+            "serverMs": 214.48,
+            "requests": 4,
+            "jsHeapUsedMb": 13.98,
+            "jsHeapTotalMb": 17.09,
+            "domNodes": 27308,
+            "jsListeners": 1624,
+            "phpPeakMb": 2.65,
+            "phpPeakRealMb": 4,
+            "phpRequests": 6
+        },
+        {
+            "action": "open-edit",
+            "label": "page 10104",
+            "ms": 172.52,
+            "serverMs": 120.71,
+            "requests": 1,
+            "jsHeapUsedMb": 15.43,
+            "jsHeapTotalMb": 19.2,
+            "domNodes": 28622,
+            "jsListeners": 1809,
+            "phpPeakMb": 1.21,
+            "phpPeakRealMb": 2,
+            "phpRequests": 1
+        },
+        {
+            "action": "save-edit",
+            "label": "page 10104",
+            "ms": 567.26,
+            "serverMs": 210.64,
+            "requests": 2,
+            "id": 10104,
+            "jsHeapUsedMb": 16.74,
+            "jsHeapTotalMb": 21.01,
+            "domNodes": 30011,
+            "jsListeners": 2045,
+            "phpPeakMb": 1.26,
+            "phpPeakRealMb": 2,
+            "phpRequests": 3
+        },
+        {
+            "action": "open-edit",
+            "label": "page 10105",
+            "ms": 165.31,
+            "serverMs": 119.03,
+            "requests": 1,
+            "jsHeapUsedMb": 17.91,
+            "jsHeapTotalMb": 22.07,
+            "domNodes": 31328,
+            "jsListeners": 2245,
+            "phpPeakMb": 1.22,
+            "phpPeakRealMb": 4,
+            "phpRequests": 3
+        },
+        {
+            "action": "save-edit",
+            "label": "page 10105",
+            "ms": 553.4,
+            "serverMs": 205.12,
+            "requests": 2,
+            "id": 10105,
+            "jsHeapUsedMb": 18.52,
+            "jsHeapTotalMb": 22.76,
+            "domNodes": 32837,
+            "jsListeners": 2554,
+            "phpPeakMb": 1.27,
+            "phpPeakRealMb": 2,
+            "phpRequests": 4
+        },
+        {
+            "action": "open-edit",
+            "label": "page 10106",
+            "ms": 180.27,
+            "serverMs": 94.99,
+            "requests": 1,
+            "jsHeapUsedMb": 14.2,
+            "jsHeapTotalMb": 23.51,
+            "domNodes": 12446,
+            "jsListeners": 390,
+            "phpPeakMb": 1.22,
+            "phpPeakRealMb": 2,
+            "phpRequests": 4
+        },
+        {
+            "action": "save-edit",
+            "label": "page 10106",
+            "ms": 546.42,
+            "serverMs": 211.58,
+            "requests": 2,
+            "id": 10106,
+            "jsHeapUsedMb": 15.51,
+            "jsHeapTotalMb": 23.82,
+            "domNodes": 13894,
+            "jsListeners": 663,
+            "phpPeakMb": 1.27,
+            "phpPeakRealMb": 2,
+            "phpRequests": 3
+        },
+        {
+            "action": "open-edit",
+            "label": "page 10107",
+            "ms": 155.65,
+            "serverMs": 109.29,
+            "requests": 1,
+            "jsHeapUsedMb": 16.04,
+            "jsHeapTotalMb": 23.51,
+            "domNodes": 15266,
+            "jsListeners": 881,
+            "phpPeakMb": 1.22,
+            "phpPeakRealMb": 2,
+            "phpRequests": 3
+        },
+        {
+            "action": "save-edit",
+            "label": "page 10107",
+            "ms": 506.03,
+            "serverMs": 175.22,
+            "requests": 2,
+            "id": 10107,
+            "jsHeapUsedMb": 16.95,
+            "jsHeapTotalMb": 23.51,
+            "domNodes": 16720,
+            "jsListeners": 1172,
+            "phpPeakMb": 1.26,
+            "phpPeakRealMb": 2,
+            "phpRequests": 4
+        },
+        {
+            "action": "open-edit",
+            "label": "page 10108",
+            "ms": 153,
+            "serverMs": 97.6,
+            "requests": 1,
+            "jsHeapUsedMb": 18.15,
+            "jsHeapTotalMb": 23.82,
+            "domNodes": 18092,
+            "jsListeners": 1408,
+            "phpPeakMb": 1.22,
+            "phpPeakRealMb": 2,
+            "phpRequests": 3
+        },
+        {
+            "action": "save-edit",
+            "label": "page 10108",
+            "ms": 558.61,
+            "serverMs": 195.03,
+            "requests": 2,
+            "id": 10108,
+            "jsHeapUsedMb": 19.05,
+            "jsHeapTotalMb": 23.82,
+            "domNodes": 19546,
+            "jsListeners": 1681,
+            "phpPeakMb": 1.27,
+            "phpPeakRealMb": 2,
+            "phpRequests": 4
+        },
+        {
+            "action": "open-create",
+            "label": "page 1",
+            "ms": 137.83,
+            "serverMs": 84.69,
+            "requests": 1,
+            "jsHeapUsedMb": 19.61,
+            "jsHeapTotalMb": 24.26,
+            "domNodes": 20732,
+            "jsListeners": 1907,
+            "phpPeakMb": 1.22,
+            "phpPeakRealMb": 2,
+            "phpRequests": 3
+        },
+        {
+            "action": "save-create",
+            "label": "page 1",
+            "ms": 634.41,
+            "serverMs": 289.6,
+            "requests": 2,
+            "id": 10114,
+            "jsHeapUsedMb": 20.5,
+            "jsHeapTotalMb": 25.26,
+            "domNodes": 22009,
+            "jsListeners": 2172,
+            "phpPeakMb": 1.24,
+            "phpPeakRealMb": 2,
+            "phpRequests": 4
+        },
+        {
+            "action": "open-create",
+            "label": "page 2",
+            "ms": 140.22,
+            "serverMs": 78.5,
+            "requests": 1,
+            "jsHeapUsedMb": 8.08,
+            "jsHeapTotalMb": 25.76,
+            "domNodes": 2457,
+            "jsListeners": 379,
+            "phpPeakMb": 1.22,
+            "phpPeakRealMb": 2,
+            "phpRequests": 3
+        },
+        {
+            "action": "save-create",
+            "label": "page 2",
+            "ms": 605.44,
+            "serverMs": 280.48,
+            "requests": 2,
+            "id": 10115,
+            "jsHeapUsedMb": 9.02,
+            "jsHeapTotalMb": 25.76,
+            "domNodes": 3734,
+            "jsListeners": 644,
+            "phpPeakMb": 1.33,
+            "phpPeakRealMb": 2,
+            "phpRequests": 4
+        },
+        {
+            "action": "open-create",
+            "label": "page 3",
+            "ms": 141.86,
+            "serverMs": 80.86,
+            "requests": 1,
+            "jsHeapUsedMb": 10.16,
+            "jsHeapTotalMb": 26.07,
+            "domNodes": 4917,
+            "jsListeners": 870,
+            "phpPeakMb": 1.22,
+            "phpPeakRealMb": 2,
+            "phpRequests": 3
+        },
+        {
+            "action": "save-create",
+            "label": "page 3",
+            "ms": 819.19,
+            "serverMs": 493.42,
+            "requests": 2,
+            "id": 10116,
+            "jsHeapUsedMb": 10.75,
+            "jsHeapTotalMb": 25.76,
+            "domNodes": 6194,
+            "jsListeners": 1135,
+            "phpPeakMb": 1.24,
+            "phpPeakRealMb": 2,
+            "phpRequests": 4
+        },
+        {
+            "action": "open-create",
+            "label": "page 4",
+            "ms": 235.43,
+            "serverMs": 159.52,
+            "requests": 1,
+            "jsHeapUsedMb": 11.91,
+            "jsHeapTotalMb": 26.07,
+            "domNodes": 7377,
+            "jsListeners": 1361,
+            "phpPeakMb": 1.22,
+            "phpPeakRealMb": 2,
+            "phpRequests": 3
+        },
+        {
+            "action": "save-create",
+            "label": "page 4",
+            "ms": 780.54,
+            "serverMs": 452.64,
+            "requests": 2,
+            "id": 10117,
+            "jsHeapUsedMb": 8.11,
+            "jsHeapTotalMb": 16.26,
+            "domNodes": 2419,
+            "jsListeners": 344,
+            "phpPeakMb": 1.24,
+            "phpPeakRealMb": 2,
+            "phpRequests": 4
+        },
+        {
+            "action": "open-create",
+            "label": "page 5",
+            "ms": 132.65,
+            "serverMs": 83.44,
+            "requests": 1,
+            "jsHeapUsedMb": 9.27,
+            "jsHeapTotalMb": 16.57,
+            "domNodes": 3602,
+            "jsListeners": 570,
+            "phpPeakMb": 1.22,
+            "phpPeakRealMb": 2,
+            "phpRequests": 3
+        },
+        {
+            "action": "save-create",
+            "label": "page 5",
+            "ms": 748.71,
+            "serverMs": 296.69,
+            "requests": 2,
+            "id": 10118,
+            "jsHeapUsedMb": 10.25,
+            "jsHeapTotalMb": 16.57,
+            "domNodes": 4879,
+            "jsListeners": 835,
+            "phpPeakMb": 1.24,
+            "phpPeakRealMb": 2,
+            "phpRequests": 4
+        },
+        {
+            "action": "logout",
+            "label": "round 1",
+            "ms": 205.62,
+            "serverMs": 164.41,
+            "requests": 2,
+            "jsHeapUsedMb": 10.58,
+            "jsHeapTotalMb": 16.26,
+            "domNodes": 5019,
+            "jsListeners": 865,
+            "phpPeakMb": 1.08,
+            "phpPeakRealMb": 2,
+            "phpRequests": 4
+        }
+    ],
+    "phpMemory": {
+        "requests": 96,
+        "peak_real": {
+            "count": 96,
+            "median": 2097152,
+            "p95": 4194304,
+            "max": 16777216,
+            "mean": 2555904
+        },
+        "peak": {
+            "count": 96,
+            "median": 1108000,
+            "p95": 2694736,
+            "max": 11577552,
+            "mean": 1362943.25
+        },
+        "non_2xx": 15,
+        "steps": {
+            "warmup": {
+                "requests": 17,
+                "peak_real": {
+                    "count": 17,
+                    "median": 2097152,
+                    "p95": 16777216,
+                    "max": 16777216,
+                    "mean": 4317665.88
+                },
+                "peak": {
+                    "count": 17,
+                    "median": 1331392,
+                    "p95": 11577552,
+                    "max": 11577552,
+                    "mean": 2191544.47
+                }
+            },
+            "login:round 1": {
+                "requests": 6,
+                "peak_real": {
+                    "count": 6,
+                    "median": 2097152,
+                    "p95": 4194304,
+                    "max": 4194304,
+                    "mean": 2796202.67
+                },
+                "peak": {
+                    "count": 6,
+                    "median": 1174672,
+                    "p95": 2782512,
+                    "max": 2782512,
+                    "mean": 1522442.67
+                }
+            },
+            "open-edit:page 10104": {
+                "requests": 1,
+                "peak_real": {
+                    "count": 1,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 1,
+                    "median": 1272440,
+                    "p95": 1272440,
+                    "max": 1272440,
+                    "mean": 1272440
+                }
+            },
+            "save-edit:page 10104": {
+                "requests": 3,
+                "peak_real": {
+                    "count": 3,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 3,
+                    "median": 1280344,
+                    "p95": 1322656,
+                    "max": 1322656,
+                    "mean": 1234408
+                }
+            },
+            "open-edit:page 10105": {
+                "requests": 3,
+                "peak_real": {
+                    "count": 3,
+                    "median": 2097152,
+                    "p95": 4194304,
+                    "max": 4194304,
+                    "mean": 2796202.67
+                },
+                "peak": {
+                    "count": 3,
+                    "median": 1104224,
+                    "p95": 1277960,
+                    "max": 1277960,
+                    "mean": 1160978.67
+                }
+            },
+            "save-edit:page 10105": {
+                "requests": 4,
+                "peak_real": {
+                    "count": 4,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 4,
+                    "median": 1104224,
+                    "p95": 1326720,
+                    "max": 1326720,
+                    "mean": 1203910
+                }
+            },
+            "open-edit:page 10106": {
+                "requests": 4,
+                "peak_real": {
+                    "count": 4,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 4,
+                    "median": 1104224,
+                    "p95": 1277960,
+                    "max": 1277960,
+                    "mean": 1146790
+                }
+            },
+            "save-edit:page 10106": {
+                "requests": 3,
+                "peak_real": {
+                    "count": 3,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 3,
+                    "median": 1280472,
+                    "p95": 1326720,
+                    "max": 1326720,
+                    "mean": 1237138.67
+                }
+            },
+            "open-edit:page 10107": {
+                "requests": 3,
+                "peak_real": {
+                    "count": 3,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 3,
+                    "median": 1104224,
+                    "p95": 1277960,
+                    "max": 1277960,
+                    "mean": 1160978.67
+                }
+            },
+            "save-edit:page 10107": {
+                "requests": 4,
+                "peak_real": {
+                    "count": 4,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 4,
+                    "median": 1104224,
+                    "p95": 1325928,
+                    "max": 1325928,
+                    "mean": 1203672
+                }
+            },
+            "open-edit:page 10108": {
+                "requests": 3,
+                "peak_real": {
+                    "count": 3,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 3,
+                    "median": 1104224,
+                    "p95": 1277960,
+                    "max": 1277960,
+                    "mean": 1160978.67
+                }
+            },
+            "save-edit:page 10108": {
+                "requests": 4,
+                "peak_real": {
+                    "count": 4,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 4,
+                    "median": 1104224,
+                    "p95": 1326720,
+                    "max": 1326720,
+                    "mean": 1203910
+                }
+            },
+            "open-create:page 1": {
+                "requests": 3,
+                "peak_real": {
+                    "count": 3,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 3,
+                    "median": 1104224,
+                    "p95": 1281384,
+                    "max": 1281384,
+                    "mean": 1162120
+                }
+            },
+            "save-create:page 1": {
+                "requests": 4,
+                "peak_real": {
+                    "count": 4,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 4,
+                    "median": 1104224,
+                    "p95": 1297504,
+                    "max": 1297504,
+                    "mean": 1178644
+                }
+            },
+            "open-create:page 2": {
+                "requests": 3,
+                "peak_real": {
+                    "count": 3,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 3,
+                    "median": 1104176,
+                    "p95": 1281192,
+                    "max": 1281192,
+                    "mean": 1161981.33
+                }
+            },
+            "save-create:page 2": {
+                "requests": 4,
+                "peak_real": {
+                    "count": 4,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 4,
+                    "median": 1104176,
+                    "p95": 1392112,
+                    "max": 1392112,
+                    "mean": 1202248
+                }
+            },
+            "open-create:page 3": {
+                "requests": 3,
+                "peak_real": {
+                    "count": 3,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 3,
+                    "median": 1104176,
+                    "p95": 1281192,
+                    "max": 1281192,
+                    "mean": 1161981.33
+                }
+            },
+            "save-create:page 3": {
+                "requests": 4,
+                "peak_real": {
+                    "count": 4,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 4,
+                    "median": 1104176,
+                    "p95": 1297568,
+                    "max": 1297568,
+                    "mean": 1178612
+                }
+            },
+            "open-create:page 4": {
+                "requests": 3,
+                "peak_real": {
+                    "count": 3,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 3,
+                    "median": 1104176,
+                    "p95": 1281192,
+                    "max": 1281192,
+                    "mean": 1162018.67
+                }
+            },
+            "save-create:page 4": {
+                "requests": 4,
+                "peak_real": {
+                    "count": 4,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 4,
+                    "median": 1104176,
+                    "p95": 1297568,
+                    "max": 1297568,
+                    "mean": 1178612
+                }
+            },
+            "open-create:page 5": {
+                "requests": 3,
+                "peak_real": {
+                    "count": 3,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 3,
+                    "median": 1104176,
+                    "p95": 1281192,
+                    "max": 1281192,
+                    "mean": 1161981.33
+                }
+            },
+            "save-create:page 5": {
+                "requests": 4,
+                "peak_real": {
+                    "count": 4,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 4,
+                    "median": 1104176,
+                    "p95": 1297568,
+                    "max": 1297568,
+                    "mean": 1178620
+                }
+            },
+            "logout:round 1": {
+                "requests": 4,
+                "peak_real": {
+                    "count": 4,
+                    "median": 2097152,
+                    "p95": 2097152,
+                    "max": 2097152,
+                    "mean": 2097152
+                },
+                "peak": {
+                    "count": 4,
+                    "median": 1099024,
+                    "p95": 1136272,
+                    "max": 1136272,
+                    "mean": 1103746
+                }
+            }
+        }
+    },
+    "containerPeakMb": 93.8,
+    "components": [
+        {
+            "name": "PHP",
+            "version": "8.4.25",
+            "source": "https://github.com/php/php-src"
+        },
+        {
+            "name": "Evolution CMS",
+            "version": "3.5.9 (path /host/evolution@e8125e3de, 2026-09-21)",
+            "source": "https://github.com/evolution-cms/evolution"
+        },
+        {
+            "name": "illuminate/database",
+            "version": "v12.69.2",
+            "source": "https://github.com/illuminate/database"
+        }
+    ]
+}

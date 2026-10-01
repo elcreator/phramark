@@ -1,0 +1,11 @@
+Phramark admin workload: stack=evo-phalcon jit=tracing base=http://nginx-phalcon:80 rounds=1 pages=5
+Total wall time: 13664.08 ms over 22 steps
+PHP-FPM container peak RSS during the run: 99.1 MiB
+
+action        n    wall p50    wall p95    wall max    server p50     php peak p50   js heap p50    dom nodes p50  
+login         1    1813.2 ms   1813.2 ms   1813.2 ms   282.7 ms       2.6 MiB        13.97 MiB      27309          
+open-edit     5    202.74 ms   259.06 ms   259.06 ms   131.15 ms      1.42 MiB       10.1 MiB       5411           
+save-edit     5    888.84 ms   979.11 ms   979.11 ms   550 ms         11.52 MiB      9.08 MiB       4094           
+open-create   5    173.17 ms   198.4 ms    198.4 ms    113.47 ms      1.39 MiB       8.95 MiB       3713           
+save-create   5    1048.18 ms  1109.86 ms  1109.86 ms  657.06 ms      11.51 MiB      9.05 MiB       3732           
+logout        1    264.8 ms    264.8 ms    264.8 ms    211.57 ms      2.26 MiB       9.22 MiB       2557           

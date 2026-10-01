@@ -1,0 +1,75 @@
+Running 15s test @ http://nginx-parser:80
+  4 threads and 32 connections
+  Thread calibration: mean lat.: 352.306ms, rate sampling interval: 1135ms
+  Thread calibration: mean lat.: 353.161ms, rate sampling interval: 1112ms
+  Thread calibration: mean lat.: 360.870ms, rate sampling interval: 1156ms
+  Thread calibration: mean lat.: 371.072ms, rate sampling interval: 1159ms
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   380.27ms  164.17ms 615.94ms   53.52%
+    Req/Sec     7.12      0.93     9.00    100.00%
+  Latency Distribution (HdrHistogram - Recorded Latency)
+ 50.000%  397.82ms
+ 75.000%  546.82ms
+ 90.000%  583.17ms
+ 99.000%  604.16ms
+ 99.900%  616.45ms
+ 99.990%  616.45ms
+ 99.999%  616.45ms
+100.000%  616.45ms
+
+  Detailed Percentile spectrum:
+       Value   Percentile   TotalCount 1/(1-Percentile)
+
+      56.895     0.000000            1         1.00
+     142.591     0.100000           15         1.11
+     215.423     0.200000           29         1.25
+     257.535     0.300000           43         1.43
+     332.799     0.400000           57         1.67
+     397.823     0.500000           71         2.00
+     434.943     0.550000           79         2.22
+     451.071     0.600000           86         2.50
+     491.263     0.650000           93         2.86
+     504.831     0.700000          100         3.33
+     546.815     0.750000          107         4.00
+     553.471     0.775000          111         4.44
+     557.055     0.800000          114         5.00
+     568.319     0.825000          118         5.71
+     571.391     0.850000          121         6.67
+     579.583     0.875000          125         8.00
+     582.143     0.887500          127         8.89
+     583.167     0.900000          128        10.00
+     584.703     0.912500          130        11.43
+     590.847     0.925000          133        13.33
+     592.895     0.937500          134        16.00
+     594.943     0.943750          135        17.78
+     594.943     0.950000          135        20.00
+     595.967     0.956250          136        22.86
+     596.991     0.962500          137        26.67
+     599.551     0.968750          138        32.00
+     600.575     0.971875          139        35.56
+     600.575     0.975000          139        40.00
+     600.575     0.978125          139        45.71
+     601.087     0.981250          140        53.33
+     601.087     0.984375          140        64.00
+     604.159     0.985938          141        71.11
+     604.159     0.987500          141        80.00
+     604.159     0.989062          141        91.43
+     604.159     0.990625          141       106.67
+     604.159     0.992188          141       128.00
+     616.447     0.992969          142       142.22
+     616.447     1.000000          142          inf
+#[Mean    =      380.272, StdDeviation   =      164.174]
+#[Max     =      615.936, Total count    =          142]
+#[Buckets =           27, SubBuckets     =         2048]
+----------------------------------------------------------
+  453 requests in 15.17s, 6.22MB read
+Requests/sec:     29.86
+Transfer/sec:    419.96KB
+
+---- memory ----
+PHP memory (per request, allocator peak): median 4.0 MiB, p95 4.0 MiB, max 4.0 MiB over 479 requests (0 non-2xx); script peak median 1.8 MiB
+PHP-FPM container peak RSS: 81.0 MiB (docker stats, 1 s samples)
+
+---- versions ----
+label: evo@3.5.x
+[{"name":"PHP","version":"8.4.25","source":"https://github.com/php/php-src"},{"name":"Evolution CMS","version":"3.5.9 (branch 3.5.x@851c705, 2026-09-10)","source":"https://github.com/evolution-cms/evolution"},{"name":"illuminate/database","version":"v12.69.2","source":"https://github.com/illuminate/database"}]

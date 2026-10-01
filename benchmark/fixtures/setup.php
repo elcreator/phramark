@@ -350,6 +350,15 @@ function writeSettings(string $database, ?string $snippetCode): void
         $snippet = PREFIX . 'site_snippets';
         $pdo->prepare('DELETE FROM `' . $snippet . '` WHERE name = ?')->execute(['benchmarkCategory']);
         $pdo->prepare('INSERT INTO `' . $snippet . '` (name, description, snippet, category, locked) VALUES (?, ?, ?, 0, 1)')->execute(['benchmarkCategory', 'Phramark category workload', $snippetCode]);
+        // The snippet's template keeps its code in the database, which is what the
+        // manager stores (`db`) for a template created since templates have a source
+        // (Evolution 3.5.9). The raw fixture row would otherwise be an "automatic"
+        // legacy template, for which the core looks for a view file named after it
+        // on every request. Releases without the column have no such lookup.
+        $templates = PREFIX . 'site_templates';
+        if (in_array('templatesource', columns($pdo, $templates), true)) {
+            $pdo->prepare('UPDATE `' . $templates . '` SET templatesource = ? WHERE id = 10')->execute(['db']);
+        }
     }
 }
 
