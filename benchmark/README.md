@@ -25,6 +25,9 @@ The framework column is not the marketing name: it is what a warm category reque
 | `modx` | 8087 | [MODX Revolution](https://github.com/modxcms/revolution) core (111 `MODX\Revolution` classes, 132 core files) on **xPDO** (20 classes, 23 files), its own ORM over PDO; no third-party framework on the request path (a few Symfony polyfill files, no Symfony classes) | Full CMS front controller: `modRequest` resolves `/articles/category-NNN` through the alias map (one resource per category), `modParser` renders the template with an uncached snippet that reads `phramark_article` through an xPDO model (`Phramark\Model\Article`) and renders one chunk per article |
 | `wordpress-gantry` | 8088 | [WordPress](https://wordpress.org) core (481 `wp-includes` files; procedural plus global classes such as `WP_Query`, `wpdb`, `WP_Rewrite`) with the [Gantry 5](https://github.com/gantry/gantry5) **theme framework** plugin (66 `Gantry` classes, 84 plugin files, 12 RocketTheme toolbox classes) rendering its Hydrogen theme through **Timber** (35 classes) and **Twig 2** (49 classes, 54 files); Symfony yaml/event-dispatcher only for the outline (2 classes) | Full CMS front controller: WordPress resolves `/articles/category-NNN` through its page hierarchy (one child page of "Articles" per category), a must-use plugin's `template_include` hands the page to a template that reads `phramark_article` through `$wpdb` and renders a Twig view (`custom/views` override of the theme) inside the Gantry outline: header, navigation, main, footer and off-canvas sections with their particles. One stack, not two: WordPress is measured only through Gantry, because the framework does nothing without a Gantry theme |
 | `evo-sarticles` | 8089 | Same Evolution core, with the [sArticles](https://github.com/Seiger/sArticles) module: the articles are Eloquent models in the module's own tables (`s_articles`, `s_article_translates`, `s_articles_categories`) instead of documents in the tree | **Opt-in** (`--solutions=evo-sarticles`), and the one stack whose point is a comparison with itself: sArticles 1.x against the 2.x branch, which rebuilds the manager on [evo-ui](https://github.com/evolution-cms/evo-ui) and Livewire. The category page still resolves through the document tree and renders the shared contract from the module's models, so guest numbers sit next to the other stacks; the admin round edits articles, not documents |
+| `evo-frankenphp` | 8092 | The `evo-parser` request path on classic FrankenPHP: PHP's normal request lifecycle loads a fresh Evolution application on every request | **Opt-in** (`--solutions=evo-frankenphp`), see [FrankenPHP modes](#frankenphp-modes). Works with Evolution refs that do not provide the worker runtime |
+| `evo-worker` | 8090 | The `evo-parser` request path, run by Evolution's own [FrankenPHP](https://frankenphp.dev) worker loop instead of PHP-FPM: a new application per request | **Opt-in** (`--solutions=evo-worker`), see [FrankenPHP modes](#frankenphp-modes). The same site, snippet and fixture as `evo-parser`: the runtime is the only difference |
+| `evo-worker-keep` | 8091 | The same, with one booted application kept per worker and reset after each request (`EVO_WORKER_KEEP_APP=1`) | **Opt-in**, as `evo-worker`. `evo-worker-keep` − `evo-worker` is what booting the providers costs per request |
 
 `evo-sarticles` answers a different question from the rest of the table. Every other stack asks what a framework costs inside a CMS request; this one asks whether a rewritten manager is going in the right direction, by running the same editorial round against two versions of one module (`--versions=sarticles@1.2.1,sarticles@2.x`). The six admin actions are the same user intents in both — open the list, open an article, change its title and summary, save, open the form for a new one, save — and each is waited to the state where the editor can act again. How each version gets there is its own doing: 1.x is a manager tab with a plain form, 2.x an evo-ui modal saved over Livewire.
 
@@ -82,7 +85,7 @@ Admin panels (user `benchmark` everywhere):
 
 | Stack | Admin URL | Password | Admin fixture |
 | --- | --- | --- | --- |
-| evo-* | http://127.0.0.1:8080/manager/ (8081, 8082, 8085) | `benchmark-admin` | Folder "Admin workload" (id 10103) with pages 10104–10108 |
+| evo-* | http://127.0.0.1:8080/manager/ (8081, 8082, 8085; 8090, 8091 with the worker profile) | `benchmark-admin` | Folder "Admin workload" (id 10103) with pages 10104–10108 |
 | drupal | http://127.0.0.1:8083/user/login | `benchmark-admin` | Content type "Basic page" with a plain-text body; the five lowest page nodes |
 | typo3 | http://127.0.0.1:8084/typo3/ | `Benchmark1!` | Root page "Admin workload" (uid 10103) with pages 10104–10108, each with one text element of the same uid |
 | winter | http://127.0.0.1:8086/backend/ | `benchmark-admin` | "Benchmark pages" (plugin `Phramark.Benchmark`, table `phramark_benchmark_pages`) with pages 10104–10108 |
@@ -137,7 +140,7 @@ EVO_VERSION=3.5.8 docker compose -f benchmark/compose.yaml up                 # 
 
 | Product | Part | Stacks | Installed from |
 | --- | --- | --- | --- |
-| `php` | the PHP image (`php:<ref>-fpm-bookworm`, `PHP_VERSION` build argument) | all | image rebuild; no path |
+| `php` | the PHP image (`php:<ref>-fpm-bookworm`, and `dunglas/frankenphp:1-php<ref>-bookworm` for FrankenPHP stacks; `PHP_VERSION` build argument) | all | image rebuild; no path |
 | `evo` | Evolution CMS | `evo-*` | git clone of the tag or branch; a path is copied as the site tree |
 | `latte` (`alattex`) | aLatteX | `evo-latte`, `evo-latte-parser`, `evo-phalcon` | Composer version or dev branch; a path as a path repository |
 | `phalcon` (`aphalcon`) | aPhalcon | `evo-phalcon` | Composer version or dev branch; a path as a path repository |
@@ -160,6 +163,35 @@ Keep `PHP_FPM_PM_MAX_CHILDREN` (default 8), `DURATION` (default 60s), `CONNECTIO
 
 Capacity is the highest offered rate with zero non-2xx responses and p99 below 100 ms; wrk2 reports coordinated-omission-corrected latency, so an offered rate above capacity shows queueing time, not request time. Production reporting: separate load host, 60 s warm-up, 120 s measurement, five repetitions, keep all raw output.
 
+### FrankenPHP modes
+
+The comparison has three FrankenPHP modes and the PHP-FPM reference (`evo-parser`). All use the same category request, seed data, PHP version, JIT mode and 8-way concurrency. The classic stack uses FrankenPHP's normal PHP request lifecycle. The two worker stacks use Evolution 3.6.x's [worker runtime](https://github.com/evolution-cms/evolution/blob/3.6.x/.github/docker/WORKER.md):
+
+| Stack | Mode | Application state between requests |
+| --- | --- | --- |
+| `evo-frankenphp` | Classic | A normal PHP request lifecycle; Evolution's application is loaded on each request |
+| `evo-worker` | Worker, `EVO_WORKER_KEEP_APP=0` | The PHP process and loaded classes; Evolution builds a new application and boots its providers for each request |
+| `evo-worker-keep` | Worker, `EVO_WORKER_KEEP_APP=1` | The booted application per worker; request state is reset after each request |
+
+Evolution 3.5.x has no worker runtime, so it is measured on PHP-FPM. Evolution 3.6.x provides the worker runtime. The FrankenPHP stacks are opt-in; run all three alongside the FPM reference from the official 3.6.x branch with:
+
+```sh
+benchmark/scripts/matrix --solutions=evo-parser,evo-frankenphp,evo-worker,evo-worker-keep --versions=evo@3.6.x
+```
+
+All three containers belong to the compose profile `worker`, which a plain `up` leaves out. `matrix` starts the selected container after setup. The two worker services require `core/includes/worker.runtime.php`; classic FrankenPHP does not.
+
+What is held equal and what is not:
+
+- **Concurrency.** `PHP_FPM_PM_MAX_CHILDREN` (8) sets the classic FrankenPHP thread count and the FPM child count. Worker stacks use 8 application workers plus 8 classic PHP threads for manager requests.
+- **Recycling.** A worker restarts after Evolution's default of 500 requests (`EVO_WORKER_MAX_REQUESTS` to change it), where the FPM pool never recycles (`pm.max_requests = 0`): the restarts are part of what the mode costs.
+- **Transport.** nginx serves the static files and hands PHP over HTTP instead of FastCGI, one connection per request in both cases.
+- **Host.** Worker stacks serve one origin (`EVO_WORKER_ORIGIN`, here `http://evo-worker` and `http://evo-worker-keep`) and answer every other with 421, while the harness reaches a stack both as `127.0.0.1:PORT` and as `nginx-…`. nginx sends front-end requests with that origin's `Host`; classic FrankenPHP and the manager keep the client's host.
+- **Memory.** `auto_prepend_file` runs once per worker, not per request, so the probe wraps the `frankenphp_handle_request()` call of Evolution's worker loop (in `EvolutionCMS\Runtime`) and writes one line per request with the peak reset at its start: a worker's peak includes what it keeps between requests. The container RSS includes FrankenPHP's Go runtime and Caddy, where an FPM container holds only PHP.
+- **Phalcon.** The FPM image loads the Phalcon extension for every stack; the FrankenPHP image does not, which only changes process start-up.
+
+`trace-request` and `profile` install their hooks into an FPM container and do not support these stacks.
+
 ### Admin workload details
 
 `benchmark/workloads/admin` is a Playwright project with one adapter per CMS (`lib/adapters/`): Evolution manager (iframe shell, `a=27`/`a=4`/`a=5` document forms), Drupal (`/user/login`, `/node/{nid}/edit`, `/node/add/page`, logout confirmation form), TYPO3 backend (tokenised module routes read from the module menu, FormEngine editing a page record and its text element in one form) Winter backend (`/backend/backend/auth/signin`, the plugin's Form/List controller at `/backend/phramark/benchmark/pages/update/{id}` and `/create`; Save is Winter's AJAX framework posting to the `onSave` handler, a create answers with a redirect to the new record's editor), MODX manager (ExtJS: `/manager/` login form, `?a=resource/update&id={id}` and `?a=resource/create&parent=10103` resource forms; Save is a multipart XHR to `/connectors/index.php` with `action=Resource/Update` or `Resource/Create`, after which the manager loads the new resource's editor) and WordPress (`/wp-login.php`, `/wp-admin/post.php?post={id}&action=edit` and `/wp-admin/post-new.php?post_type=page` with the Classic Editor's Text tab; Save is the form post to `post.php`, which redirects back to the editor of the saved or new page, so the id is read from that URL; logout is the nonce-protected admin-bar link). Each recorded step is one editorial action; `ms` is wall time until the admin UI is ready for the next action, `serverMs` is the summed server time of the document requests (form post plus its redirect) within that step, plus Winter's AJAX handler requests (`X-Winter-Request-Handler`) and MODX's connector requests (`/connectors/index.php`: saves, but also the resource tree, toolbar and combo-box loads the manager issues on every page), with static assets excluded. On Winter and MODX an update save leaves the form in place, so the saved values are verified by one untimed reload tagged `verify`.
@@ -180,7 +212,7 @@ Every step also records memory on both sides:
 | Metric | Side | Source |
 | --- | --- | --- |
 | `phpPeakMb` / `phpPeakRealMb` | PHP | Exact script peak and allocator peak (`memory_get_peak_usage`) of the largest request the step caused; requests are attributed by the `X-Phramark-Step` header the browser sends, logged by `benchmark/fixtures/memory-prepend.php` |
-| `containerPeakMb` | PHP | Peak RSS of the stack's PHP-FPM container during the run: the anonymous memory of its cgroup (`memory.stat` `anon`, 1 s samples), the heaps of PHP-FPM and its workers |
+| `containerPeakMb` | PHP | Peak RSS of the stack's PHP container during the run: the anonymous memory of its cgroup (`memory.stat` `anon`, 1 s samples); FrankenPHP also includes its Go runtime and Caddy |
 | `containerFootprintMb` | PHP | With `matrix --footprint` (`PHRAMARK_FOOTPRINT=1`): the container's memory as `docker stats` reports it, the RSS plus the page cache of what the container read and wrote. It grows with every file a request leaves behind (a session file per visitor, compiled templates, logs), so a rise here with a flat RSS is I/O, not a leak. Runs from before this split recorded only this figure |
 | `jsHeapUsedMb`, `jsHeapTotalMb` | Frontend | Renderer JS heap after the step (Chrome DevTools `Performance.getMetrics`) |
 | `domNodes`, `jsListeners` | Frontend | DOM nodes and event listeners alive in the renderer after the step (same source; counts nodes not yet garbage-collected). Chrome keeps one renderer for the whole same-site session, so the heap and node counts of a page-per-action manager include what earlier pages left for the garbage collector; the drop after logout shows that collection |
@@ -225,8 +257,8 @@ Every run keeps its memory series, and the results site draws them as small mult
 | Series | Source | What a rising line means |
 | --- | --- | --- |
 | Guest: PHP peak per request | `.memory.log` (one line per request from `memory-prepend.php`), cut into 40 time slices | The request itself allocates more as the run goes on: a per-process cache or a leak that survives requests (PHP frees per request, so this is normally flat) |
-| Guest: PHP-FPM RSS | `.rss.log` column 2 (cgroup `anon`, 1 s samples) | The workers' resident memory: OPcache filling, per-worker static caches, or a leak across requests |
-| Guest: PHP-FPM container footprint | `.rss.log` column 3 (`docker stats`, with `--footprint`) | The same plus the page cache: what the run wrote to disk |
+| Guest: PHP container RSS | `.rss.log` column 2 (cgroup `anon`, 1 s samples) | The resident memory of PHP-FPM or FrankenPHP, including the worker heaps and any runtime memory |
+| Guest: PHP container footprint | `.rss.log` column 3 (`docker stats`, with `--footprint`) | The same plus the page cache: what the run wrote to disk |
 | Admin: JS heap, DOM nodes per step | the report's steps (Chrome DevTools `Performance.getMetrics` after every action) | The manager's frontend retains state across actions: a single-page manager (ExtJS, React) grows until a full reload; a page-per-action manager returns to its baseline |
 | Admin: PHP peak per step and per request | the report's steps and its `.memory.log` | The largest request of each action; a growing line across the five repetitions of one action is a server-side accumulation |
 
@@ -329,7 +361,7 @@ Recorded from the running containers on 2026-09-20T14:43:04Z: PHP 8.4.25, MySQL 
 
 ### Guest workload (wrk2, constant offered rate)
 
-| Stack | JIT | Offered | Achieved rps | p50 | p99 | Non-2xx | PHP peak/request (script median) | PHP alloc peak p95 | FPM container peak RSS |
+| Stack | JIT | Offered | Achieved rps | p50 | p99 | Non-2xx | PHP peak/request (script median) | PHP alloc peak p95 | PHP container peak RSS |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | evo-parser | off | 30 | 29.99 | 392.96ms | 743.42ms | 0 | 1.8 MiB | 4.0 MiB | 81.4 MiB |
 | evo-parser | tracing | 30 | 30.03 | 351.74ms | 668.67ms | 0 | 1.8 MiB | 4.0 MiB | 91.6 MiB |
@@ -375,7 +407,7 @@ Recorded from the running containers on 2026-09-20T14:43:04Z: PHP 8.4.25, MySQL 
 
 ### Admin workload memory (medians per action)
 
-| Stack | JIT | Side | login | open-edit | save-edit | open-create | save-create | logout | FPM container peak |
+| Stack | JIT | Side | login | open-edit | save-edit | open-create | save-create | logout | PHP container peak |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | evo-parser | off | PHP peak (script) | 2.5 MiB | 1.23 MiB | 5.94 MiB | 1.26 MiB | 5.93 MiB | 2.12 MiB | 93.3 MiB |
 | evo-parser | off | Frontend JS heap | 14.01 MiB | 10.11 MiB | 10.18 MiB | 8.46 MiB | 9.33 MiB | 9.75 MiB |  |
@@ -431,3 +463,32 @@ Recorded from the running containers on 2026-09-20T14:43:04Z: PHP 8.4.25, MySQL 
 | wordpress-gantry | tracing | PHP peak (script) | 4.56 MiB | 4.56 MiB | 4.56 MiB | 4.56 MiB | 4.56 MiB | 3.15 MiB | 33.3 MiB |
 | wordpress-gantry | tracing | Frontend JS heap | 44.58 MiB | 97.79 MiB | 85.59 MiB | 130.51 MiB | 156.61 MiB | 207.04 MiB |  |
 | wordpress-gantry | tracing | Frontend DOM nodes | 1947 | 13143 | 9486 | 21733 | 25541 | 38293 |  |
+
+## Official Evolution branch comparison (2026-11-01)
+
+Fresh Evo-only installs from the official [`3.5.x`](https://github.com/evolution-cms/evolution/tree/3.5.x) branch at `6413fdc` and [`3.6.x`](https://github.com/evolution-cms/evolution/tree/3.6.x) branch at `830003b`. The 3.5.x branch has no Evolution worker runtime, so it is measured on PHP-FPM. Evolution 3.6.x provides worker mode; the benchmark measures classic FrankenPHP, worker mode with a new app per request, and worker mode with the app retained per worker, as described in the [Evolution worker setup](https://github.com/evolution-cms/evolution/blob/3.6.x/.github/docker/WORKER.md) and [FrankenPHP worker docs](https://github.com/php/frankenphp/blob/main/docs/worker.md). No optional CMS plugin stacks were benchmarked for these refs.
+
+PHP 8.4.27, 30 offered requests/sec, 60 seconds, 32 connections, 8 PHP workers/threads; all cells had zero non-2xx responses.
+
+| Runtime | Evolution ref | JIT | Achieved rps | p50 | p99 | Non-2xx |
+| --- | --- | --- | --- | --- | --- | --- |
+| PHP-FPM | 3.5.9 `3.5.x@6413fdc` | off | 30.38 | 36.22ms | 243.33ms | 0 |
+| PHP-FPM | 3.5.9 `3.5.x@6413fdc` | tracing | 30.38 | 34.37ms | 244.48ms | 0 |
+| PHP-FPM | 3.6.0 `3.6.x@830003b` | off | 30.38 | 55.94ms | 116.54ms | 0 |
+| PHP-FPM | 3.6.0 `3.6.x@830003b` | tracing | 30.37 | 56.70ms | 245.76ms | 0 |
+| FrankenPHP classic | 3.6.0 `3.6.x@830003b` | off | 30.38 | 62.85ms | 118.78ms | 0 |
+| FrankenPHP classic | 3.6.0 `3.6.x@830003b` | tracing | 30.38 | 63.46ms | 255.87ms | 0 |
+| Worker, full app reload (`EVO_WORKER_KEEP_APP=0`) | 3.6.0 `3.6.x@830003b` | off | 30.38 | 64.29ms | 126.85ms | 0 |
+| Worker, full app reload (`EVO_WORKER_KEEP_APP=0`) | 3.6.0 `3.6.x@830003b` | tracing | 30.37 | 61.31ms | 247.81ms | 0 |
+| Worker, retained app (`EVO_WORKER_KEEP_APP=1`) | 3.6.0 `3.6.x@830003b` | off | 30.38 | 40.35ms | 221.70ms | 0 |
+| Worker, retained app (`EVO_WORKER_KEEP_APP=1`) | 3.6.0 `3.6.x@830003b` | tracing | 30.38 | 38.08ms | 106.94ms | 0 |
+
+Admin workload total wall time (one round; five edits and five creates passed):
+
+| Runtime | JIT off | JIT tracing |
+| --- | --- | --- |
+| PHP-FPM, 3.5.x | 7954ms | 7336ms |
+| PHP-FPM, 3.6.x | 7870ms | 8209ms |
+| FrankenPHP classic, 3.6.x | 9065ms | 8715ms |
+| Worker, full app reload, 3.6.x | 8504ms | 8575ms |
+| Worker, retained app, 3.6.x | 8450ms | 8247ms |

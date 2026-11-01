@@ -29,8 +29,11 @@ final class VersionSpec
 {
     public const LATEST = 'latest';
 
-    private const EVO_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles'];
-    private const ALL_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'drupal', 'typo3', 'winter', 'modx', 'wordpress-gantry'];
+    private const EVO_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep'];
+    private const ALL_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep', 'drupal', 'typo3', 'winter', 'modx', 'wordpress-gantry'];
+    // Built from a product but run only when named (--solutions): FrankenPHP
+    // comparisons are opt-in so ordinary CMS matrices keep their existing size.
+    private const NAMED_ONLY = ['evo-frankenphp', 'evo-worker', 'evo-worker-keep'];
 
     /**
      * kind: how the setup scripts install a ref.
@@ -117,7 +120,7 @@ final class VersionSpec
             $stacks = array_merge($stacks, $products[$spec['product']]['stacks']);
         }
 
-        return array_values(array_intersect(self::ALL_STACKS, array_unique($stacks)));
+        return array_values(array_diff(array_intersect(self::ALL_STACKS, array_unique($stacks)), self::NAMED_ONLY));
     }
 
     /**

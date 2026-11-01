@@ -7,7 +7,7 @@ set -eu
 
 . "$(dirname "$0")/lib.sh"
 stack_for_port "${1:?Usage: admin-reset PORT}"
-compose="docker compose -f benchmark/compose.yaml"
+compose="docker.exe compose -f benchmark/compose.yaml"
 
 case "$stack" in
   evo-*)
@@ -28,4 +28,4 @@ esac
 # site cache that OPcache keeps (validate_timestamps=0); Drupal, TYPO3,
 # Winter, MODX and WordPress keep container/file/object caches. A fresh FPM makes every stack see the restored
 # fixture from the same state; nginx resolves the FPM address dynamically.
-docker restart "$php" >/dev/null
+docker.exe restart "$php" >/dev/null

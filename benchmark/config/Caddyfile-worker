@@ -1,0 +1,28 @@
+# FrankenPHP for the worker-mode stacks, after Evolution's own
+# .github/docker/worker.Caddyfile: the root index.php is the worker, every
+# other PHP entry point (the manager) runs as classic PHP. nginx in front
+# serves the static files and blocks nothing here, as on the FPM stacks.
+{
+	auto_https off
+	admin off
+	frankenphp {
+		num_threads {$PHRAMARK_THREADS}
+		worker {
+			file /var/www/html/index.php
+			num {$PHRAMARK_WORKERS}
+		}
+	}
+}
+
+:80 {
+	root * /var/www/html
+
+	@notfile {
+		not file {
+			try_files {path} {path}/index.php {path}/index.html
+		}
+	}
+	rewrite @notfile /index.php?q={path}&{query}
+
+	php_server
+}

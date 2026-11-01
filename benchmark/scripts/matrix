@@ -11,6 +11,10 @@
 #                    evo-sarticles is not in the default set either: it compares
 #                    the sArticles module with itself, e.g.
 #                    --solutions=evo-sarticles --versions=sarticles@1.2.1,sarticles@2.x
+#                    evo-frankenphp, evo-worker and evo-worker-keep are named
+#                    only too: --solutions=evo-parser,evo-frankenphp,evo-worker,evo-worker-keep
+#                    --versions=evo@3.6.x compares classic FrankenPHP and both
+#                    worker modes with the FPM reference.
 #   --versions=evo@3.5.x,evo@3.5.8,latte@0.4.0
 #                    compare versions of the parts a stack is built from: a
 #                    published tag of that name, else the branch of that name
@@ -53,7 +57,7 @@ manticore=0
 jits="off tracing"
 workloads="guest admin"
 repeats=${REPEATS:-1}
-compose="docker compose -f benchmark/compose.yaml"
+compose="docker.exe compose -f benchmark/compose.yaml"
 for argument in "$@"; do
   case "$argument" in
     --solutions=*|--stacks=*)
@@ -101,7 +105,7 @@ provision() {
   export PHRAMARK_STACKS
   if [ -n "${PHP_VERSION:-}" ]; then
     echo "===== building the images with PHP $PHP_VERSION ====="
-    $compose --profile cross-cms build || { echo "image build with PHP $PHP_VERSION failed" >&2; return 1; }
+    $compose --profile cross-cms --profile worker build || { echo "image build with PHP $PHP_VERSION failed" >&2; return 1; }
   fi
   evo=0; cross=0
   for stack in $2; do case "$stack" in evo-*) evo=1 ;; *) cross=1 ;; esac; done
@@ -120,6 +124,16 @@ run_cells() {
   port=$1
   PHRAMARK_VERSION=$2
   export PHRAMARK_VERSION
+  stack_for_port "$port"
+  profile=$(profile_for_stack "$stack")
+  service=${php#phramark-}; service=${service%-1}
+  nginx_service=${nginx#phramark-}; nginx_service=${nginx_service%-1}
+  # Start the selected stack before probing it; bench recreates it per JIT cell.
+  if ! $compose $profile up -d --no-deps "$service" "$nginx_service"; then
+    echo "port $port: unable to start $stack" >&2
+    failed="$failed $port${2:+~$2}:start-failed"
+    return
+  fi
   # A stack whose containers were just (re)created may need a moment.
   reachable=0
   for attempt in 1 2 3 4 5; do

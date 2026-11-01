@@ -297,12 +297,16 @@ final class ResultSet
         preg_match('#Requests/sec:\s+([\d.]+)#', $text, $rps);
         preg_match('#Non-2xx or 3xx responses:\s+(\d+)#', $text, $errors);
         preg_match('#PHP memory \(per request, allocator peak\): median (\S+) MiB, p95 (\S+) MiB, max (\S+) MiB over (\d+) requests.*script peak median (\S+) MiB#', $text, $mem);
-        // "PHP-FPM peak RSS: X MiB (cgroup anon …)" is the process memory;
+        // "PHP container peak RSS: X MiB (cgroup anon …)" is the process memory;
         // "container footprint peak: Y MiB (docker stats …)" the optional figure
         // with the page cache. Results from before the split recorded docker's
         // figure as "container peak RSS": that is a footprint, not an RSS.
-        preg_match('#PHP-FPM peak RSS: ([\d.]+) MiB \(cgroup#', $text, $rss);
-        preg_match('#container (?:footprint peak|peak RSS): ([\d.]+) MiB#', $text, $footprint);
+        preg_match('#(?:PHP container|PHP-FPM) peak RSS: ([\d.]+) MiB \(cgroup#', $text, $rss);
+        preg_match('#container footprint peak: ([\d.]+) MiB#', $text, $footprint);
+        if (!isset($footprint[1])) {
+            // Historical result files called docker's footprint "container peak RSS".
+            preg_match('#container peak RSS: ([\d.]+) MiB \(docker stats#', $text, $footprint);
+        }
 
         return [
             'stack' => $stack,
@@ -382,6 +386,9 @@ final class ResultSet
         'evo-latte-parser' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX'],
         'evo-phalcon' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX', 'elcreator/aphalcon' => 'aPhalcon'],
         'evo-sarticles' => ['Evolution CMS' => '', 'seiger/sarticles' => 'sArticles'],
+        'evo-frankenphp' => ['Evolution CMS' => '', 'FrankenPHP' => 'FrankenPHP'],
+        'evo-worker' => ['Evolution CMS' => '', 'FrankenPHP' => 'FrankenPHP'],
+        'evo-worker-keep' => ['Evolution CMS' => '', 'FrankenPHP' => 'FrankenPHP'],
         'drupal' => ['drupal/core' => ''],
         'typo3' => ['typo3/cms-core' => ''],
         'winter' => ['winter/wn-cms-module' => ''],
@@ -699,7 +706,7 @@ final class ResultSet
         }
         $name = static fn (array $row): string => $row['stack'] . ($row['version'] !== '' ? ' (' . $row['version'] . ')' : '');
         $out .= "## Guest workload (wrk2, constant offered rate)\n\n";
-        $out .= "| Stack | JIT | Offered | Achieved rps | p50 | p99 | Non-2xx | PHP peak/request (script median) | PHP alloc peak p95 | FPM peak RSS | FPM footprint (with page cache) |\n";
+        $out .= "| Stack | JIT | Offered | Achieved rps | p50 | p99 | Non-2xx | PHP peak/request (script median) | PHP alloc peak p95 | PHP container peak RSS | PHP container footprint (with page cache) |\n";
         $out .= "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n";
         foreach ($set['guest'] as $row) {
             $out .= sprintf("| %s | %s | %d | %s | %s | %s | %d | %s | %s | %s | %s |\n", $name($row), $row['jit'], $row['rate'], $number($row['rps']), $ms($row['p50Ms']), $ms($row['p99Ms']), $row['errors'], $mib($row['phpScriptMedianMb']), $mib($row['phpAllocP95Mb']), $mib($row['containerPeakMb']), $mib($row['containerFootprintMb']));
@@ -717,7 +724,7 @@ final class ResultSet
         }
 
         $out .= "\n## Admin workload memory (medians per action)\n\n";
-        $out .= "| Stack | JIT | Side | login | open-edit | save-edit | open-create | save-create | logout | FPM container peak |\n";
+        $out .= "| Stack | JIT | Side | login | open-edit | save-edit | open-create | save-create | logout | PHP container peak |\n";
         $out .= "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n";
         foreach ($set['admin'] as $row) {
             foreach (['PHP peak (script)' => ['phpPeakMb', 'MiB'], 'Frontend JS heap' => ['jsHeapUsedMb', 'MiB'], 'Frontend DOM nodes' => ['domNodes', '']] as $side => [$metric, $unit]) {

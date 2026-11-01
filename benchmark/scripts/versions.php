@@ -43,6 +43,7 @@ const SOURCES = [
     'winter/wn-cms-module' => 'https://github.com/wintercms/wn-cms-module',
     'MODX Revolution' => 'https://github.com/modxcms/revolution',
     'xpdo/xpdo' => 'https://github.com/modxcms/xpdo',
+    'FrankenPHP' => 'https://github.com/php/frankenphp',
     'WordPress' => 'https://github.com/WordPress/WordPress',
     'gantry5' => 'https://github.com/gantry/gantry5',
     'g5_hydrogen' => 'https://github.com/gantry/gantry5',
@@ -58,6 +59,9 @@ function container(string $stack): string
         'evo-latte-parser' => 'latte-parser',
         'evo-phalcon' => 'phalcon',
         'evo-sarticles' => 'sarticles',
+        'evo-frankenphp' => 'frankenphp',
+        'evo-worker' => 'worker',
+        'evo-worker-keep' => 'worker-keep',
         default => $stack,
     } . '-1';
 }
@@ -80,7 +84,7 @@ function capture(array $argv): string
 
 function inContainer(string $container, string $command): string
 {
-    return capture(['docker', 'exec', $container, 'sh', '-c', $command]);
+    return capture(['docker.exe', 'exec', $container, 'sh', '-c', $command]);
 }
 
 /** @return array<string, string> package => version */
@@ -92,7 +96,7 @@ function composerVersions(string $container, string $installedJson, array $names
         var_export($names, true)
     );
     $versions = [];
-    foreach (explode("\n", capture(['docker', 'exec', '-w', '/var/www/html', $container, 'php', '-r', $script])) as $line) {
+    foreach (explode("\n", capture(['docker.exe', 'exec', '-w', '/var/www/html', $container, 'php', '-r', $script])) as $line) {
         if (str_contains($line, '=')) {
             [$name, $version] = explode('=', $line, 2);
             $versions[$name] = $version;
@@ -159,6 +163,33 @@ $evolution = static function (string $stack, array $packages): array {
     return components($versions);
 };
 
+/**
+ * The FrankenPHP binary and the execution mode the container runs with.
+ *
+ * @return list<array{name: string, version: string, source?: string}>
+ */
+function frankenPhp(string $container, bool $worker = true): array
+{
+    preg_match('/FrankenPHP v?(\S+)/', inContainer($container, 'frankenphp version'), $m);
+    $environment = static fn (string $name): string => inContainer($container, 'printenv ' . $name);
+
+    $versions = [
+        'FrankenPHP' => $m[1] ?? '?',
+    ];
+    if (!$worker) {
+        $versions['PHP lifecycle'] = 'classic FrankenPHP; new application per request';
+        $versions['PHP threads'] = $environment('PHRAMARK_THREADS') ?: ($environment('PHP_FPM_PM_MAX_CHILDREN') ?: '8');
+
+        return components($versions);
+    }
+
+    $versions['worker application'] = $environment('EVO_WORKER_KEEP_APP') === '1' ? 'kept per worker (EVO_WORKER_KEEP_APP=1)' : 'new per request';
+    $versions['worker requests'] = ($environment('EVO_WORKER_MAX_REQUESTS') ?: '500') . ' per worker, then a restart';
+    $versions['workers'] = $environment('PHP_FPM_PM_MAX_CHILDREN') ?: '8';
+
+    return components($versions);
+}
+
 /** @return list<array{name: string, version: string, source?: string}>|null null when the stack's container is not running */
 function stackComponents(string $stack): ?array
 {
@@ -174,6 +205,8 @@ function stackComponents(string $stack): ?array
         'evo-latte', 'evo-latte-parser' => $evolution($stack, ['elcreator/alattex', 'latte/latte', 'illuminate/database']),
         'evo-phalcon' => $evolution($stack, ['elcreator/alattex', 'elcreator/aphalcon', 'latte/latte', 'illuminate/database']),
         'evo-sarticles' => $evolution($stack, ['seiger/sarticles', 'evolution-cms/evo-ui', 'livewire/livewire', 'evolution-cms-extras/tinymce5', 'illuminate/database']),
+        'evo-frankenphp' => array_merge($evolution($stack, ['illuminate/database']), frankenPhp($container, false)),
+        'evo-worker', 'evo-worker-keep' => array_merge($evolution($stack, ['illuminate/database']), frankenPhp($container)),
         'drupal' => components(composerVersions($container, 'vendor/composer/installed.json', ['drupal/core', 'symfony/http-kernel', 'symfony/http-foundation', 'twig/twig', 'drush/drush'])),
         'typo3' => components(composerVersions($container, 'vendor/composer/installed.json', ['typo3/cms-core', 'doctrine/dbal', 'typo3fluid/fluid', 'symfony/http-foundation'])),
         'winter' => components(composerVersions($container, 'vendor/composer/installed.json', ['winter/storm', 'winter/wn-cms-module', 'laravel/framework', 'twig/twig', 'doctrine/dbal', 'symfony/http-foundation'])),
@@ -237,8 +270,8 @@ $record = [
     'recordedAt' => gmdate('Y-m-d\TH:i:s\Z'),
     'runtime' => [
         'php' => inContainer($anyContainer, 'php -r "echo PHP_VERSION;"'),
-        'mysql' => preg_replace('/^.*Ver (\S+).*$/s', '$1', capture(['docker', 'exec', 'phramark-mysql-1', 'mysql', '--version'])),
-        'nginx' => preg_replace('/^nginx version: /', '', capture(['docker', 'exec', 'phramark-nginx-parser-1', 'sh', '-c', 'nginx -v 2>&1'])),
+        'mysql' => preg_replace('/^.*Ver (\S+).*$/s', '$1', capture(['docker.exe', 'exec', 'phramark-mysql-1', 'mysql', '--version'])),
+        'nginx' => preg_replace('/^nginx version: /', '', capture(['docker.exe', 'exec', 'phramark-nginx-parser-1', 'sh', '-c', 'nginx -v 2>&1'])),
         'opcache' => 'validate_timestamps=0, memory_consumption=512, max_accelerated_files=100000',
     ],
     'stacks' => $stacks,

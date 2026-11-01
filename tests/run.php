@@ -148,6 +148,7 @@ unlink($modxPage);
 $setup = repositoryFile('benchmark/fixtures/setup.php');
 expect(str_contains($setup, "file_get_contents(\$marker) === \$wanted"), true, 'Fixture setup must be safely repeatable: a site is reinstalled only when its resolved versions changed.');
 expect(str_contains($setup, "['git', 'clone', '--depth=1', '--branch', \$ref"), true, 'Evolution is cloned from the resolved tag or branch, never a hardcoded one.');
+expect(str_contains($setup, "'--skipComposer=y'"), true, 'Evolution install must keep the bundled vendor tree intact; optional packages are installed explicitly afterward.');
 expect(str_contains($setup, "/core/storage/bootstrap/services.php'"), true, 'The service cache written during a package install is dropped, so every installed provider boots (aPhalcon without its provider answers 500).');
 expect(preg_match("/--branch', '\\d/", $setup), 0, 'No hardcoded Evolution branch in the setup.');
 // The snippet stacks' template keeps its code in the database ("db", what the
@@ -233,7 +234,7 @@ foreach (['evo', 'evo@', 'illuminate@1.0', 'evo@3.5 x', 'evo@3.5.x;rm'] as $bad)
     }
 }
 expect(VersionSpec::affectedStacks(VersionSpec::parse('latte@0.4.0')), ['evo-latte', 'evo-latte-parser', 'evo-phalcon'], 'Without --solutions a version selects the stacks its product is part of.');
-expect(VersionSpec::affectedStacks(VersionSpec::parse('php@8.3')), array_keys(RuntimeProfile::adapters()), 'PHP is part of every stack.');
+expect(VersionSpec::affectedStacks(VersionSpec::parse('php@8.3')), array_values(array_diff(array_keys(RuntimeProfile::adapters()), ['evo-frankenphp', 'evo-worker', 'evo-worker-keep'])), 'PHP is part of every stack; FrankenPHP stacks run only when named.');
 expect(VersionSpec::label(['latte' => '0.4.0', 'evo' => '3.5.8']), 'evo@3.5.8+latte@0.4.0', 'Labels list the products in a fixed order.');
 // A ref starting with .. is a directory on the host, relative to the repository root.
 expect(VersionSpec::parse('latte@0.2.0,latte@../evo/aLatteX'), [['product' => 'latte', 'ref' => '0.2.0'], ['product' => 'latte', 'ref' => '../evo/aLatteX']], 'A path ref is a version to compare like any other.');
@@ -327,6 +328,7 @@ expect(ResultSet::shortVersion('3.5.9 (branch 3.5.x@abc1234, 2026-09-21)'), '3.5
 expect(ResultSet::shortVersion('v12.69.2'), '12.69.2', 'A Composer "v" prefix is dropped.');
 expect(ResultSet::shortVersion('dev-local (evo/aLatteX@3cd59aae7232ddf7)'), '../evo/aLatteX@3cd59aae', 'An extension from a host directory names the directory and a short fingerprint.');
 expect(ResultSet::buildVersion('evo-phalcon', [['name' => 'Evolution CMS', 'version' => '3.5.8 (tag 3.5.8@1, 2026-09-10)'], ['name' => 'elcreator/alattex', 'version' => '0.5.0'], ['name' => 'elcreator/aphalcon', 'version' => '0.1.0']]), '3.5.8 · aLatteX 0.5.0 · aPhalcon 0.1.0', 'A stack with extensions names them after the CMS.');
+expect(ResultSet::buildVersion('evo-frankenphp', [['name' => 'Evolution CMS', 'version' => '3.6.0 (branch 3.6.x@abc1234, 2026-10-31)'], ['name' => 'FrankenPHP', 'version' => '1.13.4']]), '3.6.0 3.6.x@abc1234 · FrankenPHP 1.13.4', 'The classic FrankenPHP stack names both Evolution and its runtime.');
 expect(ResultSet::buildVersion('wordpress-gantry', [['name' => 'WordPress', 'version' => '7.1.1'], ['name' => 'gantry5', 'version' => '5.6.4']]), '7.1.1 · Gantry 5.6.4', 'WordPress + Gantry names both.');
 expect(ResultSet::buildVersion('drupal', [['name' => 'PHP', 'version' => '8.4.25']]), null, 'Components without the CMS name no build.');
 expect(ResultSet::buildVersion('evo-parser', [['name' => 'Evolution CMS', 'version' => '3.5.9 (path /host/evolution@3f9ea9220 2026-09-21, files x)'], ['name' => 'front-end session', 'version' => 'off (NO_SESSION)']]), '3.5.9 ../evolution@3f9ea9220 · NO_SESSION', 'A site without a front-end session is its own cell.');
@@ -472,6 +474,10 @@ $resultsDir = sys_get_temp_dir() . '/phramark-results-' . getmypid();
 mkdir($resultsDir);
 file_put_contents($resultsDir . '/guest-modx-jit-off-rps-30.txt', "Running 1m test\n 50.000%  120.50ms\n 99.000%  1.02s\nRequests/sec:     30.10\nNon-2xx or 3xx responses: 3\n---- memory ----\nPHP memory (per request, allocator peak): median 4.0 MiB, p95 4.0 MiB, max 6.0 MiB over 1800 requests (3 non-2xx); script peak median 2.1 MiB\nPHP-FPM container peak RSS: 80.5 MiB (docker stats, 1 s samples)\n");
 file_put_contents($resultsDir . '/guest-modx-jit-tracing-rps-30.txt', "Running 1m test\n");
+$genericMemoryResult = $resultsDir . '/guest-evo-frankenphp-jit-off-rps-30.txt';
+file_put_contents($genericMemoryResult, "Running 1m test\n 50.000%  25.00ms\n 99.000%  50.00ms\nRequests/sec:     30.00\n---- memory ----\nPHP container peak RSS: 42.5 MiB (cgroup anon, 1 s samples)\nPHP container footprint peak: 50.0 MiB (docker stats, page cache included, 1 s samples)\n");
+$genericMemoryRow = ResultSet::guestRow($genericMemoryResult);
+expect([$genericMemoryRow['containerPeakMb'], $genericMemoryRow['containerFootprintMb']], [42.5, 50.0], 'The result reader accepts the PHP container memory labels used by FrankenPHP.');
 touch($resultsDir . '/guest-modx-jit-off-rps-30.txt', 1_789_900_000); // an older, mtime-dated run
 file_put_contents($resultsDir . '/admin-modx-jit-off-2026-09-20T10-00-00-000Z.json', json_encode(['stack' => 'modx', 'jit' => 'off', 'rounds' => 1, 'pages' => 5, 'recordedAt' => '2026-09-20T10:00:00.000Z', 'containerPeakMb' => 90.5, 'summary' => ['ms' => ['login' => ['median' => 700.5]], 'serverMs' => ['login' => ['median' => 300.25]], 'phpPeakMb' => ['login' => ['median' => 4.5]]], 'steps' => [['action' => 'login', 'ms' => 700.5], ['action' => 'logout', 'ms' => 200.25]]]));
 file_put_contents($resultsDir . '/admin-modx-jit-off-2026-09-20T09-00-00-000Z.json', json_encode(['stack' => 'modx', 'jit' => 'off', 'recordedAt' => '2026-09-20T09:00:00.000Z', 'summary' => ['ms' => ['login' => ['median' => 999]]], 'steps' => [['action' => 'login', 'ms' => 999]]]));
@@ -685,5 +691,67 @@ foreach (['/tree/sub/renamed.php', '/tree/sub/b.php', '/tree/notes.txt', '/compi
 rmdir($cacheDir . '/tree/sub');
 rmdir($cacheDir . '/tree');
 rmdir($cacheDir);
+
+// FrankenPHP classic and worker modes: one ordinary request lifecycle, plus
+// Evolution's worker loop with a new or a kept application.
+$adapters = RuntimeProfile::adapters();
+expect($adapters['evo-frankenphp']['port'], 8092, 'The classic FrankenPHP stack takes the next free port.');
+expect($adapters['evo-frankenphp']['components'], $adapters['evo-parser']['components'], 'Classic FrankenPHP runs the same Evolution parser request path.');
+expect([$adapters['evo-worker']['port'], $adapters['evo-worker-keep']['port']], [8090, 8091], 'The worker stacks take the next free ports.');
+expect([$adapters['evo-worker']['components'], $adapters['evo-worker-keep']['components']], [$adapters['evo-parser']['components'], $adapters['evo-parser']['components']], 'A worker stack runs the evo-parser request path: only the runtime differs.');
+expect(in_array('evo-worker', VersionSpec::affectedStacks(VersionSpec::parse('evo@3.5.8')), true), false, 'A version alone does not select the worker stacks: most Evolution refs have no worker mode.');
+expect(in_array('evo-frankenphp', VersionSpec::affectedStacks(VersionSpec::parse('evo@3.5.8')), true), false, 'The explicit classic FrankenPHP comparison is opt-in.');
+expect(array_column(VersionSpec::rounds(VersionSpec::parse('evo@../evolution'), ['evo-parser', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep'])[0]['stacks'], 'stack'), ['evo-parser', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep'], 'Named FrankenPHP stacks are built from the same Evolution ref as evo-parser.');
+$compose = str_replace("\r\n", "\n", repositoryFile('benchmark/compose.yaml'));
+if (preg_match('/^  php-frankenphp:\n((?:    .*\n|\s*\n)*)/m', $compose, $m) !== 1) {
+    throw new RuntimeException('compose.yaml must define php-frankenphp.');
+}
+expect([str_contains($m[1], 'profiles: ["worker"]'), str_contains($m[1], 'EVO_WORKER_MODE'), str_contains($m[1], 'Caddyfile-classic'), str_contains($m[1], 'evo-frankenphp:/var/www/html')], [true, false, true, true], 'Classic FrankenPHP uses a normal PHP lifecycle without enabling Evolution worker mode.');
+$classicCaddy = repositoryFile('benchmark/config/Caddyfile-classic');
+expect([str_contains($classicCaddy, 'num_threads {$PHRAMARK_THREADS}'), str_contains($classicCaddy, 'php_server'), str_contains($classicCaddy, 'worker {')], [true, true, false], 'Classic FrankenPHP serves PHP requests without a worker block.');
+expect(str_contains(repositoryFile('benchmark/images/frankenphp/entrypoint.sh'), 'if [ "${EVO_WORKER_MODE:-0}" = 1 ]'), true, 'Only the worker stacks require Evolution worker support.');
+foreach (['php-worker' => ['evo-worker', '0'], 'php-worker-keep' => ['evo-worker-keep', '1']] as $service => [$origin, $keep]) {
+    if (preg_match('/^  ' . preg_quote($service, '/') . ':\n((?:    .*\n|\s*\n)*)/m', $compose, $m) !== 1) {
+        throw new RuntimeException("compose.yaml must define $service.");
+    }
+    expect([str_contains($m[1], 'profiles: ["worker"]'), str_contains($m[1], 'EVO_WORKER_MODE: "1"'), str_contains($m[1], "EVO_WORKER_ORIGIN: http://$origin"), str_contains($m[1], "EVO_WORKER_KEEP_APP: \"$keep\"")], [true, true, true, true], "$service runs Evolution's worker mode, opt-in, with EVO_WORKER_KEEP_APP=$keep.");
+    $nginx = repositoryFile('benchmark/config/nginx-' . substr($service, 4) . '.conf');
+    expect(substr_count($nginx, "proxy_set_header Host $origin;"), 2, "nginx sends the front end of $service to the worker under its one origin.");
+    expect(str_contains($nginx, 'proxy_set_header Host $http_host;'), true, "The manager of $service keeps the client's host.");
+}
+expect(str_contains(repositoryFile('benchmark/fixtures/admin-reset.php'), "'evo-frankenphp', 'evo-worker', 'evo-worker-keep'"), true, 'The admin fixture of every FrankenPHP stack is reset like any Evolution stack.');
+$lib = repositoryFile('benchmark/scripts/lib.sh');
+expect([str_contains($lib, '8090) stack=evo-worker;'), str_contains($lib, '8091) stack=evo-worker-keep;'), str_contains($lib, '8092) stack=evo-frankenphp;'), str_contains($lib, 'evo-frankenphp|evo-worker|evo-worker-keep) echo "--profile worker"')], [true, true, true, true], 'The scripts map all FrankenPHP ports and start them with their profile.');
+$matrix = repositoryFile('benchmark/scripts/matrix');
+expect(strpos($matrix, 'if ! $compose $profile up -d --no-deps') < strpos($matrix, 'if curl -s --max-time'), true, 'The matrix starts each selected service before checking that its port is reachable.');
+expect(str_contains($setup, "\$site !== 'evo-parser' && \$site !== 'evo-frankenphp' && !in_array(\$site, WORKER_SITES, true)"), true, 'The classic and worker FrankenPHP sites render the evo-parser snippet.');
+
+// The memory probe in a worker logs each request it hands on, not the worker's
+// life: Evolution calls frankenphp_handle_request() unqualified from
+// EvolutionCMS\Runtime, which reaches the probe's wrapper first.
+function frankenphp_handle_request(callable $handler): bool
+{
+    $_SERVER = ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/articles/category-042', 'HTTP_X_PHRAMARK_STEP' => 'guest'];
+    $handler();
+
+    return true;
+}
+$memoryLog = sys_get_temp_dir() . '/phramark-memory-' . getmypid() . '.log';
+putenv('PHRAMARK_MEMORY_LOG=' . $memoryLog);
+require_once dirname(__DIR__) . '/benchmark/fixtures/memory-prepend.php';
+$served = [];
+$kept = EvolutionCMS\Runtime\frankenphp_handle_request(static function () use (&$served): void {
+    $served[] = $_SERVER['REQUEST_URI'];
+    // A worker rewrites $_SERVER while it serves; the log names the request.
+    $_SERVER['REQUEST_URI'] = '/index.php';
+    $block = str_repeat('x', 4_000_000);
+    unset($block);
+});
+$logged = json_decode(trim((string) file_get_contents($memoryLog)), true);
+putenv('PHRAMARK_MEMORY_LOG');
+unlink($memoryLog);
+expect([$kept, $served], [true, ['/articles/category-042']], 'The wrapper hands the request to the CMS and returns FrankenPHP\'s answer.');
+expect([$logged['method'], $logged['uri'], $logged['step'], $logged['hash_ms']], ['GET', '/articles/category-042', 'guest', 0], 'One line per worker request, with the fields the request arrived with.');
+expect($logged['peak'] >= 4_000_000 && is_float($logged['ms']), true, 'The line carries the request\'s peak memory and wall time.');
 
 fwrite(STDOUT, "Phramark tests passed.\n");

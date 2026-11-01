@@ -7,7 +7,7 @@ FROM php:${PHP_VERSION}-fpm-bookworm
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git default-mysql-client libfreetype6-dev libjpeg62-turbo-dev libpng-dev libzip-dev unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd opcache pdo_mysql zip \
+    && docker-php-ext-install exif gd opcache pdo_mysql zip \
     && pecl install phalcon-5.9.3 \
     && docker-php-ext-enable phalcon \
     && rm -rf /var/lib/apt/lists/*

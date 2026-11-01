@@ -31,12 +31,12 @@ output=${OUTPUT:-benchmark/results/guest-${stack}$(version_suffix)-jit-${jit}-rp
 base=${output%.txt}
 
 mkdir -p benchmark/results
-docker build -q -t phramark-wrk2 -f benchmark/images/loadgen/Dockerfile . >/dev/null
+docker.exe build -q -t phramark-wrk2 -f benchmark/images/loadgen/Dockerfile . >/dev/null
 echo "guest workload: stack=$stack jit=$jit rate=$rate duration=$duration connections=$connections"
 memory_log_reset "$php"
 memory_sampler_start "$php" "$base.rss.log"
 trap 'memory_sampler_stop' EXIT
-docker run --rm --network phramark_default phramark-wrk2 \
+docker.exe run --rm --network phramark_default phramark-wrk2 \
   -t "$threads" -c "$connections" -d "$duration" -R "$rate" --latency \
   -s /workloads/category.lua "http://${target}:80" >"$output"
 memory_sampler_stop
@@ -45,9 +45,9 @@ memory_log_fetch "$php" "$base.memory.log"
   echo
   echo "---- memory ----"
   php benchmark/scripts/memory-summary.php "$base.memory.log"
-  echo "PHP-FPM peak RSS: $(memory_sampler_peak_mib "$base.rss.log") MiB (cgroup anon, 1 s samples)"
+  echo "PHP container peak RSS: $(memory_sampler_peak_mib "$base.rss.log") MiB (cgroup anon, 1 s samples)"
   footprint=$(memory_sampler_peak_mib "$base.rss.log" 3)
-  [ -z "$footprint" ] || echo "PHP-FPM container footprint peak: $footprint MiB (docker stats, page cache included, 1 s samples)"
+  [ -z "$footprint" ] || echo "PHP container footprint peak: $footprint MiB (docker stats, page cache included, 1 s samples)"
 } >>"$output"
 attach_versions "$stack" "$output"
 grep -E 'Requests/sec|Non-2xx|Socket errors|^ *(50|99)\.000%|^PHP' "$output" || true

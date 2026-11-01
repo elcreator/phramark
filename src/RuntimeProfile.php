@@ -49,6 +49,26 @@ final class RuntimeProfile
                 'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'sArticles'],
                 'port' => 8089,
             ],
+            // The evo-parser site and request path, run by Evolution's FrankenPHP
+            // worker loop instead of PHP-FPM: the runtime is the only difference.
+            'evo-worker' => [
+                'label' => 'Evolution parser, FrankenPHP worker',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components (+ Symfony http-foundation/finder) in FrankenPHP worker mode: a new application per request',
+                'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)'],
+                'port' => 8090,
+            ],
+            'evo-worker-keep' => [
+                'label' => 'Evolution parser, FrankenPHP worker, kept app',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components (+ Symfony http-foundation/finder) in FrankenPHP worker mode: one booted application per worker, reset after each request (EVO_WORKER_KEEP_APP=1)',
+                'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)'],
+                'port' => 8091,
+            ],
+            'evo-frankenphp' => [
+                'label' => 'Evolution parser, FrankenPHP classic',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components (+ Symfony http-foundation/finder), served by classic FrankenPHP with a fresh application lifecycle on every request',
+                'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)'],
+                'port' => 8092,
+            ],
             'drupal' => [
                 'label' => 'Drupal',
                 'framework' => 'Drupal core on Symfony HttpKernel/Routing + Twig',

@@ -1,0 +1,20 @@
+{
+	auto_https off
+	admin off
+	frankenphp {
+		num_threads {$PHRAMARK_THREADS}
+	}
+}
+
+:80 {
+	root * /var/www/html
+
+	@notfile {
+		not file {
+			try_files {path} {path}/index.php {path}/index.html
+		}
+	}
+	rewrite @notfile /index.php?q={path}&{query}
+
+	php_server
+}

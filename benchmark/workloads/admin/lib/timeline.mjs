@@ -67,7 +67,7 @@ export function formatReport({ stack, jit, baseUrl, rounds, pages, steps, contai
     `Total wall time: ${round(total)} ms over ${steps.length} steps`,
   ];
   if (typeof containerPeakMb === 'number') {
-    lines.push(`PHP-FPM container peak RSS during the run: ${containerPeakMb} MiB`);
+    lines.push(`PHP container peak RSS during the run: ${containerPeakMb} MiB`);
   }
   lines.push('', pad('action', 14) + pad('n', 5) + pad('wall p50', 12) + pad('wall p95', 12) + pad('wall max', 12)
     + present.filter((metric) => metric.key !== 'ms').map((metric) => pad(`${metric.label} p50`, 15)).join(''));

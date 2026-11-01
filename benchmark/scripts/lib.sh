@@ -17,7 +17,10 @@ stack_for_port() {
     8087) stack=modx; php=phramark-php-modx-1; nginx=phramark-nginx-modx-1; target=nginx-modx ;;
     8088) stack=wordpress-gantry; php=phramark-php-wordpress-gantry-1; nginx=phramark-nginx-wordpress-gantry-1; target=nginx-wordpress-gantry ;;
     8089) stack=evo-sarticles; php=phramark-php-sarticles-1; nginx=phramark-nginx-sarticles-1; target=nginx-sarticles ;;
-    *) echo "PORT must be 8080 through 8089" >&2; exit 2 ;;
+    8090) stack=evo-worker; php=phramark-php-worker-1; nginx=phramark-nginx-worker-1; target=nginx-worker ;;
+    8091) stack=evo-worker-keep; php=phramark-php-worker-keep-1; nginx=phramark-nginx-worker-keep-1; target=nginx-worker-keep ;;
+    8092) stack=evo-frankenphp; php=phramark-php-frankenphp-1; nginx=phramark-nginx-frankenphp-1; target=nginx-frankenphp ;;
+    *) echo "PORT must be 8080 through 8092" >&2; exit 2 ;;
   esac
 }
 
@@ -34,7 +37,19 @@ port_for_stack() {
     modx) echo 8087 ;;
     wordpress-gantry) echo 8088 ;;
     evo-sarticles) echo 8089 ;;
-    *) echo "unknown stack '$1' (evo-parser, evo-latte, evo-latte-parser, evo-phalcon, drupal, typo3, winter, modx, wordpress-gantry, evo-sarticles; evo-manticore is a job without a port)" >&2; return 2 ;;
+    evo-worker) echo 8090 ;;
+    evo-worker-keep) echo 8091 ;;
+    evo-frankenphp) echo 8092 ;;
+    *) echo "unknown stack '$1' (evo-parser, evo-latte, evo-latte-parser, evo-phalcon, drupal, typo3, winter, modx, wordpress-gantry, evo-sarticles, evo-frankenphp, evo-worker, evo-worker-keep; evo-manticore is a job without a port)" >&2; return 2 ;;
+  esac
+}
+
+# The compose profile a stack's services belong to: none for the default
+# Evolution stacks.
+profile_for_stack() {
+  case "$1" in
+    drupal|typo3|winter|modx|wordpress-gantry) echo "--profile cross-cms" ;;
+    evo-frankenphp|evo-worker|evo-worker-keep) echo "--profile worker" ;;
   esac
 }
 
@@ -56,7 +71,7 @@ attach_versions() {
 # Reads the JIT mode the running FPM container was started with, so a result
 # is labelled by what actually ran rather than by what the caller intended.
 jit_for_container() {
-  mode=$(docker exec "$1" sed -n 's/^opcache\.jit=//p' /usr/local/etc/php/conf.d/zz-benchmark-jit.ini 2>/dev/null || true)
+mode=$(docker.exe exec "$1" sed -n 's/^opcache\.jit=//p' /usr/local/etc/php/conf.d/zz-benchmark-jit.ini 2>/dev/null || true)
   case "$mode" in
     tracing) echo tracing ;;
     0|'') echo off ;;
@@ -75,10 +90,10 @@ repo_root() {
 
 # PHP-side memory log of a stack (benchmark/fixtures/memory-prepend.php).
 memory_log_reset() {
-  docker exec "$1" sh -c ': > /var/log/phramark/memory.log'
+  docker.exe exec "$1" sh -c ': > /var/log/phramark/memory.log'
 }
 memory_log_fetch() {
-  docker exec "$1" cat /var/log/phramark/memory.log > "$2"
+  docker.exe exec "$1" cat /var/log/phramark/memory.log > "$2"
 }
 
 # Samples a container's memory into FILE until memory_sampler_stop, one
@@ -95,10 +110,10 @@ memory_sampler_start() {
   : > "$file"
   (
     while :; do
-      rss=$(docker exec "$container" sh -c 'grep "^anon " /sys/fs/cgroup/memory.stat 2>/dev/null || grep "^rss " /sys/fs/cgroup/memory/memory.stat 2>/dev/null' | awk '{ printf "%.2fMiB", $2 / 1048576 }')
+      rss=$(docker.exe exec "$container" sh -c 'grep "^anon " /sys/fs/cgroup/memory.stat 2>/dev/null || grep "^rss " /sys/fs/cgroup/memory/memory.stat 2>/dev/null' | awk '{ printf "%.2fMiB", $2 / 1048576 }')
       if [ -n "$rss" ]; then
         if [ "${PHRAMARK_FOOTPRINT:-0}" = 1 ]; then
-          footprint=$(docker stats --no-stream --format '{{.MemUsage}}' "$container" 2>/dev/null | sed 's#/.*##; s/ //g')
+          footprint=$(docker.exe stats --no-stream --format '{{.MemUsage}}' "$container" 2>/dev/null | sed 's#/.*##; s/ //g')
           echo "$(date +%s) $rss ${footprint:--}" >> "$file"
         else
           echo "$(date +%s) $rss" >> "$file"

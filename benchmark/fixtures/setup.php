@@ -12,6 +12,8 @@ require '/opt/phramark/benchmark/fixtures/sarticles.php';
 
 const PREFIX = 'site_';
 const ROOT = '/sites';
+// The evo-parser site served by FrankenPHP in worker mode (compose profile "worker").
+const WORKER_SITES = ['evo-worker', 'evo-worker-keep'];
 
 /** @param list<string> $command */
 function run(array $command, ?string $cwd = null): void
@@ -54,6 +56,9 @@ function siteProducts(): array
         // the content tab, so the stack carries TinyMCE 5 as every real
         // sArticles install does.
         'evo-sarticles' => ['evo', 'tinymce', 'sarticles'],
+        'evo-frankenphp' => ['evo'],
+        'evo-worker' => ['evo'],
+        'evo-worker-keep' => ['evo'],
     ];
 }
 
@@ -111,10 +116,14 @@ function install(string $name): void
     } else {
         run(['git', 'clone', '--depth=1', '--branch', $ref, 'https://github.com/evolution-cms/evolution.git', $path]);
     }
+    // 3.5 ships core/vendor in git; 3.6 does not, so its tree arrives without it.
+    if (!is_file($path . '/core/vendor/autoload.php')) {
+        run(['composer', 'install', '--no-dev', '--no-interaction', '--no-progress'], $path . '/core');
+    }
     run([
         'php', 'cli-install.php', '--typeInstall=1', '--databaseType=mysql', '--databaseServer=' . getenv('DB_HOST'),
         '--database=' . $database, '--databaseUser=' . getenv('DB_USER'), '--databasePassword=' . getenv('DB_PASSWORD'),
-        '--tablePrefix=' . PREFIX, '--cmsAdmin=benchmark', '--cmsAdminEmail=benchmark@example.test',
+        '--tablePrefix=' . PREFIX, '--cmsAdmin=benchmark', '--cmsAdminEmail=benchmark@example.test', '--skipComposer=y',
         '--cmsPassword=' . getenv('EVO_ADMIN_PASSWORD'), '--language=en', '--removeInstall=y',
     ], $path . '/install');
     foreach (siteProducts()[$name] as $product) {
@@ -161,7 +170,7 @@ function installPackage(string $site, string $product, string $wanted): void
 function createDatabases(): void
 {
     $pdo = rootPdo();
-    foreach (['canonical', 'evo_parser', 'evo_latte', 'evo_latte_parser', 'evo_phalcon', 'evo_sarticles'] as $name) {
+    foreach (['canonical', 'evo_parser', 'evo_latte', 'evo_latte_parser', 'evo_phalcon', 'evo_sarticles', 'evo_frankenphp', 'evo_worker', 'evo_worker_keep'] as $name) {
         $pdo->exec(sprintf('CREATE DATABASE IF NOT EXISTS `benchmark_%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci', $name));
         $pdo->exec(sprintf("GRANT ALL PRIVILEGES ON `benchmark_%s`.* TO 'benchmark'@'%%'", $name));
     }
@@ -364,15 +373,16 @@ function writeSettings(string $database, ?string $snippetCode): void
 
 /**
  * The category snippet of a site: the document-tree workload for the
- * parser stack (the Latte and Phalcon stacks bring their own view), the
- * module's own models for evo-sArticles, and nothing for the rest.
+ * parser stack and its worker-mode twins (the Latte and Phalcon stacks bring
+ * their own view), the module's own models for evo-sArticles, and nothing
+ * for the rest.
  */
 function snippetFor(string $site): ?string
 {
     if ($site === 'evo-sarticles') {
         return sArticlesSnippet();
     }
-    if ($site !== 'evo-parser') {
+    if ($site !== 'evo-parser' && $site !== 'evo-frankenphp' && !in_array($site, WORKER_SITES, true)) {
         return null;
     }
 
@@ -408,11 +418,22 @@ PHP;
 try {
     createDatabases();
     install('canonical');
-    $all = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles'];
+    $all = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'evo-frankenphp', ...WORKER_SITES];
     $required = array_values(array_intersect($all, array_filter(explode(' ', (string) getenv('PHRAMARK_STACKS')))));
     $sites = $required ?: $all;
     $failed = [];
+    // Every site is built from the canonical one's Evolution ref: a core
+    // without the worker runtime cannot serve the worker stacks at all.
+    $workerMode = is_file(ROOT . '/canonical/core/includes/worker.runtime.php');
     foreach ($sites as $site) {
+        if (!$workerMode && in_array($site, WORKER_SITES, true)) {
+            $reason = 'this Evolution has no FrankenPHP worker mode (core/includes/worker.runtime.php); use one that has, e.g. --versions=evo@../evolution';
+            if (in_array($site, $required, true)) {
+                $failed[$site] = $reason;
+            }
+            printf('%s: skipped, %s' . PHP_EOL, $site, $reason);
+            continue;
+        }
         try {
             install($site);
         } catch (Throwable $exception) {

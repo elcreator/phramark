@@ -23,14 +23,14 @@ root=$(repo_root)
 results=benchmark/results
 
 mkdir -p "$results"
-docker build -q -t phramark-playwright -f benchmark/images/playwright/Dockerfile . >/dev/null
+docker.exe build -q -t phramark-playwright -f benchmark/images/playwright/Dockerfile . >/dev/null
 benchmark/scripts/admin-reset "$port"
 trap 'memory_sampler_stop; benchmark/scripts/admin-reset "$port"' EXIT
 
 # Drupal node ids are whatever the install assigned; the adapter is told.
 nids=
 if [ "$stack" = drupal ]; then
-  nids=$(docker exec "$php" sh -c "cd /var/www/html && vendor/bin/drush sql:query \"SELECT nid FROM node WHERE type='page' ORDER BY nid LIMIT ${PAGES:-5}\"" | sed 's/[^0-9]//g' | paste -sd, -)
+  nids=$(docker.exe exec "$php" sh -c "cd /var/www/html && vendor/bin/drush sql:query \"SELECT nid FROM node WHERE type='page' ORDER BY nid LIMIT ${PAGES:-5}\"" | sed 's/[^0-9]//g' | paste -sd, -)
   echo "drupal page nodes: $nids"
 fi
 echo "admin workload: stack=$stack jit=$jit rounds=$rounds"
@@ -38,7 +38,7 @@ memory_log_reset "$php"
 memory_sampler_start "$php" "$results/.admin-rss.samples"
 name="$stack$(version_suffix)"
 before=$(ls "$results"/admin-"$name"-jit-"$jit"-*.json 2>/dev/null | wc -l)
-docker run --rm --network phramark_default \
+docker.exe run --rm --network phramark_default \
   -v "$root/benchmark/results:/results" \
   -e PHRAMARK_BASE_URL="http://$target:80" \
   -e PHRAMARK_STACK="$stack" \
@@ -62,7 +62,7 @@ php benchmark/scripts/memory-summary.php "${report%.json}.memory.log" --json > "
 peak=$(memory_sampler_peak_mib "$results/.admin-rss.samples")
 footprint=$(memory_sampler_peak_mib "$results/.admin-rss.samples" 3)
 rm -f "$results/.admin-rss.samples"
-docker run --rm -v "$root/benchmark/results:/results" --entrypoint node phramark-playwright \
+docker.exe run --rm -v "$root/benchmark/results:/results" --entrypoint node phramark-playwright \
   lib/merge-memory.mjs "/results/$(basename "$report")" "/results/$(basename "${report%.json}.memory.json")" "$peak" "$footprint"
 attach_versions "$stack" "$report"
 echo "Results: $report"
