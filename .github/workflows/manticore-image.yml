@@ -2,8 +2,9 @@
 # bootstrapped from source, ~7 min) and publishes it to GHCR, so a
 # `benchmark/scripts/manticore` run pulls the compiler instead of
 # bootstrapping it. Runs when the image definition changes, on demand, and
-# monthly to pick up upstream fixes; MANTICORE_REF pins the compiler
-# revision baked in. The tag is the compiler version the image reports.
+# weekly, so that `latest` follows the compiler's releases and the PHP image;
+# MANTICORE_REF names another compiler revision to bake in. The tag is the
+# compiler version the image reports.
 name: manticore-image
 
 on:
@@ -13,12 +14,12 @@ on:
       - benchmark/images/manticore/Dockerfile
       - .github/workflows/manticore-image.yml
   schedule:
-    - cron: "17 4 1 * *"
+    - cron: "17 4 * * 1"
   workflow_dispatch:
     inputs:
       manticore_ref:
-        description: manticorephp/compiler branch or tag to build
-        default: main
+        description: manticorephp/compiler branch or tag to build, or latest for its latest release
+        default: latest
 
 permissions:
   contents: read
@@ -40,7 +41,7 @@ jobs:
         with:
           context: .
           file: benchmark/images/manticore/Dockerfile
-          build-args: MANTICORE_REF=${{ inputs.manticore_ref || 'main' }}
+          build-args: MANTICORE_REF=${{ inputs.manticore_ref || 'latest' }}
           load: true
           tags: phramark-manticore:candidate
           cache-from: type=gha

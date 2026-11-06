@@ -26,8 +26,14 @@ RUN apt-get update \
 
 COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
 
-ARG MANTICORE_REF=main
-RUN git clone --depth 1 --branch "$MANTICORE_REF" https://github.com/manticorephp/compiler.git /opt/manticore-src \
+# The compiler's latest release unless MANTICORE_REF names another ref. ADD
+# fetches the URL on every build, so a new release also invalidates the cache,
+# which the unchanged default of an ARG would not.
+ARG MANTICORE_REF=latest
+ADD https://api.github.com/repos/manticorephp/compiler/releases/latest /tmp/manticore-release.json
+RUN ref=$MANTICORE_REF \
+    && if [ "$ref" = latest ]; then ref=$(php -r 'echo json_decode(file_get_contents("/tmp/manticore-release.json"))->tag_name;'); fi \
+    && git clone --depth 1 --branch "$ref" https://github.com/manticorephp/compiler.git /opt/manticore-src \
     && cd /opt/manticore-src \
     && MANTICORE_SRC=/opt/manticore-src bash install.sh \
     && manticore version

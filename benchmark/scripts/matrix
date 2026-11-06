@@ -14,7 +14,9 @@
 #                    evo-frankenphp, evo-worker and evo-worker-keep are named
 #                    only too: --solutions=evo-parser,evo-frankenphp,evo-worker,evo-worker-keep
 #                    --versions=evo@3.6.x compares classic FrankenPHP and both
-#                    worker modes with the FPM reference.
+#                    worker modes with the FPM reference. evo-latte-worker,
+#                    evo-latte-parser-worker and evo-phalcon-worker, each also
+#                    with -keep, are the Latte and Phalcon stacks in those modes.
 #   --versions=evo@3.5.x,evo@3.5.8,latte@0.4.0
 #                    compare versions of the parts a stack is built from: a
 #                    published tag of that name, else the branch of that name

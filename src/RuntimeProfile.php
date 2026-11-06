@@ -63,6 +63,43 @@ final class RuntimeProfile
                 'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)'],
                 'port' => 8091,
             ],
+            // The Latte and Phalcon stacks on that worker loop, as above.
+            'evo-latte-worker' => [
+                'label' => 'Evolution + Latte, FrankenPHP worker',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components + Latte (+ Symfony http-foundation/finder) in FrankenPHP worker mode: a new application per request',
+                'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'Latte'],
+                'port' => 8093,
+            ],
+            'evo-latte-worker-keep' => [
+                'label' => 'Evolution + Latte, FrankenPHP worker, kept app',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components + Latte (+ Symfony http-foundation/finder) in FrankenPHP worker mode: one booted application per worker, reset after each request (EVO_WORKER_KEEP_APP=1)',
+                'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'Latte'],
+                'port' => 8094,
+            ],
+            'evo-latte-parser-worker' => [
+                'label' => 'Evolution + Latte + EVO pass, FrankenPHP worker',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components + Latte, with the core tag pass over the view output (+ Symfony http-foundation/finder) in FrankenPHP worker mode: a new application per request',
+                'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'Latte'],
+                'port' => 8095,
+            ],
+            'evo-latte-parser-worker-keep' => [
+                'label' => 'Evolution + Latte + EVO pass, FrankenPHP worker, kept app',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components + Latte, with the core tag pass over the view output (+ Symfony http-foundation/finder) in FrankenPHP worker mode: one booted application per worker, reset after each request (EVO_WORKER_KEEP_APP=1)',
+                'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'Latte'],
+                'port' => 8096,
+            ],
+            'evo-phalcon-worker' => [
+                'label' => 'Evolution + aPhalcon, FrankenPHP worker',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components + Phalcon DB adapter + Latte (+ Symfony http-foundation/finder) in FrankenPHP worker mode: a new application per request',
+                'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'Phalcon (extension)', 'Latte'],
+                'port' => 8097,
+            ],
+            'evo-phalcon-worker-keep' => [
+                'label' => 'Evolution + aPhalcon, FrankenPHP worker, kept app',
+                'framework' => 'Evolution CMS core on Laravel (Illuminate) components + Phalcon DB adapter + Latte (+ Symfony http-foundation/finder) in FrankenPHP worker mode: one booted application per worker, reset after each request (EVO_WORKER_KEEP_APP=1)',
+                'components' => ['Evolution core', 'Laravel/Illuminate', 'Symfony (minor)', 'Phalcon (extension)', 'Latte'],
+                'port' => 8098,
+            ],
             'evo-frankenphp' => [
                 'label' => 'Evolution parser, FrankenPHP classic',
                 'framework' => 'Evolution CMS core on Laravel (Illuminate) components (+ Symfony http-foundation/finder), served by classic FrankenPHP with a fresh application lifecycle on every request',

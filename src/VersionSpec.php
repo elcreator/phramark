@@ -29,11 +29,13 @@ final class VersionSpec
 {
     public const LATEST = 'latest';
 
-    private const EVO_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep'];
-    private const ALL_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep', 'drupal', 'typo3', 'winter', 'modx', 'wordpress-gantry'];
+    private const LATTE_WORKER_STACKS = ['evo-latte-worker', 'evo-latte-worker-keep', 'evo-latte-parser-worker', 'evo-latte-parser-worker-keep'];
+    private const PHALCON_WORKER_STACKS = ['evo-phalcon-worker', 'evo-phalcon-worker-keep'];
+    private const EVO_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep', ...self::LATTE_WORKER_STACKS, ...self::PHALCON_WORKER_STACKS];
+    private const ALL_STACKS = [...self::EVO_STACKS, 'drupal', 'typo3', 'winter', 'modx', 'wordpress-gantry'];
     // Built from a product but run only when named (--solutions): FrankenPHP
     // comparisons are opt-in so ordinary CMS matrices keep their existing size.
-    private const NAMED_ONLY = ['evo-frankenphp', 'evo-worker', 'evo-worker-keep'];
+    private const NAMED_ONLY = ['evo-frankenphp', 'evo-worker', 'evo-worker-keep', ...self::LATTE_WORKER_STACKS, ...self::PHALCON_WORKER_STACKS];
 
     /**
      * kind: how the setup scripts install a ref.
@@ -51,8 +53,8 @@ final class VersionSpec
         return [
             'php' => ['label' => 'PHP', 'env' => 'PHP_VERSION', 'kind' => 'image', 'stacks' => self::ALL_STACKS, 'source' => 'https://github.com/php/php-src', 'default' => '8.4'],
             'evo' => ['label' => 'Evolution CMS', 'env' => 'EVO_VERSION', 'kind' => 'git', 'stacks' => self::EVO_STACKS, 'source' => 'https://github.com/evolution-cms/evolution', 'repo' => 'https://github.com/evolution-cms/evolution.git', 'aliases' => ['evolution']],
-            'latte' => ['label' => 'aLatteX', 'env' => 'ALATTEX_VERSION', 'kind' => 'composer', 'stacks' => ['evo-latte', 'evo-latte-parser', 'evo-phalcon'], 'source' => 'https://github.com/elcreator/aLatteX', 'package' => 'elcreator/alattex', 'aliases' => ['alattex']],
-            'phalcon' => ['label' => 'aPhalcon', 'env' => 'APHALCON_VERSION', 'kind' => 'composer', 'stacks' => ['evo-phalcon'], 'source' => 'https://github.com/elcreator/aPhalcon', 'package' => 'elcreator/aphalcon', 'aliases' => ['aphalcon'], 'default' => '../evo/aPhalcon'],
+            'latte' => ['label' => 'aLatteX', 'env' => 'ALATTEX_VERSION', 'kind' => 'composer', 'stacks' => ['evo-latte', 'evo-latte-parser', 'evo-phalcon', ...self::LATTE_WORKER_STACKS, ...self::PHALCON_WORKER_STACKS], 'source' => 'https://github.com/elcreator/aLatteX', 'package' => 'elcreator/alattex', 'aliases' => ['alattex']],
+            'phalcon' => ['label' => 'aPhalcon', 'env' => 'APHALCON_VERSION', 'kind' => 'composer', 'stacks' => ['evo-phalcon', ...self::PHALCON_WORKER_STACKS], 'source' => 'https://github.com/elcreator/aPhalcon', 'package' => 'elcreator/aphalcon', 'aliases' => ['aphalcon'], 'default' => '../evo/aPhalcon'],
             'sarticles' => ['label' => 'sArticles', 'env' => 'SARTICLES_VERSION', 'kind' => 'composer', 'stacks' => ['evo-sarticles'], 'source' => 'https://github.com/Seiger/sArticles', 'package' => 'seiger/sarticles', 'aliases' => ['sarticles']],
             'tinymce' => ['label' => 'TinyMCE 5', 'env' => 'TINYMCE_VERSION', 'kind' => 'composer', 'stacks' => ['evo-sarticles'], 'source' => 'https://github.com/evolution-cms-extras/tinymce5', 'package' => 'evolution-cms-extras/tinymce5', 'aliases' => ['tinymce5']],
             'drupal' => ['label' => 'Drupal', 'env' => 'DRUPAL_VERSION', 'kind' => 'composer', 'stacks' => ['drupal'], 'source' => 'https://github.com/drupal/core', 'package' => 'drupal/recommended-project'],

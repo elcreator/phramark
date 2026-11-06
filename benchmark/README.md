@@ -28,6 +28,9 @@ The framework column is not the marketing name: it is what a warm category reque
 | `evo-frankenphp` | 8092 | The `evo-parser` request path on classic FrankenPHP: PHP's normal request lifecycle loads a fresh Evolution application on every request | **Opt-in** (`--solutions=evo-frankenphp`), see [FrankenPHP modes](#frankenphp-modes). Works with Evolution refs that do not provide the worker runtime |
 | `evo-worker` | 8090 | The `evo-parser` request path, run by Evolution's own [FrankenPHP](https://frankenphp.dev) worker loop instead of PHP-FPM: a new application per request | **Opt-in** (`--solutions=evo-worker`), see [FrankenPHP modes](#frankenphp-modes). The same site, snippet and fixture as `evo-parser`: the runtime is the only difference |
 | `evo-worker-keep` | 8091 | The same, with one booted application kept per worker and reset after each request (`EVO_WORKER_KEEP_APP=1`) | **Opt-in**, as `evo-worker`. `evo-worker-keep` − `evo-worker` is what booting the providers costs per request |
+| `evo-latte-worker`, `evo-latte-worker-keep` | 8093, 8094 | The `evo-latte` request path in the two worker modes | **Opt-in**, as `evo-worker`. The same packages, view and fixture as `evo-latte`: the runtime is the only difference |
+| `evo-latte-parser-worker`, `evo-latte-parser-worker-keep` | 8095, 8096 | The `evo-latte-parser` request path in the two worker modes | **Opt-in**, as `evo-latte-worker` |
+| `evo-phalcon-worker`, `evo-phalcon-worker-keep` | 8097, 8098 | The `evo-phalcon` request path in the two worker modes | **Opt-in**, as `evo-latte-worker`. Runs the thread-safe build of the Phalcon extension, where the FPM stacks run the non-thread-safe one |
 
 `evo-sarticles` answers a different question from the rest of the table. Every other stack asks what a framework costs inside a CMS request; this one asks whether a rewritten manager is going in the right direction, by running the same editorial round against two versions of one module (`--versions=sarticles@1.2.1,sarticles@2.x`). The six admin actions are the same user intents in both — open the list, open an article, change its title and summary, save, open the form for a new one, save — and each is waited to the state where the editor can act again. How each version gets there is its own doing: 1.x is a manager tab with a plain form, 2.x an evo-ui modal saved over Livewire.
 
@@ -85,7 +88,7 @@ Admin panels (user `benchmark` everywhere):
 
 | Stack | Admin URL | Password | Admin fixture |
 | --- | --- | --- | --- |
-| evo-* | http://127.0.0.1:8080/manager/ (8081, 8082, 8085; 8090, 8091 with the worker profile) | `benchmark-admin` | Folder "Admin workload" (id 10103) with pages 10104–10108 |
+| evo-* | http://127.0.0.1:8080/manager/ (8081, 8082, 8085; 8090, 8091, 8093–8098 with the worker profile) | `benchmark-admin` | Folder "Admin workload" (id 10103) with pages 10104–10108 |
 | drupal | http://127.0.0.1:8083/user/login | `benchmark-admin` | Content type "Basic page" with a plain-text body; the five lowest page nodes |
 | typo3 | http://127.0.0.1:8084/typo3/ | `Benchmark1!` | Root page "Admin workload" (uid 10103) with pages 10104–10108, each with one text element of the same uid |
 | winter | http://127.0.0.1:8086/backend/ | `benchmark-admin` | "Benchmark pages" (plugin `Phramark.Benchmark`, table `phramark_benchmark_pages`) with pages 10104–10108 |
@@ -179,16 +182,24 @@ Evolution 3.5.x has no worker runtime, so it is measured on PHP-FPM. Evolution 3
 benchmark/scripts/matrix --solutions=evo-parser,evo-frankenphp,evo-worker,evo-worker-keep --versions=evo@3.6.x
 ```
 
-All three containers belong to the compose profile `worker`, which a plain `up` leaves out. `matrix` starts the selected container after setup. The two worker services require `core/includes/worker.runtime.php`; classic FrankenPHP does not.
+The Latte and Phalcon stacks run in the same two worker modes, next to their FPM stacks:
+
+```sh
+benchmark/scripts/matrix --solutions=evo-latte,evo-latte-worker,evo-latte-worker-keep,evo-latte-parser,evo-latte-parser-worker,evo-latte-parser-worker-keep,evo-phalcon,evo-phalcon-worker,evo-phalcon-worker-keep --versions=evo@3.6.x
+```
+
+These stacks need aLatteX 0.5.1 or newer: in `EVO_WORKER_KEEP_APP=0` mode Evolution includes a plugin on every request, and 0.5.0 stops the worker on the second one with `Cannot redeclare function alattexEvoTagsEnabled()`, so the `-worker` stacks answer about half their requests with 500. The `-keep` stacks are not affected.
+
+All these containers belong to the compose profile `worker`, which a plain `up` leaves out. `matrix` starts the selected container after setup. The worker services require `core/includes/worker.runtime.php`; classic FrankenPHP does not.
 
 What is held equal and what is not:
 
 - **Concurrency.** `PHP_FPM_PM_MAX_CHILDREN` (8) sets the classic FrankenPHP thread count and the FPM child count. Worker stacks use 8 application workers plus 8 classic PHP threads for manager requests.
 - **Recycling.** A worker restarts after Evolution's default of 500 requests (`EVO_WORKER_MAX_REQUESTS` to change it), where the FPM pool never recycles (`pm.max_requests = 0`): the restarts are part of what the mode costs.
 - **Transport.** nginx serves the static files and hands PHP over HTTP instead of FastCGI, one connection per request in both cases.
-- **Host.** Worker stacks serve one origin (`EVO_WORKER_ORIGIN`, here `http://evo-worker` and `http://evo-worker-keep`) and answer every other with 421, while the harness reaches a stack both as `127.0.0.1:PORT` and as `nginx-…`. nginx sends front-end requests with that origin's `Host`; classic FrankenPHP and the manager keep the client's host.
+- **Host.** Worker stacks serve one origin (`EVO_WORKER_ORIGIN`, here `http://` and the stack id) and answer every other with 421, while the harness reaches a stack both as `127.0.0.1:PORT` and as `nginx-…`. nginx sends front-end requests with that origin's `Host`; classic FrankenPHP and the manager keep the client's host.
 - **Memory.** `auto_prepend_file` runs once per worker, not per request, so the probe wraps the `frankenphp_handle_request()` call of Evolution's worker loop (in `EvolutionCMS\Runtime`) and writes one line per request with the peak reset at its start: a worker's peak includes what it keeps between requests. The container RSS includes FrankenPHP's Go runtime and Caddy, where an FPM container holds only PHP.
-- **Phalcon.** The FPM image loads the Phalcon extension for every stack; the FrankenPHP image does not, which only changes process start-up.
+- **Phalcon.** Every PHP image loads the Phalcon extension, whichever stack it serves, and the same release. It is never compiled here: the FPM images copy it out of the official [`phalconphp/cphalcon`](https://hub.docker.com/r/phalconphp/cphalcon) image, without the other extensions that image loads, and FrankenPHP, which needs a thread-safe build, takes the one published with that [release](https://github.com/phalcon/cphalcon/releases). `PHALCON_VERSION` in the three Dockerfiles names it; `tests/run.php` keeps them equal.
 
 `trace-request` and `profile` install their hooks into an FPM container and do not support these stacks.
 
@@ -303,7 +314,7 @@ A cold run bootstraps the compiler (about 7 minutes: Zend seeds a native compile
 
 | Cache | Where | What it saves | Key |
 | --- | --- | --- | --- |
-| Compiler image `ghcr.io/elcreator/phramark-manticore:<version>` | GitHub Container Registry, published by `.github/workflows/manticore-image.yml` (on Dockerfile changes, monthly, on demand) | the toolchain install and the compiler bootstrap; `benchmark/scripts/manticore` pulls it and builds locally only with `MANTICORE_BUILD=1` | the compiler version the image reports |
+| Compiler image `ghcr.io/elcreator/phramark-manticore:latest` (`MANTICORE_IMAGE_TAG` names a version) | GitHub Container Registry, published by `.github/workflows/manticore-image.yml` from the compiler's latest release (on Dockerfile changes, weekly, on demand) | the toolchain install and the compiler bootstrap; `benchmark/scripts/manticore` pulls it and builds locally only with `MANTICORE_BUILD=1` | the compiler version the image reports |
 | Result cache `benchmark/results/manticore/compile-cache.tsv` (1 MB, in git) | this repository | the per-file sweep: a file whose content hash was already compiled by the same toolchain is reported from the cache, not compiled (`benchmark/scripts/manticore-cache.php`; 9,686 of 9,687 hits on a repeat, the one miss is a file Evolution regenerates on every setup) | `sha256(file)` + `manticore <version> \| clang <version>`, so an upgraded compiler misses everything and a moved or re-installed tree still hits |
 | Exclusion list `benchmark/results/manticore/evo-parser-build-excludes.txt` (in git) | this repository | the whole-program rounds: a repeat starts from the 41 known blockers and reaches the compiler's crash in one round instead of 42 | the file list itself; delete it to rediscover from scratch |
 | Object cache (`MANTICORE_OBJ_CACHE=1`, Manticore's own, content-addressed on the emitted LLVM IR) | the `manticore-cache` Docker volume on the host that runs the job | `clang` on unchanged IR — 5.3× on a repeat compile of the same files — for the workload compile and the build rounds | sha1 of the IR text + clang flags |
@@ -341,128 +352,211 @@ So the answer to "evo-manticore" is: not a stack, not a faster one either, at th
 
 ## Local smoke numbers
 
-Full matrix (`benchmark/scripts/matrix 30`, `DURATION=60s`, `ROUNDS=1`) on one Windows 11 laptop with Docker Desktop, 8 FPM workers, load generator on the same host, 2026-09-20. A smoke run that shows every cell working; single rounds on a shared machine, so treat differences below ~20 % as noise. Sortable at https://phramark.artur.work; regenerate with `php benchmark/scripts/summary.php`. The versions table names exactly what ran, per stack, linked to the source repositories.
+Full matrix (`benchmark/scripts/matrix 30`, `DURATION=60s`, `ROUNDS=1`) on one Windows 11 laptop with Docker Desktop, 8 FPM workers, load generator on the same host, 2026-11-06. A smoke run that shows every cell working; single rounds on a shared machine, so treat differences below ~20 % as noise. Sortable at https://phramark.artur.work; regenerate with `php benchmark/scripts/summary.php`. The versions table names exactly what ran, per stack, linked to the source repositories.
 
 ### Versions tested
 
-Recorded from the running containers on 2026-09-20T14:43:04Z: PHP 8.4.25, MySQL 8.4.7, nginx/1.27.5, OPcache validate_timestamps=0, memory_consumption=512, max_accelerated_files=100000.
+Recorded from the running containers on 2026-11-06T04:37:37Z: PHP 8.4.27, MySQL 8.4.7, nginx/1.27.5, OPcache validate_timestamps=0, memory_consumption=512, max_accelerated_files=100000.
 
 | Stack | Components (exact versions) |
 | --- | --- |
-| evo-parser | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (3.5.x@851c705, 2026-09-10), [illuminate/database](https://github.com/illuminate/database) v12.69.2 |
-| evo-latte | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (3.5.x@851c705, 2026-09-10), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [illuminate/database](https://github.com/illuminate/database) v12.69.2, [latte/latte](https://github.com/nette/latte) v3.1.6 |
-| evo-latte-parser | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (3.5.x@851c705, 2026-09-10), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [illuminate/database](https://github.com/illuminate/database) v12.69.2, [latte/latte](https://github.com/nette/latte) v3.1.6 |
-| evo-phalcon | [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (3.5.x@851c705, 2026-09-10), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [elcreator/aphalcon](https://github.com/elcreator/aPhalcon) 0.1.0, [illuminate/database](https://github.com/illuminate/database) v12.69.2, [latte/latte](https://github.com/nette/latte) v3.1.6, [phalcon (extension)](https://github.com/phalcon/cphalcon) 5.9.3 |
-| drupal | [drupal/core](https://github.com/drupal/core) 11.4.7, [drush/drush](https://github.com/drush-ops/drush) 13.8.0, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.19, [symfony/http-kernel](https://github.com/symfony/http-kernel) v7.4.19, [twig/twig](https://github.com/twigphp/Twig) v3.28.0 |
-| typo3 | [doctrine/dbal](https://github.com/doctrine/dbal) 4.4.4, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.19, [typo3/cms-core](https://github.com/TYPO3/typo3) v14.3.7, [typo3fluid/fluid](https://github.com/TYPO3/Fluid) 5.3.2 |
-| winter | [doctrine/dbal](https://github.com/doctrine/dbal) 2.13.9, [laravel/framework](https://github.com/laravel/framework) v9.52.22, [symfony/http-foundation](https://github.com/symfony/http-foundation) v6.4.46, [twig/twig](https://github.com/twigphp/Twig) v3.29.0, [winter/storm](https://github.com/wintercms/storm) v1.2.14, [winter/wn-cms-module](https://github.com/wintercms/wn-cms-module) v1.2.14 |
-| modx | [MODX Revolution](https://github.com/modxcms/revolution) 3.2.4-pl, [xpdo/xpdo](https://github.com/modxcms/xpdo) v3.1.7 |
-| wordpress-gantry | [WordPress](https://github.com/WordPress/WordPress) 7.1.1, [classic-editor](https://github.com/WordPress/classic-editor) 1.7.0, [gantry5](https://github.com/gantry/gantry5) 5.6.4, [g5_hydrogen](https://github.com/gantry/gantry5) 5.6.4, [timber/timber](https://github.com/timber/timber) 1.24.1, [twig/twig](https://github.com/twigphp/Twig) v2.16.1 |
+| evo-parser | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (branch 3.5.x@6413fdc, 2026-10-31), [illuminate/database](https://github.com/illuminate/database) v12.70.2 |
+| evo-latte | [PHP](https://github.com/php/php-src) 8.4.26, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (branch 3.5.x@c16d07e, 2026-10-15), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [illuminate/database](https://github.com/illuminate/database) v12.70.0, [latte/latte](https://github.com/nette/latte) v3.1.6 |
+| evo-latte-parser | [PHP](https://github.com/php/php-src) 8.4.26, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (branch 3.5.x@c16d07e, 2026-10-15), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [illuminate/database](https://github.com/illuminate/database) v12.70.0, [latte/latte](https://github.com/nette/latte) v3.1.6 |
+| evo-phalcon | [PHP](https://github.com/php/php-src) 8.4.26, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (branch 3.5.x@c16d07e, 2026-10-15), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [elcreator/aphalcon](https://github.com/elcreator/aPhalcon) dev-local (evo/aPhalcon@1c92644748139ad3), [illuminate/database](https://github.com/illuminate/database) v12.70.0, [latte/latte](https://github.com/nette/latte) v3.1.6, [phalcon (extension)](https://github.com/phalcon/cphalcon) 5.9.3 |
+| evo-worker | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@830003b, 2026-10-31), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.4, worker application new per request, worker requests 500 per worker, then a restart, workers 8 |
+| evo-worker-keep | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@830003b, 2026-10-31), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.4, worker application kept per worker (EVO_WORKER_KEEP_APP=1), worker requests 500 per worker, then a restart, workers 8 |
+| evo-frankenphp | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@830003b, 2026-10-31), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.4, PHP lifecycle classic FrankenPHP; new application per request, PHP threads 8 |
+| drupal | [PHP](https://github.com/php/php-src) 8.4.27, [drupal/core](https://github.com/drupal/core) 11.4.11, [drush/drush](https://github.com/drush-ops/drush) 13.8.0, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.21, [symfony/http-kernel](https://github.com/symfony/http-kernel) v7.4.21, [twig/twig](https://github.com/twigphp/Twig) v3.30.0 |
+| typo3 | [PHP](https://github.com/php/php-src) 8.4.27, [doctrine/dbal](https://github.com/doctrine/dbal) 4.4.4, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.19, [typo3/cms-core](https://github.com/TYPO3/typo3) v14.3.7, [typo3fluid/fluid](https://github.com/TYPO3/Fluid) 5.3.2 |
+| winter | [PHP](https://github.com/php/php-src) 8.4.27, [doctrine/dbal](https://github.com/doctrine/dbal) 2.13.9, [laravel/framework](https://github.com/laravel/framework) v9.52.23, [symfony/http-foundation](https://github.com/symfony/http-foundation) v6.4.50, [twig/twig](https://github.com/twigphp/Twig) v3.30.0, [winter/storm](https://github.com/wintercms/storm) v1.2.15, [winter/wn-cms-module](https://github.com/wintercms/wn-cms-module) v1.2.15 |
+| modx | [PHP](https://github.com/php/php-src) 8.4.27, [MODX Revolution](https://github.com/modxcms/revolution) 3.2.4-pl, [xpdo/xpdo](https://github.com/modxcms/xpdo) v3.1.7 |
+| wordpress-gantry | [PHP](https://github.com/php/php-src) 8.4.27, [WordPress](https://github.com/WordPress/WordPress) 7.1.4, [classic-editor](https://github.com/WordPress/classic-editor) 1.7.0, [gantry5](https://github.com/gantry/gantry5) 5.6.7, [g5_hydrogen](https://github.com/gantry/gantry5) 5.6.7, [timber/timber](https://github.com/timber/timber) 1.24.1, [twig/twig](https://github.com/twigphp/Twig) v2.16.1 |
 
 ### Guest workload (wrk2, constant offered rate)
 
-| Stack | JIT | Offered | Achieved rps | p50 | p99 | Non-2xx | PHP peak/request (script median) | PHP alloc peak p95 | PHP container peak RSS |
+| Stack | JIT | Offered | Achieved rps | p50 | p99 | Non-2xx | PHP peak/request (script median) | PHP alloc peak p95 | PHP container peak RSS | PHP container footprint (with page cache) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| evo-parser | off | 30 | 29.99 | 392.96ms | 743.42ms | 0 | 1.8 MiB | 4.0 MiB | 81.4 MiB |
-| evo-parser | tracing | 30 | 30.03 | 351.74ms | 668.67ms | 0 | 1.8 MiB | 4.0 MiB | 91.6 MiB |
-| evo-latte | off | 30 | 30.03 | 380.16ms | 690.69ms | 0 | 1.8 MiB | 4.0 MiB | 84.5 MiB |
-| evo-latte | tracing | 30 | 30.08 | 346.37ms | 642.56ms | 0 | 1.9 MiB | 4.0 MiB | 93.8 MiB |
-| evo-latte-parser | off | 30 | 30.03 | 384.51ms | 644.61ms | 0 | 1.8 MiB | 4.0 MiB | 84.2 MiB |
-| evo-latte-parser | tracing | 30 | 30.07 | 333.05ms | 573.95ms | 0 | 1.9 MiB | 4.0 MiB | 93.6 MiB |
-| evo-phalcon | off | 30 | 30.37 | 50.88ms | 169.73ms | 0 | 1.0 MiB | 2.0 MiB | 74.8 MiB |
-| evo-phalcon | tracing | 30 | 30.38 | 48.74ms | 246.40ms | 0 | 1.0 MiB | 2.0 MiB | 83.3 MiB |
-| drupal | off | 30 | 30.37 | 79.68ms | 145.66ms | 0 | 2.1 MiB | 4.0 MiB | 71.2 MiB |
-| drupal | tracing | 30 | 30.37 | 81.73ms | 166.53ms | 0 | 2.1 MiB | 4.0 MiB | 72.7 MiB |
-| typo3 | off | 30 | 30.38 | 46.43ms | 100.86ms | 0 | 3.1 MiB | 4.0 MiB | 81.8 MiB |
-| typo3 | tracing | 30 | 30.38 | 49.82ms | 110.78ms | 0 | 3.1 MiB | 4.0 MiB | 90.0 MiB |
-| winter | off | 30 | 30.38 | 90.05ms | 197.38ms | 0 | 1.4 MiB | 2.0 MiB | 82.1 MiB |
-| winter | tracing | 30 | 30.38 | 86.46ms | 219.90ms | 0 | 1.4 MiB | 2.0 MiB | 93.5 MiB |
-| modx | off | 30 | 30.38 | 115.14ms | 211.84ms | 0 | 0.7 MiB | 2.0 MiB | 50.3 MiB |
-| modx | tracing | 30 | 30.38 | 103.93ms | 188.03ms | 0 | 0.7 MiB | 2.0 MiB | 58.0 MiB |
-| wordpress-gantry | off | 30 | 30.14 | 249.98ms | 436.99ms | 0 | 4.9 MiB | 6.0 MiB | 131.0 MiB |
-| wordpress-gantry | tracing | 30 | 30.12 | 229.12ms | 400.38ms | 0 | 4.9 MiB | 6.0 MiB | 148.2 MiB |
+| evo-parser (3.5.9) | off | 30 | 30.38 | 35.39ms | 110.33ms | 0 | 0.7 MiB | 2.0 MiB | 27.1 MiB | - |
+| evo-parser (3.5.9) | tracing | 30 | 30.37 | 35.81ms | 65.92ms | 0 | 0.8 MiB | 2.0 MiB | 28.9 MiB | - |
+| evo-parser (3.5.9 3.5.x@6413fdc) | off | 30 | 30.38 | 36.22ms | 243.33ms | 0 | 0.7 MiB | 2.0 MiB | 22.0 MiB | - |
+| evo-parser (3.5.9 3.5.x@6413fdc) | tracing | 30 | 30.38 | 34.37ms | 244.48ms | 0 | 0.8 MiB | 2.0 MiB | 24.2 MiB | - |
+| evo-parser (3.6.0 3.6.x@830003b) | off | 30 | 30.38 | 57.31ms | 242.30ms | 0 | 1.1 MiB | 2.0 MiB | 25.4 MiB | - |
+| evo-parser (3.6.0 3.6.x@830003b) | tracing | 30 | 30.38 | 62.24ms | 271.36ms | 0 | 1.1 MiB | 2.0 MiB | 27.5 MiB | - |
+| evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | 30 | 30.38 | 42.21ms | 235.90ms | 0 | 0.9 MiB | 2.0 MiB | 23.9 MiB | - |
+| evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | 30 | 30.38 | 38.33ms | 205.31ms | 0 | 0.9 MiB | 2.0 MiB | 26.2 MiB | - |
+| evo-latte (3.5.9 · aLatteX 0.5.1) | off | 30 | 30.38 | 38.53ms | 74.05ms | 0 | 0.9 MiB | 2.0 MiB | 29.0 MiB | - |
+| evo-latte (3.5.9 · aLatteX 0.5.1) | tracing | 30 | 30.38 | 38.56ms | 212.22ms | 0 | 0.9 MiB | 2.0 MiB | 30.9 MiB | - |
+| evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | 30 | 30.37 | 39.78ms | 83.07ms | 0 | 0.9 MiB | 2.0 MiB | 23.9 MiB | - |
+| evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | 30 | 30.38 | 39.07ms | 233.60ms | 0 | 0.9 MiB | 2.0 MiB | 25.9 MiB | - |
+| evo-latte-parser (3.5.9 · aLatteX 0.5.1) | off | 30 | 30.38 | 38.91ms | 78.08ms | 0 | 0.9 MiB | 2.0 MiB | 29.1 MiB | - |
+| evo-latte-parser (3.5.9 · aLatteX 0.5.1) | tracing | 30 | 30.38 | 40.10ms | 243.33ms | 0 | 0.9 MiB | 2.0 MiB | 30.9 MiB | - |
+| evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | off | 30 | 30.37 | 38.43ms | 243.46ms | 0 | 0.9 MiB | 2.0 MiB | 24.9 MiB | - |
+| evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | tracing | 30 | 30.38 | 39.58ms | 232.32ms | 0 | 0.9 MiB | 2.0 MiB | 26.4 MiB | - |
+| evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | 30 | 30.37 | 41.15ms | 235.26ms | 0 | 0.9 MiB | 2.0 MiB | 30.1 MiB | - |
+| evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 30 | 30.37 | 40.61ms | 246.65ms | 0 | 0.9 MiB | 2.0 MiB | 32.5 MiB | - |
+| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 30 | 30.38 | 64.29ms | 126.85ms | 0 | 1.6 MiB | 8.0 MiB | 72.8 MiB | - |
+| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 30 | 30.37 | 61.31ms | 247.81ms | 0 | 1.6 MiB | 12.0 MiB | 78.6 MiB | - |
+| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 30 | 30.38 | 40.35ms | 221.70ms | 0 | 1.6 MiB | 8.0 MiB | 66.7 MiB | - |
+| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 30 | 30.38 | 38.08ms | 106.94ms | 0 | 1.9 MiB | 12.0 MiB | 77.9 MiB | - |
+| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 30 | 30.38 | 62.85ms | 118.78ms | 0 | 1.1 MiB | 2.0 MiB | 38.4 MiB | - |
+| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 30 | 30.38 | 63.46ms | 255.87ms | 0 | 1.1 MiB | 2.0 MiB | 40.7 MiB | - |
+| drupal (11.4.11) | off | 30 | 30.38 | 83.01ms | 158.72ms | 0 | 2.2 MiB | 4.0 MiB | 40.3 MiB | - |
+| drupal (11.4.11) | tracing | 30 | 30.37 | 82.88ms | 198.53ms | 0 | 2.1 MiB | 4.0 MiB | 41.2 MiB | - |
+| typo3 (14.3.7) | off | 30 | 30.37 | 51.84ms | 250.75ms | 0 | 3.1 MiB | 4.0 MiB | 47.3 MiB | - |
+| typo3 (14.3.7) | tracing | 30 | 30.37 | 52.45ms | 97.09ms | 0 | 3.1 MiB | 4.0 MiB | 55.9 MiB | - |
+| winter (1.2.15) | off | 30 | 30.37 | 89.86ms | 170.24ms | 0 | 1.4 MiB | 2.0 MiB | 37.6 MiB | - |
+| winter (1.2.15) | tracing | 30 | 30.38 | 89.73ms | 172.54ms | 0 | 1.4 MiB | 2.0 MiB | 39.6 MiB | - |
+| modx (3.2.4-pl) | off | 30 | 30.38 | 115.20ms | 538.62ms | 0 | 0.7 MiB | 2.0 MiB | 27.2 MiB | - |
+| modx (3.2.4-pl) | tracing | 30 | 30.38 | 107.01ms | 187.65ms | 0 | 0.7 MiB | 2.0 MiB | 30.7 MiB | - |
+| wordpress-gantry (7.1.4 · Gantry 5.6.7) | off | 30 | 30.08 | 194.82ms | 400.64ms | 0 | 4.9 MiB | 6.0 MiB | 85.6 MiB | - |
+| wordpress-gantry (7.1.4 · Gantry 5.6.7) | tracing | 30 | 30.14 | 255.10ms | 455.68ms | 0 | 4.9 MiB | 6.0 MiB | 86.3 MiB | - |
 
 ### Admin workload (Playwright; medians per action, wall / server)
 
 | Stack | JIT | login | open-edit | save-edit | open-create | save-create | logout | Total wall |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| evo-parser | off | 1845.75 / 313.98 ms | 168.43 / 105.14 ms | 771.67 / 443.13 ms | 144.34 / 87.02 ms | 894.2 / 524.75 ms | 172.22 / 125.13 ms | 11892 ms |
-| evo-parser | tracing | 1813.44 / 285.87 ms | 212.37 / 133.86 ms | 896.32 / 563.29 ms | 174.63 / 109.53 ms | 978.25 / 651.88 ms | 224.84 / 163.45 ms | 13463 ms |
-| evo-latte | off | 1815.63 / 251.83 ms | 164.43 / 104.95 ms | 750.15 / 420.12 ms | 141.7 / 85.41 ms | 977.99 / 530.85 ms | 237.49 / 190.7 ms | 12143 ms |
-| evo-latte | tracing | 1831.94 / 291.98 ms | 218.51 / 140.78 ms | 887.51 / 562.3 ms | 187.68 / 121.4 ms | 987.77 / 668.48 ms | 269.89 / 220.81 ms | 13515 ms |
-| evo-latte-parser | off | 1848.89 / 252.74 ms | 163.48 / 107.58 ms | 769.19 / 423.94 ms | 141.39 / 83.72 ms | 846.46 / 512.25 ms | 171.5 / 116.52 ms | 12086 ms |
-| evo-latte-parser | tracing | 1830.28 / 290.46 ms | 213.61 / 136.35 ms | 902.91 / 565.11 ms | 187.24 / 122.36 ms | 996.67 / 654.97 ms | 204.87 / 153.18 ms | 13523 ms |
-| evo-phalcon | off | 1828.4 / 254.03 ms | 191.26 / 111.62 ms | 822.23 / 472.78 ms | 145.68 / 88.5 ms | 872.71 / 529.98 ms | 181.32 / 131.11 ms | 12256 ms |
-| evo-phalcon | tracing | 1827.44 / 280.16 ms | 204.76 / 135.79 ms | 899.38 / 567.5 ms | 173.66 / 118.76 ms | 971.41 / 643.73 ms | 223.49 / 174.25 ms | 13393 ms |
-| drupal | off | 438.04 / 323.07 ms | 184.56 / 123.62 ms | 408.37 / 350.09 ms | 95.76 / 51.34 ms | 377.69 / 312.74 ms | 228.35 / 112.08 ms | 6048 ms |
-| drupal | tracing | 393.18 / 283.32 ms | 168.08 / 120.09 ms | 366.58 / 304.22 ms | 90.22 / 45.64 ms | 361.35 / 302.04 ms | 240.87 / 114.47 ms | 5516 ms |
-| typo3 | off | 1540.28 / 1046.71 ms | 470.23 / 155.25 ms | 780.94 / 399.2 ms | 282.51 / 110.61 ms | 1766.2 / 762.9 ms | 192.55 / 106.57 ms | 18461 ms |
-| typo3 | tracing | 1532.43 / 1048.91 ms | 492.05 / 151.92 ms | 832.47 / 386 ms | 329.31 / 124.17 ms | 2016.74 / 1207.93 ms | 373.2 / 328.92 ms | 20554 ms |
-| winter | off | 1266.67 / 205.39 ms | 140.25 / 35.36 ms | 134.34 / 42.68 ms | 133.91 / 36.25 ms | 228.5 / 75.64 ms | 144.38 / 79.2 ms | 4742 ms |
-| winter | tracing | 1334.07 / 222.71 ms | 119.37 / 32.52 ms | 124.54 / 34.29 ms | 118.56 / 32.06 ms | 201.4 / 64 ms | 148.33 / 73.57 ms | 4304 ms |
-| modx | off | 639.83 / 377.5 ms | 640.16 / 249.61 ms | 279.43 / 138.07 ms | 599.16 / 182.47 ms | 1451.74 / 389.44 ms | 501.18 / 122.3 ms | 15748 ms |
-| modx | tracing | 730.8 / 384.02 ms | 629.49 / 207.05 ms | 275.27 / 108.5 ms | 597.13 / 166.69 ms | 1435.32 / 354.56 ms | 504.28 / 84.22 ms | 15706 ms |
-| wordpress-gantry | off | 534.92 / 262.91 ms | 288.93 / 71.61 ms | 506.83 / 122.44 ms | 329.05 / 79.2 ms | 501.8 / 141.32 ms | 211.23 / 73.44 ms | 9101 ms |
-| wordpress-gantry | tracing | 526.12 / 249.59 ms | 279.28 / 61.21 ms | 440.89 / 128.02 ms | 342.2 / 276.81 ms | 480.77 / 130.28 ms | 255.3 / 91.11 ms | 8488 ms |
+| evo-parser (3.5.9) | off | 4516.74 / 2166.4 ms | 103.73 / 31.88 ms | 224.71 / 56.49 ms | 67.42 / 16.94 ms | 475.43 / 129.38 ms | 139.34 / 75.75 ms | 9346 ms |
+| evo-parser (3.5.9) | tracing | 3135.48 / 930.9 ms | 99.2 / 22.08 ms | 204.42 / 51.8 ms | 70.16 / 14.31 ms | 537.91 / 268.43 ms | 161.28 / 100.02 ms | 8104 ms |
+| evo-parser (3.5.9 3.5.x@6413fdc) | off | 3565.39 / 1376.32 ms | 82.08 / 20.34 ms | 152.93 / 51.13 ms | 70.26 / 16.62 ms | 493.79 / 129.15 ms | 198.63 / 141.95 ms | 7954 ms |
+| evo-parser (3.5.9 3.5.x@6413fdc) | tracing | 3145.19 / 996.8 ms | 69.23 / 20.13 ms | 119.44 / 50.6 ms | 71.13 / 14.93 ms | 474.76 / 133.01 ms | 169.15 / 120.39 ms | 7336 ms |
+| evo-parser (3.6.0 3.6.x@830003b) | off | 3664.13 / 1302.22 ms | 83.72 / 32.86 ms | 165.05 / 54.22 ms | 71.76 / 19.72 ms | 474.33 / 135.61 ms | 269.5 / 159.4 ms | 8479 ms |
+| evo-parser (3.6.0 3.6.x@830003b) | tracing | 4065.59 / 1769.63 ms | 103.08 / 22.91 ms | 205.62 / 134.79 ms | 131.13 / 35.46 ms | 500.86 / 141.84 ms | 163.26 / 109.05 ms | 9314 ms |
+| evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | 4109.77 / 1725.28 ms | 81.98 / 34.17 ms | 204.17 / 53.48 ms | 78.55 / 34.49 ms | 506.15 / 144.05 ms | 305.21 / 108.8 ms | 9531 ms |
+| evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | 3430.6 / 1234.92 ms | 116.58 / 40.28 ms | 209.86 / 54.18 ms | 99.81 / 17.6 ms | 541.39 / 150.69 ms | 196.6 / 127.96 ms | 8986 ms |
+| evo-latte (3.5.9 · aLatteX 0.5.1) | off | 3550.61 / 1400.42 ms | 90.95 / 23.79 ms | 211.79 / 48.71 ms | 78.61 / 21.46 ms | 479.27 / 127.01 ms | 124.44 / 69.03 ms | 8382 ms |
+| evo-latte (3.5.9 · aLatteX 0.5.1) | tracing | 3116.51 / 925.58 ms | 118.67 / 72.52 ms | 306.61 / 84.96 ms | 69.9 / 19.5 ms | 476.6 / 125.98 ms | 193.23 / 117.68 ms | 8475 ms |
+| evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | 3834.02 / 1541 ms | 80.27 / 25.96 ms | 169.68 / 54.18 ms | 71.02 / 17.34 ms | 488.99 / 128.22 ms | 201.26 / 132.01 ms | 8707 ms |
+| evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | 3095.26 / 986.58 ms | 68.3 / 21.63 ms | 156.4 / 46.12 ms | 56.2 / 15.47 ms | 466.75 / 127.3 ms | 177.02 / 127.63 ms | 7581 ms |
+| evo-latte-parser (3.5.9 · aLatteX 0.5.1) | off | 3693.5 / 1254.44 ms | 71.51 / 27.61 ms | 232.74 / 56.26 ms | 71.21 / 22.43 ms | 469.76 / 131.23 ms | 181.7 / 120.67 ms | 8777 ms |
+| evo-latte-parser (3.5.9 · aLatteX 0.5.1) | tracing | 3103.97 / 942.57 ms | 73.6 / 23.79 ms | 122.07 / 49.86 ms | 68.83 / 15.99 ms | 493.11 / 153.21 ms | 190.83 / 129.73 ms | 7586 ms |
+| evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | off | 3477.25 / 1259.49 ms | 94.55 / 33.02 ms | 212.98 / 63.32 ms | 73.22 / 18.56 ms | 459.41 / 138.06 ms | 135.5 / 79.68 ms | 7867 ms |
+| evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | tracing | 3262.05 / 975.97 ms | 73.01 / 24.25 ms | 145.94 / 48.71 ms | 67.36 / 17.04 ms | 481.67 / 152.5 ms | 216.51 / 161.36 ms | 8105 ms |
+| evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | 3339.26 / 1248.79 ms | 78.46 / 23.29 ms | 145.89 / 52.43 ms | 83.85 / 18.99 ms | 480.89 / 138.14 ms | 164.68 / 108.85 ms | 8000 ms |
+| evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 3079.27 / 953.04 ms | 99.12 / 25.37 ms | 205.64 / 53.63 ms | 70.9 / 17.87 ms | 453.19 / 122.58 ms | 145.43 / 79.73 ms | 7552 ms |
+| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 3775.71 / 1611.8 ms | 122.62 / 28.08 ms | 216.54 / 55.47 ms | 72.36 / 25.23 ms | 472.55 / 139.83 ms | 142.44 / 83.43 ms | 8504 ms |
+| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 3778.81 / 1483.63 ms | 87.25 / 30.55 ms | 217.89 / 68.23 ms | 80.65 / 26.77 ms | 472.31 / 135.69 ms | 187.57 / 120.66 ms | 8575 ms |
+| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 3713.61 / 1511.65 ms | 104.03 / 29.12 ms | 137.25 / 54.78 ms | 70.73 / 23.03 ms | 498.75 / 138.07 ms | 195.2 / 143.89 ms | 8450 ms |
+| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 3474.17 / 1260.44 ms | 84.78 / 30.76 ms | 225.74 / 52.71 ms | 76.49 / 23.53 ms | 482.62 / 138.27 ms | 216.58 / 166.18 ms | 8247 ms |
+| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 3959.98 / 1642.18 ms | 86.06 / 33.68 ms | 245.37 / 66.97 ms | 122.52 / 27.72 ms | 480.27 / 144.85 ms | 173.26 / 113.79 ms | 9065 ms |
+| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 3765.77 / 1524.96 ms | 98.68 / 31.46 ms | 351.88 / 64.67 ms | 91.91 / 21.2 ms | 482.52 / 138.17 ms | 215.34 / 151.81 ms | 8715 ms |
+| drupal (11.4.11) | off | 229.64 / 115.44 ms | 164.53 / 115.36 ms | 387.38 / 321.41 ms | 92.24 / 45.08 ms | 362.74 / 296.77 ms | 236.81 / 120.6 ms | 5491 ms |
+| drupal (11.4.11) | tracing | 215.95 / 114.42 ms | 151.87 / 105.71 ms | 382.43 / 319.28 ms | 88 / 45.12 ms | 382.64 / 314.61 ms | 228.93 / 111.7 ms | 5422 ms |
+| typo3 (14.3.7) | off | 946.38 / 454.82 ms | 507.54 / 351 ms | 858.8 / 389.02 ms | 387.43 / 302.88 ms | 2001.97 / 1092.23 ms | 289.12 / 126.6 ms | 19776 ms |
+| typo3 (14.3.7) | tracing | 967.91 / 464.89 ms | 500.84 / 158.4 ms | 747.94 / 374.99 ms | 436.79 / 306.73 ms | 2023.85 / 1200.95 ms | 196.01 / 123.93 ms | 20266 ms |
+| winter (1.2.15) | off | 1181.24 / 108.74 ms | 115.24 / 27.53 ms | 125.55 / 37.68 ms | 104.53 / 25.44 ms | 189.52 / 60.57 ms | 134.71 / 74.1 ms | 4310 ms |
+| winter (1.2.15) | tracing | 1168.36 / 105.54 ms | 108.2 / 26.75 ms | 123.22 / 35.58 ms | 108.75 / 24.72 ms | 186.01 / 59.92 ms | 140.01 / 75.8 ms | 4031 ms |
+| modx (3.2.4-pl) | off | 551.9 / 171.93 ms | 631.58 / 213.04 ms | 269.65 / 129.13 ms | 585.05 / 163.99 ms | 1434.04 / 399.14 ms | 482.91 / 116.48 ms | 15285 ms |
+| modx (3.2.4-pl) | tracing | 553.34 / 239.12 ms | 611.94 / 206.28 ms | 265.75 / 99.83 ms | 604.57 / 159.92 ms | 1422.07 / 351.27 ms | 486.5 / 131.93 ms | 15309 ms |
+| wordpress-gantry (7.1.4 · Gantry 5.6.7) | off | 359.58 / 90.73 ms | 285.43 / 66.82 ms | 525.77 / 125.63 ms | 312.13 / 79.1 ms | 504.86 / 139.27 ms | 230.55 / 68.98 ms | 8903 ms |
+| wordpress-gantry (7.1.4 · Gantry 5.6.7) | tracing | 364.84 / 82.56 ms | 288.27 / 66.76 ms | 448.37 / 129.54 ms | 792.28 / 168.01 ms | 589.44 / 250.64 ms | 208.69 / 95.56 ms | 14074 ms |
 
 ### Admin workload memory (medians per action)
 
 | Stack | JIT | Side | login | open-edit | save-edit | open-create | save-create | logout | PHP container peak |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| evo-parser | off | PHP peak (script) | 2.5 MiB | 1.23 MiB | 5.94 MiB | 1.26 MiB | 5.93 MiB | 2.12 MiB | 93.3 MiB |
-| evo-parser | off | Frontend JS heap | 14.01 MiB | 10.11 MiB | 10.18 MiB | 8.46 MiB | 9.33 MiB | 9.75 MiB |  |
-| evo-parser | off | Frontend DOM nodes | 27228 | 5472 | 5414 | 2455 | 3732 | 3919 |  |
-| evo-parser | tracing | PHP peak (script) | 2.56 MiB | 1.44 MiB | 11.44 MiB | 1.45 MiB | 11.43 MiB | 2.25 MiB | 99 MiB |
-| evo-parser | tracing | Frontend JS heap | 14.01 MiB | 10.23 MiB | 10.18 MiB | 9.56 MiB | 9.42 MiB | 10.97 MiB |  |
-| evo-parser | tracing | Frontend DOM nodes | 27289 | 5411 | 5414 | 3539 | 3732 | 5017 |  |
-| evo-latte | off | PHP peak (script) | 2.53 MiB | 1.24 MiB | 5.95 MiB | 1.27 MiB | 5.94 MiB | 2.13 MiB | 93.6 MiB |
-| evo-latte | off | Frontend JS heap | 13.99 MiB | 16.38 MiB | 16.98 MiB | 9.87 MiB | 9.05 MiB | 10.98 MiB |  |
-| evo-latte | off | Frontend DOM nodes | 27309 | 18098 | 19546 | 4582 | 3732 | 5017 |  |
-| evo-latte | tracing | PHP peak (script) | 2.59 MiB | 1.61 MiB | 11.45 MiB | 1.42 MiB | 11.44 MiB | 2.25 MiB | 98.4 MiB |
-| evo-latte | tracing | Frontend JS heap | 13.98 MiB | 10.17 MiB | 10.77 MiB | 9.87 MiB | 9.09 MiB | 9.18 MiB |  |
-| evo-latte | tracing | Frontend DOM nodes | 27309 | 5411 | 6920 | 4732 | 3549 | 2557 |  |
-| evo-latte-parser | off | PHP peak (script) | 2.53 MiB | 1.24 MiB | 5.95 MiB | 1.27 MiB | 5.94 MiB | 2.13 MiB | 89.3 MiB |
-| evo-latte-parser | off | Frontend JS heap | 13.99 MiB | 15.03 MiB | 15.21 MiB | 9.9 MiB | 10.24 MiB | 11.56 MiB |  |
-| evo-latte-parser | off | Frontend DOM nodes | 27310 | 15205 | 13833 | 4582 | 5710 | 5999 |  |
-| evo-latte-parser | tracing | PHP peak (script) | 2.59 MiB | 1.61 MiB | 11.45 MiB | 1.42 MiB | 11.44 MiB | 2.25 MiB | 93.9 MiB |
-| evo-latte-parser | tracing | Frontend JS heap | 14.01 MiB | 9.77 MiB | 9.35 MiB | 9.28 MiB | 10.13 MiB | 10.11 MiB |  |
-| evo-latte-parser | tracing | Frontend DOM nodes | 27310 | 5411 | 4094 | 3774 | 4877 | 3872 |  |
-| evo-phalcon | off | PHP peak (script) | 2.59 MiB | 1.24 MiB | 6.02 MiB | 1.28 MiB | 6.01 MiB | 2.14 MiB | 95.5 MiB |
-| evo-phalcon | off | Frontend JS heap | 14 MiB | 16.06 MiB | 17.02 MiB | 9.28 MiB | 9.03 MiB | 10.95 MiB |  |
-| evo-phalcon | off | Frontend DOM nodes | 27356 | 18769 | 19542 | 3600 | 3732 | 5017 |  |
-| evo-phalcon | tracing | PHP peak (script) | 2.6 MiB | 1.59 MiB | 11.52 MiB | 1.39 MiB | 11.51 MiB | 2.26 MiB | 92.8 MiB |
-| evo-phalcon | tracing | Frontend JS heap | 14 MiB | 15.07 MiB | 15.52 MiB | 9.86 MiB | 9.31 MiB | 12.22 MiB |  |
-| evo-phalcon | tracing | Frontend DOM nodes | 27309 | 15207 | 13890 | 4521 | 3732 | 7828 |  |
-| drupal | off | PHP peak (script) | 3.11 MiB | 4.82 MiB | 4.23 MiB | 4.69 MiB | 4.23 MiB | 2.83 MiB | 87.2 MiB |
-| drupal | off | Frontend JS heap | 11.9 MiB | 19.73 MiB | 20.89 MiB | 34.96 MiB | 36.06 MiB | 43.86 MiB |  |
-| drupal | off | Frontend DOM nodes | 2498 | 4805 | 5021 | 8862 | 9078 | 11093 |  |
-| drupal | tracing | PHP peak (script) | 3.11 MiB | 4.89 MiB | 4.23 MiB | 4.69 MiB | 4.23 MiB | 2.83 MiB | 82.1 MiB |
-| drupal | tracing | Frontend JS heap | 11.87 MiB | 20.16 MiB | 20.94 MiB | 35.05 MiB | 36.15 MiB | 43.91 MiB |  |
-| drupal | tracing | Frontend DOM nodes | 2498 | 4802 | 5021 | 8865 | 9084 | 11102 |  |
-| typo3 | off | PHP peak (script) | 6.27 MiB | 7.28 MiB | 7.34 MiB | 6.53 MiB | 6.93 MiB | 4.5 MiB | 32.8 MiB |
-| typo3 | off | Frontend JS heap | 34.23 MiB | 43.26 MiB | 36.46 MiB | 41.58 MiB | 36.68 MiB | 41.31 MiB |  |
-| typo3 | off | Frontend DOM nodes | 34035 | 38306 | 38673 | 30690 | 25474 | 19852 |  |
-| typo3 | tracing | PHP peak (script) | 6.33 MiB | 7.28 MiB | 7.34 MiB | 6.53 MiB | 6.93 MiB | 4.5 MiB | 32.9 MiB |
-| typo3 | tracing | Frontend JS heap | 31.78 MiB | 69.77 MiB | 70.06 MiB | 120.99 MiB | 130.84 MiB | 18.29 MiB |  |
-| typo3 | tracing | Frontend DOM nodes | 32930 | 67647 | 76294 | 153051 | 147824 | 12409 |  |
-| winter | off | PHP peak (script) | 1.88 MiB | 1.96 MiB | 1.42 MiB | 1.95 MiB | 1.96 MiB | 1.35 MiB | 85.4 MiB |
-| winter | off | Frontend JS heap | 23.55 MiB | 24.4 MiB | 23.82 MiB | 48.27 MiB | 53.58 MiB | 63 MiB |  |
-| winter | off | Frontend DOM nodes | 5230 | 4262 | 4295 | 9579 | 10477 | 14516 |  |
-| winter | tracing | PHP peak (script) | 1.91 MiB | 1.96 MiB | 1.49 MiB | 1.95 MiB | 1.97 MiB | 1.35 MiB | 94.5 MiB |
-| winter | tracing | Frontend JS heap | 23.58 MiB | 24.82 MiB | 25.47 MiB | 46.36 MiB | 46.7 MiB | 60.83 MiB |  |
-| winter | tracing | Frontend DOM nodes | 5229 | 4289 | 4322 | 7802 | 8707 | 12746 |  |
-| modx | off | PHP peak (script) | 1.05 MiB | 0.95 MiB | 0.74 MiB | 0.92 MiB | 0.96 MiB | 0.74 MiB | 63.5 MiB |
-| modx | off | Frontend JS heap | 23.12 MiB | 19.01 MiB | 22.14 MiB | 54.27 MiB | 45.21 MiB | 28.81 MiB |  |
-| modx | off | Frontend DOM nodes | 9869 | 4189 | 2031 | 12011 | 9859 | 2197 |  |
-| modx | tracing | PHP peak (script) | 1.2 MiB | 0.95 MiB | 0.74 MiB | 0.92 MiB | 0.96 MiB | 0.74 MiB | 72.1 MiB |
-| modx | tracing | Frontend JS heap | 22.9 MiB | 37.69 MiB | 32.9 MiB | 41.82 MiB | 37.97 MiB | 28.81 MiB |  |
-| modx | tracing | Frontend DOM nodes | 9706 | 9270 | 9570 | 11714 | 9701 | 2197 |  |
-| wordpress-gantry | off | PHP peak (script) | 4.57 MiB | 4.57 MiB | 4.57 MiB | 4.57 MiB | 4.57 MiB | 3.16 MiB | 85.1 MiB |
-| wordpress-gantry | off | Frontend JS heap | 65.64 MiB | 97.82 MiB | 93.37 MiB | 219.01 MiB | 233.59 MiB | 311.37 MiB |  |
-| wordpress-gantry | off | Frontend DOM nodes | 5407 | 14736 | 13018 | 41763 | 45571 | 60605 |  |
-| wordpress-gantry | tracing | PHP peak (script) | 4.56 MiB | 4.56 MiB | 4.56 MiB | 4.56 MiB | 4.56 MiB | 3.15 MiB | 33.3 MiB |
-| wordpress-gantry | tracing | Frontend JS heap | 44.58 MiB | 97.79 MiB | 85.59 MiB | 130.51 MiB | 156.61 MiB | 207.04 MiB |  |
-| wordpress-gantry | tracing | Frontend DOM nodes | 1947 | 13143 | 9486 | 21733 | 25541 | 38293 |  |
+| evo-parser (3.5.9) | off | PHP peak (script) | 31.63 MiB | 1.1 MiB | 1 MiB | 1.11 MiB | 1.04 MiB | 0.9 MiB | 41.2 MiB |
+| evo-parser (3.5.9) | off | Frontend JS heap | 6.71 MiB | 9.01 MiB | 9.75 MiB | 11.97 MiB | 12.96 MiB | 10.81 MiB |  |
+| evo-parser (3.5.9) | off | Frontend DOM nodes | 132623 | 133939 | 134012 | 7636 | 8976 | 4874 |  |
+| evo-parser (3.5.9) | tracing | PHP peak (script) | 31.56 MiB | 1.1 MiB | 1 MiB | 1.11 MiB | 1.04 MiB | 0.99 MiB | 41 MiB |
+| evo-parser (3.5.9) | tracing | Frontend JS heap | 12.71 MiB | 10.75 MiB | 10.61 MiB | 11.05 MiB | 10.29 MiB | 10.37 MiB |  |
+| evo-parser (3.5.9) | tracing | Frontend DOM nodes | 268626 | 6877 | 5500 | 6006 | 4883 | 4874 |  |
+| evo-parser (3.5.9 3.5.x@6413fdc) | off | PHP peak (script) | 31.64 MiB | 1.1 MiB | 1 MiB | 1.11 MiB | 1.04 MiB | 0.91 MiB | 38.4 MiB |
+| evo-parser (3.5.9 3.5.x@6413fdc) | off | Frontend JS heap | 6.68 MiB | 9.03 MiB | 9.71 MiB | 13.74 MiB | 13.38 MiB | 16.6 MiB |  |
+| evo-parser (3.5.9 3.5.x@6413fdc) | off | Frontend DOM nodes | 133183 | 134545 | 134559 | 10115 | 11457 | 14327 |  |
+| evo-parser (3.5.9 3.5.x@6413fdc) | tracing | PHP peak (script) | 31.56 MiB | 1.1 MiB | 1 MiB | 1.11 MiB | 1.04 MiB | 0.92 MiB | 47.5 MiB |
+| evo-parser (3.5.9 3.5.x@6413fdc) | tracing | Frontend JS heap | 6.68 MiB | 10.66 MiB | 10.8 MiB | 13.81 MiB | 14.5 MiB | 10.79 MiB |  |
+| evo-parser (3.5.9 3.5.x@6413fdc) | tracing | Frontend DOM nodes | 133182 | 135936 | 134557 | 11179 | 12521 | 4884 |  |
+| evo-parser (3.6.0 3.6.x@830003b) | off | PHP peak (script) | 32.2 MiB | 1.48 MiB | 1.38 MiB | 1.48 MiB | 1.42 MiB | 1.29 MiB | 45.8 MiB |
+| evo-parser (3.6.0 3.6.x@830003b) | off | Frontend JS heap | 12.8 MiB | 13.49 MiB | 12.86 MiB | 12.82 MiB | 13.75 MiB | 15.96 MiB |  |
+| evo-parser (3.6.0 3.6.x@830003b) | off | Frontend DOM nodes | 270745 | 243959 | 241054 | 9000 | 10378 | 13166 |  |
+| evo-parser (3.6.0 3.6.x@830003b) | tracing | PHP peak (script) | 32.2 MiB | 1.49 MiB | 1.38 MiB | 1.48 MiB | 1.47 MiB | 1.36 MiB | 42.9 MiB |
+| evo-parser (3.6.0 3.6.x@830003b) | tracing | Frontend JS heap | 6.74 MiB | 9.03 MiB | 9.72 MiB | 12.01 MiB | 12.98 MiB | 10.49 MiB |  |
+| evo-parser (3.6.0 3.6.x@830003b) | tracing | Frontend DOM nodes | 133703 | 135034 | 135109 | 7949 | 9327 | 5105 |  |
+| evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | PHP peak (script) | 31.49 MiB | 1.11 MiB | 1 MiB | 1.11 MiB | 1.04 MiB | 0.92 MiB | 41.8 MiB |
+| evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | Frontend JS heap | 8.19 MiB | 9.81 MiB | 10.27 MiB | 10.91 MiB | 11.14 MiB | 8.86 MiB |  |
+| evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | Frontend DOM nodes | 267214 | 249069 | 247692 | 6006 | 6513 | 2560 |  |
+| evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | PHP peak (script) | 31.49 MiB | 1.11 MiB | 1 MiB | 1.11 MiB | 1.04 MiB | 1 MiB | 40.5 MiB |
+| evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | Frontend JS heap | 12.71 MiB | 13.32 MiB | 12.86 MiB | 12.81 MiB | 13.05 MiB | 13.46 MiB |  |
+| evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | Frontend DOM nodes | 268594 | 243616 | 240789 | 8704 | 9841 | 9981 |  |
+| evo-latte (3.5.9 · aLatteX 0.5.1) | off | PHP peak (script) | 31.64 MiB | 1.11 MiB | 1.01 MiB | 1.12 MiB | 1.05 MiB | 1.1 MiB | 49.6 MiB |
+| evo-latte (3.5.9 · aLatteX 0.5.1) | off | Frontend JS heap | 6.7 MiB | 8.98 MiB | 9.73 MiB | 11.98 MiB | 12.59 MiB | 10.42 MiB |  |
+| evo-latte (3.5.9 · aLatteX 0.5.1) | off | Frontend DOM nodes | 132650 | 133989 | 134024 | 7636 | 8976 | 4874 |  |
+| evo-latte (3.5.9 · aLatteX 0.5.1) | tracing | PHP peak (script) | 31.57 MiB | 1.11 MiB | 1.01 MiB | 1.12 MiB | 1.05 MiB | 1 MiB | 42.2 MiB |
+| evo-latte (3.5.9 · aLatteX 0.5.1) | tracing | Frontend JS heap | 12.72 MiB | 11.11 MiB | 10.65 MiB | 10.28 MiB | 10.81 MiB | 12.15 MiB |  |
+| evo-latte (3.5.9 · aLatteX 0.5.1) | tracing | Frontend DOM nodes | 268640 | 6877 | 5500 | 4737 | 6077 | 7337 |  |
+| evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | PHP peak (script) | 31.49 MiB | 1.11 MiB | 1 MiB | 1.11 MiB | 1.04 MiB | 0.92 MiB | 36.8 MiB |
+| evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | Frontend JS heap | 8.18 MiB | 10.06 MiB | 10.44 MiB | 10.83 MiB | 10.81 MiB | 14.53 MiB |  |
+| evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | Frontend DOM nodes | 267442 | 249069 | 247692 | 6006 | 6514 | 10010 |  |
+| evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | PHP peak (script) | 31.49 MiB | 1.11 MiB | 1 MiB | 1.11 MiB | 1.04 MiB | 1 MiB | 46.3 MiB |
+| evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | Frontend JS heap | 6.69 MiB | 9.35 MiB | 9.82 MiB | 11.97 MiB | 11.22 MiB | 11.67 MiB |  |
+| evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | Frontend DOM nodes | 132649 | 134010 | 134024 | 7636 | 6513 | 6006 |  |
+| evo-latte-parser (3.5.9 · aLatteX 0.5.1) | off | PHP peak (script) | 31.64 MiB | 1.11 MiB | 1.01 MiB | 1.12 MiB | 1.05 MiB | 0.92 MiB | 47.6 MiB |
+| evo-latte-parser (3.5.9 · aLatteX 0.5.1) | off | Frontend JS heap | 6.75 MiB | 9.79 MiB | 10.09 MiB | 12.37 MiB | 12.61 MiB | 16.12 MiB |  |
+| evo-latte-parser (3.5.9 · aLatteX 0.5.1) | off | Frontend DOM nodes | 264487 | 136851 | 134022 | 9007 | 8976 | 12952 |  |
+| evo-latte-parser (3.5.9 · aLatteX 0.5.1) | tracing | PHP peak (script) | 31.57 MiB | 1.11 MiB | 1.01 MiB | 1.12 MiB | 1.05 MiB | 1 MiB | 48.1 MiB |
+| evo-latte-parser (3.5.9 · aLatteX 0.5.1) | tracing | Frontend JS heap | 6.67 MiB | 10.71 MiB | 11.5 MiB | 11.07 MiB | 9.94 MiB | 10.63 MiB |  |
+| evo-latte-parser (3.5.9 · aLatteX 0.5.1) | tracing | Frontend DOM nodes | 132649 | 136851 | 136924 | 6006 | 4883 | 5023 |  |
+| evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | off | PHP peak (script) | 31.51 MiB | 1.13 MiB | 1.02 MiB | 1.14 MiB | 1.08 MiB | 0.93 MiB | 46.8 MiB |
+| evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | off | Frontend JS heap | 6.68 MiB | 10.08 MiB | 10.53 MiB | 13.88 MiB | 14.53 MiB | 10.77 MiB |  |
+| evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | off | Frontend DOM nodes | 132650 | 133989 | 134024 | 11161 | 12501 | 4921 |  |
+| evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | tracing | PHP peak (script) | 31.51 MiB | 1.13 MiB | 1.03 MiB | 1.14 MiB | 1.08 MiB | 1.02 MiB | 47.6 MiB |
+| evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | tracing | Frontend JS heap | 12.72 MiB | 13.23 MiB | 12.68 MiB | 10.77 MiB | 11.38 MiB | 12.07 MiB |  |
+| evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | tracing | Frontend DOM nodes | 268591 | 132304 | 129477 | 6186 | 7056 | 7196 |  |
+| evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | PHP peak (script) | 31.66 MiB | 1.14 MiB | 1.03 MiB | 1.16 MiB | 1.07 MiB | 0.95 MiB | 47.6 MiB |
+| evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | Frontend JS heap | 6.67 MiB | 9.77 MiB | 10.03 MiB | 12.05 MiB | 12.91 MiB | 10.78 MiB |  |
+| evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | Frontend DOM nodes | 132650 | 135401 | 134024 | 7636 | 8976 | 4874 |  |
+| evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | PHP peak (script) | 31.59 MiB | 1.15 MiB | 1.03 MiB | 1.16 MiB | 1.07 MiB | 1.12 MiB | 48 MiB |
+| evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | Frontend JS heap | 6.68 MiB | 9.32 MiB | 9.75 MiB | 11.65 MiB | 12.58 MiB | 10.81 MiB |  |
+| evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | Frontend DOM nodes | 132649 | 133989 | 134024 | 7636 | 8976 | 4874 |  |
+| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | PHP peak (script) | 32.2 MiB | 1.47 MiB | 1.39 MiB | 1.48 MiB | 1.42 MiB | 1.29 MiB | 80.9 MiB |
+| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend JS heap | 6.74 MiB | 10.15 MiB | 10.58 MiB | 12.55 MiB | 11.87 MiB | 9.33 MiB |  |
+| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend DOM nodes | 133702 | 136482 | 136557 | 9000 | 7839 | 2723 |  |
+| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | PHP peak (script) | 32.2 MiB | 1.52 MiB | 1.39 MiB | 1.48 MiB | 1.48 MiB | 1.29 MiB | 81.5 MiB |
+| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend JS heap | 12.8 MiB | 10.81 MiB | 10.81 MiB | 12.6 MiB | 11.88 MiB | 8.95 MiB |  |
+| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend DOM nodes | 270731 | 7152 | 5737 | 9935 | 7498 | 2723 |  |
+| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | PHP peak (script) | 32.2 MiB | 1.47 MiB | 1.39 MiB | 1.48 MiB | 1.42 MiB | 1.3 MiB | 83.7 MiB |
+| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend JS heap | 6.73 MiB | 9.79 MiB | 10.58 MiB | 14.14 MiB | 15.01 MiB | 17.02 MiB |  |
+| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend DOM nodes | 133703 | 135034 | 135107 | 11693 | 13071 | 15917 |  |
+| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | PHP peak (script) | 32.2 MiB | 1.48 MiB | 1.39 MiB | 1.48 MiB | 1.48 MiB | 1.3 MiB | 83.8 MiB |
+| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend JS heap | 6.73 MiB | 10.19 MiB | 10.95 MiB | 14.01 MiB | 14.87 MiB | 10.42 MiB |  |
+| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend DOM nodes | 133702 | 135034 | 135107 | 11564 | 12942 | 5166 |  |
+| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | PHP peak (script) | 32.19 MiB | 1.47 MiB | 1.37 MiB | 1.48 MiB | 1.41 MiB | 1.31 MiB | 29.1 MiB |
+| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend JS heap | 6.75 MiB | 11.69 MiB | 12.45 MiB | 15 MiB | 16.08 MiB | 18.03 MiB |  |
+| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend DOM nodes | 133703 | 138012 | 138085 | 10113 | 8891 | 14127 |  |
+| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | PHP peak (script) | 32.19 MiB | 1.48 MiB | 1.37 MiB | 1.48 MiB | 1.47 MiB | 1.28 MiB | 34 MiB |
+| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend JS heap | 6.75 MiB | 9.44 MiB | 9.91 MiB | 12.09 MiB | 12.72 MiB | 11.05 MiB |  |
+| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend DOM nodes | 133702 | 135056 | 135107 | 8011 | 9328 | 6173 |  |
+| drupal (11.4.11) | off | PHP peak (script) | 3.17 MiB | 4.9 MiB | 4.3 MiB | 4.76 MiB | 4.3 MiB | 2.88 MiB | 62.1 MiB |
+| drupal (11.4.11) | off | Frontend JS heap | 11.88 MiB | 19.8 MiB | 20.97 MiB | 35.4 MiB | 36.12 MiB | 44.04 MiB |  |
+| drupal (11.4.11) | off | Frontend DOM nodes | 2498 | 4802 | 5018 | 8853 | 9069 | 11084 |  |
+| drupal (11.4.11) | tracing | PHP peak (script) | 3.19 MiB | 4.97 MiB | 4.3 MiB | 4.76 MiB | 4.31 MiB | 2.88 MiB | 58.7 MiB |
+| drupal (11.4.11) | tracing | Frontend JS heap | 11.9 MiB | 19.73 MiB | 20.9 MiB | 35.01 MiB | 36.11 MiB | 43.89 MiB |  |
+| drupal (11.4.11) | tracing | Frontend DOM nodes | 2498 | 4802 | 5021 | 8865 | 9081 | 11096 |  |
+| typo3 (14.3.7) | off | PHP peak (script) | 6.36 MiB | 7.38 MiB | 7.45 MiB | 6.63 MiB | 7.03 MiB | 4.55 MiB | 131.6 MiB |
+| typo3 (14.3.7) | off | Frontend JS heap | 34.03 MiB | 60.79 MiB | 61.58 MiB | 80.19 MiB | 104.98 MiB | 104.98 MiB |  |
+| typo3 (14.3.7) | off | Frontend DOM nodes | 32098 | 56054 | 64728 | 117146 | 111982 | 112266 |  |
+| typo3 (14.3.7) | tracing | PHP peak (script) | 6.42 MiB | 7.39 MiB | 7.45 MiB | 6.63 MiB | 7.03 MiB | 4.55 MiB | 78.1 MiB |
+| typo3 (14.3.7) | tracing | Frontend JS heap | 28.72 MiB | 64.66 MiB | 64.79 MiB | 124.87 MiB | 130.76 MiB | 132.19 MiB |  |
+| typo3 (14.3.7) | tracing | Frontend DOM nodes | 25858 | 60430 | 69090 | 147323 | 164767 | 165135 |  |
+| winter (1.2.15) | off | PHP peak (script) | 1.88 MiB | 1.96 MiB | 1.48 MiB | 1.95 MiB | 1.96 MiB | 1.35 MiB | 41.2 MiB |
+| winter (1.2.15) | off | Frontend JS heap | 23.46 MiB | 22.71 MiB | 22.77 MiB | 48.55 MiB | 54.27 MiB | 63.34 MiB |  |
+| winter (1.2.15) | off | Frontend DOM nodes | 4890 | 4213 | 2513 | 9523 | 10421 | 14453 |  |
+| winter (1.2.15) | tracing | PHP peak (script) | 1.94 MiB | 1.96 MiB | 1.5 MiB | 1.95 MiB | 1.96 MiB | 1.35 MiB | 41.9 MiB |
+| winter (1.2.15) | tracing | Frontend JS heap | 23.41 MiB | 24.49 MiB | 23.73 MiB | 39.55 MiB | 44.88 MiB | 59.42 MiB |  |
+| winter (1.2.15) | tracing | Frontend DOM nodes | 4890 | 4206 | 4239 | 5976 | 6874 | 10906 |  |
+| modx (3.2.4-pl) | off | PHP peak (script) | 1.05 MiB | 0.95 MiB | 0.74 MiB | 0.92 MiB | 0.96 MiB | 0.74 MiB | 32.1 MiB |
+| modx (3.2.4-pl) | off | Frontend JS heap | 25.46 MiB | 26.3 MiB | 29.23 MiB | 43.07 MiB | 42.76 MiB | 41.56 MiB |  |
+| modx (3.2.4-pl) | off | Frontend DOM nodes | 9703 | 8433 | 8568 | 12039 | 9604 | 10448 |  |
+| modx (3.2.4-pl) | tracing | PHP peak (script) | 1.2 MiB | 0.96 MiB | 0.74 MiB | 0.92 MiB | 0.96 MiB | 0.74 MiB | 32.8 MiB |
+| modx (3.2.4-pl) | tracing | Frontend JS heap | 25.25 MiB | 33.06 MiB | 27.41 MiB | 51.74 MiB | 56.96 MiB | 75.52 MiB |  |
+| modx (3.2.4-pl) | tracing | Frontend DOM nodes | 9792 | 6825 | 6979 | 17209 | 18815 | 24771 |  |
+| wordpress-gantry (7.1.4 · Gantry 5.6.7) | off | PHP peak (script) | 4.58 MiB | 4.58 MiB | 4.58 MiB | 4.58 MiB | 4.58 MiB | 3.17 MiB | 60.8 MiB |
+| wordpress-gantry (7.1.4 · Gantry 5.6.7) | off | Frontend JS heap | 45.48 MiB | 121.54 MiB | 135.84 MiB | 269.63 MiB | 243.76 MiB | 105.77 MiB |  |
+| wordpress-gantry (7.1.4 · Gantry 5.6.7) | off | Frontend DOM nodes | 1947 | 19079 | 22870 | 48613 | 45084 | 14854 |  |
+| wordpress-gantry (7.1.4 · Gantry 5.6.7) | tracing | PHP peak (script) | 4.57 MiB | 4.57 MiB | 4.57 MiB | 4.57 MiB | 4.57 MiB | 3.16 MiB | 61.7 MiB |
+| wordpress-gantry (7.1.4 · Gantry 5.6.7) | tracing | Frontend JS heap | 113.16 MiB | 105.87 MiB | 106.23 MiB | 227.44 MiB | 212.11 MiB | 79.04 MiB |  |
+| wordpress-gantry (7.1.4 · Gantry 5.6.7) | tracing | Frontend DOM nodes | 14163 | 17813 | 17453 | 43086 | 39549 | 7435 |  |
 
 ## Official Evolution branch comparison (2026-11-01)
 

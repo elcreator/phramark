@@ -53,17 +53,7 @@ const SOURCES = [
 
 function container(string $stack): string
 {
-    return 'phramark-php-' . match ($stack) {
-        'evo-parser' => 'parser',
-        'evo-latte' => 'latte',
-        'evo-latte-parser' => 'latte-parser',
-        'evo-phalcon' => 'phalcon',
-        'evo-sarticles' => 'sarticles',
-        'evo-frankenphp' => 'frankenphp',
-        'evo-worker' => 'worker',
-        'evo-worker-keep' => 'worker-keep',
-        default => $stack,
-    } . '-1';
+    return 'phramark-php-' . preg_replace('/^evo-/', '', $stack) . '-1';
 }
 
 // proc_open with an argument list bypasses the host shell (cmd.exe on a
@@ -151,7 +141,7 @@ $evolution = static function (string $stack, array $packages): array {
             }
         }
     }
-    if ($stack === 'evo-phalcon') {
+    if (str_starts_with($stack, 'evo-phalcon')) {
         $versions['phalcon (extension)'] = inContainer($container, 'php -r "echo phpversion(\"phalcon\");"');
     }
     // A site set up with EVO_NO_SESSION=1 (setup.php writes the define) runs
@@ -207,6 +197,8 @@ function stackComponents(string $stack): ?array
         'evo-sarticles' => $evolution($stack, ['seiger/sarticles', 'evolution-cms/evo-ui', 'livewire/livewire', 'evolution-cms-extras/tinymce5', 'illuminate/database']),
         'evo-frankenphp' => array_merge($evolution($stack, ['illuminate/database']), frankenPhp($container, false)),
         'evo-worker', 'evo-worker-keep' => array_merge($evolution($stack, ['illuminate/database']), frankenPhp($container)),
+        'evo-latte-worker', 'evo-latte-worker-keep', 'evo-latte-parser-worker', 'evo-latte-parser-worker-keep' => array_merge($evolution($stack, ['elcreator/alattex', 'latte/latte', 'illuminate/database']), frankenPhp($container)),
+        'evo-phalcon-worker', 'evo-phalcon-worker-keep' => array_merge($evolution($stack, ['elcreator/alattex', 'elcreator/aphalcon', 'latte/latte', 'illuminate/database']), frankenPhp($container)),
         'drupal' => components(composerVersions($container, 'vendor/composer/installed.json', ['drupal/core', 'symfony/http-kernel', 'symfony/http-foundation', 'twig/twig', 'drush/drush'])),
         'typo3' => components(composerVersions($container, 'vendor/composer/installed.json', ['typo3/cms-core', 'doctrine/dbal', 'typo3fluid/fluid', 'symfony/http-foundation'])),
         'winter' => components(composerVersions($container, 'vendor/composer/installed.json', ['winter/storm', 'winter/wn-cms-module', 'laravel/framework', 'twig/twig', 'doctrine/dbal', 'symfony/http-foundation'])),

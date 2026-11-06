@@ -17,9 +17,9 @@ const PREFIX = 'site_';
 // evo-sArticles edits articles in the module's own tables instead of
 // documents, so its round is restored there.
 //
-// Usage: php admin-reset.php evo-parser|evo-latte|evo-latte-parser|evo-phalcon|evo-sarticles|evo-frankenphp|evo-worker|evo-worker-keep
+// Usage: php admin-reset.php evo-parser|evo-latte|evo-latte-parser|evo-phalcon|evo-sarticles|evo-frankenphp|evo-worker|evo-worker-keep|evo-latte-worker|evo-latte-worker-keep|evo-latte-parser-worker|evo-latte-parser-worker-keep|evo-phalcon-worker|evo-phalcon-worker-keep
 
-$stacks = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep'];
+$stacks = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep', 'evo-latte-worker', 'evo-latte-worker-keep', 'evo-latte-parser-worker', 'evo-latte-parser-worker-keep', 'evo-phalcon-worker', 'evo-phalcon-worker-keep'];
 $stack = $argv[1] ?? '';
 if (!in_array($stack, $stacks, true)) {
     fwrite(STDERR, 'Usage: admin-reset.php ' . implode('|', $stacks) . "\n");

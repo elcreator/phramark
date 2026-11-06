@@ -20,7 +20,13 @@ stack_for_port() {
     8090) stack=evo-worker; php=phramark-php-worker-1; nginx=phramark-nginx-worker-1; target=nginx-worker ;;
     8091) stack=evo-worker-keep; php=phramark-php-worker-keep-1; nginx=phramark-nginx-worker-keep-1; target=nginx-worker-keep ;;
     8092) stack=evo-frankenphp; php=phramark-php-frankenphp-1; nginx=phramark-nginx-frankenphp-1; target=nginx-frankenphp ;;
-    *) echo "PORT must be 8080 through 8092" >&2; exit 2 ;;
+    8093) stack=evo-latte-worker; php=phramark-php-latte-worker-1; nginx=phramark-nginx-latte-worker-1; target=nginx-latte-worker ;;
+    8094) stack=evo-latte-worker-keep; php=phramark-php-latte-worker-keep-1; nginx=phramark-nginx-latte-worker-keep-1; target=nginx-latte-worker-keep ;;
+    8095) stack=evo-latte-parser-worker; php=phramark-php-latte-parser-worker-1; nginx=phramark-nginx-latte-parser-worker-1; target=nginx-latte-parser-worker ;;
+    8096) stack=evo-latte-parser-worker-keep; php=phramark-php-latte-parser-worker-keep-1; nginx=phramark-nginx-latte-parser-worker-keep-1; target=nginx-latte-parser-worker-keep ;;
+    8097) stack=evo-phalcon-worker; php=phramark-php-phalcon-worker-1; nginx=phramark-nginx-phalcon-worker-1; target=nginx-phalcon-worker ;;
+    8098) stack=evo-phalcon-worker-keep; php=phramark-php-phalcon-worker-keep-1; nginx=phramark-nginx-phalcon-worker-keep-1; target=nginx-phalcon-worker-keep ;;
+    *) echo "PORT must be 8080 through 8098" >&2; exit 2 ;;
   esac
 }
 
@@ -40,7 +46,13 @@ port_for_stack() {
     evo-worker) echo 8090 ;;
     evo-worker-keep) echo 8091 ;;
     evo-frankenphp) echo 8092 ;;
-    *) echo "unknown stack '$1' (evo-parser, evo-latte, evo-latte-parser, evo-phalcon, drupal, typo3, winter, modx, wordpress-gantry, evo-sarticles, evo-frankenphp, evo-worker, evo-worker-keep; evo-manticore is a job without a port)" >&2; return 2 ;;
+    evo-latte-worker) echo 8093 ;;
+    evo-latte-worker-keep) echo 8094 ;;
+    evo-latte-parser-worker) echo 8095 ;;
+    evo-latte-parser-worker-keep) echo 8096 ;;
+    evo-phalcon-worker) echo 8097 ;;
+    evo-phalcon-worker-keep) echo 8098 ;;
+    *) echo "unknown stack '$1' (evo-parser, evo-latte, evo-latte-parser, evo-phalcon, drupal, typo3, winter, modx, wordpress-gantry, evo-sarticles, evo-frankenphp, evo-worker, evo-worker-keep, evo-latte-worker, evo-latte-worker-keep, evo-latte-parser-worker, evo-latte-parser-worker-keep, evo-phalcon-worker, evo-phalcon-worker-keep; evo-manticore is a job without a port)" >&2; return 2 ;;
   esac
 }
 
@@ -49,7 +61,7 @@ port_for_stack() {
 profile_for_stack() {
   case "$1" in
     drupal|typo3|winter|modx|wordpress-gantry) echo "--profile cross-cms" ;;
-    evo-frankenphp|evo-worker|evo-worker-keep) echo "--profile worker" ;;
+    evo-frankenphp|evo-worker|evo-worker-keep|evo-*-worker|evo-*-worker-keep) echo "--profile worker" ;;
   esac
 }
 

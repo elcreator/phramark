@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 # Runs the Manticore compile job (benchmark/README.md, "Manticore") through
-# the compose service: pulls ghcr.io/elcreator/phramark-manticore unless it
-# is already local, installs the Evolution fixture if needed, then sweeps
+# the compose service: pulls the newest ghcr.io/elcreator/phramark-manticore
+# (a copy pulled earlier would keep an old compiler and an old PHP), installs
+# the Evolution fixture if needed, then sweeps
 # the evo-parser tree, tries the whole-program build and times the
 # category-page workload into benchmark/results/manticore. Never part of
 # the default matrix: `benchmark/scripts/matrix --solutions=evo-manticore`
@@ -10,6 +11,6 @@
 set -eu
 
 cd "$(dirname "$0")/../.."
-build=
-[ "${MANTICORE_BUILD:-0}" = 1 ] && build=--build
-exec docker compose -f benchmark/compose.yaml --profile manticore run --rm $build -T manticore
+image='--pull always'
+[ "${MANTICORE_BUILD:-0}" = 1 ] && image=--build
+exec docker compose -f benchmark/compose.yaml --profile manticore run --rm $image -T manticore

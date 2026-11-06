@@ -34,10 +34,21 @@ foreach ($data as $edge => $m) {
 $total = $incl['main()'] ?? max($incl);
 
 if (isset($opts['callees'])) {
-    $fn = $opts['callees'];
+    $fn = (string) $opts['callees'];
+    if (!isset($incl[$fn])) {
+        // A function the request never called (or a misspelt name): say so instead of a TypeError.
+        $similar = array_values(array_filter(array_keys($incl), static fn (string $name): bool => stripos($name, $fn) !== false
+            || stripos($fn, explode('::', $name)[1] ?? $name) !== false));
+        fwrite(STDERR, "$fn is not in this profile." . ($similar !== [] ? " Similar:\n  " . implode("\n  ", array_slice($similar, 0, 10)) : '') . "\n");
+        exit(1);
+    }
     printf("%s inclusive %.1f ms, exclusive %.1f ms\n", $fn, $incl[$fn] / 1000, $excl[$fn] / 1000);
-    arsort($children[$fn]);
-    foreach (array_slice($children[$fn], 0, $top, true) as $c => $wt) {
+    $callees = $children[$fn] ?? [];
+    if ($callees === []) {
+        echo "  (no callees)\n";
+    }
+    arsort($callees);
+    foreach (array_slice($callees, 0, $top, true) as $c => $wt) {
         printf("  %7.1f ms %5.1f%% %6d  %s\n", $wt / 1000, $wt / $total * 100, $data["$fn==>$c"]['ct'], $c);
     }
     exit;
