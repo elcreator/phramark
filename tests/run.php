@@ -234,7 +234,7 @@ foreach (['evo', 'evo@', 'illuminate@1.0', 'evo@3.5 x', 'evo@3.5.x;rm'] as $bad)
     }
 }
 expect(VersionSpec::affectedStacks(VersionSpec::parse('latte@0.4.0')), ['evo-latte', 'evo-latte-parser', 'evo-phalcon'], 'Without --solutions a version selects the stacks its product is part of.');
-expect(VersionSpec::affectedStacks(VersionSpec::parse('php@8.3')), array_values(array_diff(array_keys(RuntimeProfile::adapters()), ['evo-frankenphp', 'evo-worker', 'evo-worker-keep'])), 'PHP is part of every stack; FrankenPHP stacks run only when named.');
+expect(VersionSpec::affectedStacks(VersionSpec::parse('php@8.3')), array_values(array_filter(array_keys(RuntimeProfile::adapters()), static fn (string $stack): bool => $stack !== 'evo-frankenphp' && !str_contains($stack, 'worker'))), 'PHP is part of every stack; FrankenPHP stacks run only when named.');
 expect(VersionSpec::label(['latte' => '0.4.0', 'evo' => '3.5.8']), 'evo@3.5.8+latte@0.4.0', 'Labels list the products in a fixed order.');
 // A ref starting with .. is a directory on the host, relative to the repository root.
 expect(VersionSpec::parse('latte@0.2.0,latte@../evo/aLatteX'), [['product' => 'latte', 'ref' => '0.2.0'], ['product' => 'latte', 'ref' => '../evo/aLatteX']], 'A path ref is a version to compare like any other.');
@@ -560,10 +560,22 @@ file_put_contents($selectionDir . '/admin-evo-parser-old.json', json_encode(['st
 file_put_contents($selectionDir . '/admin-evo-parser-current.json', json_encode(['stack' => 'evo-parser', 'version' => 'evo@3.5.x', 'jit' => 'off', 'recordedAt' => '2026-09-20T12:30:00Z', 'components' => $evoCore('3.5.9 (branch 3.5.x@a18891c, 2026-09-28)'), 'summary' => [], 'steps' => []]));
 file_put_contents($selectionDir . '/admin-evo-parser-tracing.json', json_encode(['stack' => 'evo-parser', 'version' => 'evo@3.5.x', 'jit' => 'tracing', 'recordedAt' => '2026-09-20T12:30:00Z', 'components' => $evoCore('3.5.9 (branch 3.5.x@a18891c, 2026-09-28)'), 'summary' => [], 'steps' => []]));
 file_put_contents($selectionDir . '/admin-evo-parser-working-copy.json', json_encode(['stack' => 'evo-parser', 'version' => 'evo@../evo/evolution', 'jit' => 'off', 'recordedAt' => '2026-09-20T13:30:00Z', 'components' => $evoCore('3.5.9 (path /host/evolution@deadbee 2026-09-29, files abc)'), 'summary' => [], 'steps' => []]));
+$writeSelectionGuest('evo-latte', 'evo@3.5.9', $evoCore('3.5.9 (tag 3.5.9@release, 2026-10-21)'), '2026-09-20T09-00-00Z');
+$writeSelectionGuest('evo-latte', 'evo@3.6.x', $evoCore('3.6.0 (branch 3.6.x@older00, 2026-10-30)'), '2026-09-20T10-00-00Z');
+$writeSelectionGuest('evo-latte', 'evo@3.6.x', $evoCore('3.6.0 (branch 3.6.x@newer00, 2026-11-01)'), '2026-09-20T11-00-00Z');
+$writeSelectionGuest('evo-worker', 'evo@3.6.x', $evoCore('3.6.0 (branch 3.6.x@newer00, 2026-11-01)'), '2026-09-20T11-00-00Z');
 $selection = ResultSet::collect($selectionDir);
 $selectedEvoBuilds = array_values(array_unique(array_column(array_filter($selection['guest'], static fn (array $row): bool => $row['stack'] === 'evo-parser'), 'version')));
 sort($selectedEvoBuilds);
 expect($selectedEvoBuilds, ['3.5.8', '3.5.9 3.5.x@a18891c'], 'Evolution keeps its latest release and the newest 3.5.x branch build, not older branch commits.');
+$selectedBuilds = static function (string $stack) use ($selection): array {
+    $builds = array_values(array_unique(array_column(array_filter($selection['guest'], static fn (array $row): bool => $row['stack'] === $stack), 'version')));
+    sort($builds);
+
+    return $builds;
+};
+expect($selectedBuilds('evo-latte'), ['3.5.9', '3.6.0 3.6.x@newer00'], 'A newer branch is no release: the latest tag stays beside the newest build of that branch.');
+expect($selectedBuilds('evo-worker'), ['3.6.0 3.6.x@newer00'], 'A stack that only runs on a newer branch still shows it.');
 expect(array_values(array_unique(array_column(array_filter($selection['guest'], static fn (array $row): bool => $row['stack'] === 'drupal'), 'version'))), ['11.4.7'], 'A CMS shows its newest recorded release only.');
 expect(count($selection['admin']), 2, 'The selected 3.5.x Admin rows remain available in both JIT modes; stale working-copy rows are filtered.');
 expect(ResultSet::buildVersion('evo-parser', $selection['versions']['stacks']['evo-parser']), '3.5.9 3.5.x@a18891c', 'The versions table follows the selected Evolution branch build.');
@@ -710,21 +722,45 @@ expect([str_contains($m[1], 'profiles: ["worker"]'), str_contains($m[1], 'EVO_WO
 $classicCaddy = repositoryFile('benchmark/config/Caddyfile-classic');
 expect([str_contains($classicCaddy, 'num_threads {$PHRAMARK_THREADS}'), str_contains($classicCaddy, 'php_server'), str_contains($classicCaddy, 'worker {')], [true, true, false], 'Classic FrankenPHP serves PHP requests without a worker block.');
 expect(str_contains(repositoryFile('benchmark/images/frankenphp/entrypoint.sh'), 'if [ "${EVO_WORKER_MODE:-0}" = 1 ]'), true, 'Only the worker stacks require Evolution worker support.');
-foreach (['php-worker' => ['evo-worker', '0'], 'php-worker-keep' => ['evo-worker-keep', '1']] as $service => [$origin, $keep]) {
-    if (preg_match('/^  ' . preg_quote($service, '/') . ':\n((?:    .*\n|\s*\n)*)/m', $compose, $m) !== 1) {
-        throw new RuntimeException("compose.yaml must define $service.");
+// One nginx config for every worker stack, with the names from compose.yaml.
+$nginx = repositoryFile('benchmark/config/nginx-worker.conf.template');
+expect(substr_count($nginx, 'proxy_set_header Host ${PHRAMARK_WORKER_ORIGIN};'), 2, 'nginx sends the front end of a worker stack to the worker under its one origin.');
+expect(str_contains($nginx, 'set $php ${PHRAMARK_WORKER_PHP}:80;'), true, 'nginx hands PHP to the worker stack it belongs to.');
+expect(str_contains($nginx, 'proxy_set_header Host $http_host;'), true, "The manager of a worker stack keeps the client's host.");
+foreach (['evo-worker' => ['worker', '0', 8090], 'evo-worker-keep' => ['worker-keep', '1', 8091], 'evo-latte-worker' => ['latte-worker', '0', 8093], 'evo-latte-worker-keep' => ['latte-worker-keep', '1', 8094], 'evo-latte-parser-worker' => ['latte-parser-worker', '0', 8095], 'evo-latte-parser-worker-keep' => ['latte-parser-worker-keep', '1', 8096], 'evo-phalcon-worker' => ['phalcon-worker', '0', 8097], 'evo-phalcon-worker-keep' => ['phalcon-worker-keep', '1', 8098]] as $origin => [$service, $keep, $port]) {
+    if (preg_match('/^  php-' . preg_quote($service, '/') . ':\n((?:    .*\n|\s*\n)*)/m', $compose, $m) !== 1) {
+        throw new RuntimeException("compose.yaml must define php-$service.");
     }
-    expect([str_contains($m[1], 'profiles: ["worker"]'), str_contains($m[1], 'EVO_WORKER_MODE: "1"'), str_contains($m[1], "EVO_WORKER_ORIGIN: http://$origin"), str_contains($m[1], "EVO_WORKER_KEEP_APP: \"$keep\"")], [true, true, true, true], "$service runs Evolution's worker mode, opt-in, with EVO_WORKER_KEEP_APP=$keep.");
-    $nginx = repositoryFile('benchmark/config/nginx-' . substr($service, 4) . '.conf');
-    expect(substr_count($nginx, "proxy_set_header Host $origin;"), 2, "nginx sends the front end of $service to the worker under its one origin.");
-    expect(str_contains($nginx, 'proxy_set_header Host $http_host;'), true, "The manager of $service keeps the client's host.");
+    expect([str_contains($m[1], "EVO_WORKER_ORIGIN: http://$origin"), str_contains($m[1], "EVO_WORKER_KEEP_APP: \"$keep\""), str_contains($m[1], "- $origin:/var/www/html")], [true, true, true], "php-$service serves $origin with EVO_WORKER_KEEP_APP=$keep.");
+    if (preg_match('/^  nginx-' . preg_quote($service, '/') . ':\n((?:    .*\n|\s*\n)*)/m', $compose, $m) !== 1) {
+        throw new RuntimeException("compose.yaml must define nginx-$service.");
+    }
+    expect([str_contains($m[1], "\"$port:80\""), str_contains($m[1], "PHRAMARK_WORKER_PHP: php-$service\n"), str_contains($m[1], "PHRAMARK_WORKER_ORIGIN: $origin\n"), str_contains($m[1], 'nginx-worker.conf.template:/etc/nginx/templates/default.conf.template:ro')], [true, true, true, true], "nginx-$service fills the worker config with the names of $origin.");
+    expect(RuntimeProfile::adapters()[$origin]['port'], $port, "$origin is published on the port of its adapter.");
+    expect(str_contains($compose, "- $origin:/sites/$origin\n") && str_contains($compose, "\n  $origin:\n"), true, "setup installs $origin into a volume of its own.");
 }
+expect([str_contains($compose, "x-worker-php: &worker-php\n  profiles: [\"worker\"]"), str_contains($compose, "x-worker-nginx: &worker-nginx\n  profiles: [\"worker\"]"), str_contains($compose, "x-worker-environment: &worker-environment\n"), str_contains($compose, '  EVO_WORKER_MODE: "1"')], [true, true, true, true], 'The Latte and Phalcon worker stacks are opt-in and run worker mode.');
+
+// A Latte or Phalcon worker stack is its FPM stack on another runtime.
+foreach (['evo-latte-worker' => 'evo-latte', 'evo-latte-worker-keep' => 'evo-latte', 'evo-latte-parser-worker' => 'evo-latte-parser', 'evo-latte-parser-worker-keep' => 'evo-latte-parser', 'evo-phalcon-worker' => 'evo-phalcon', 'evo-phalcon-worker-keep' => 'evo-phalcon'] as $stack => $twin) {
+    expect($adapters[$stack]['components'], $adapters[$twin]['components'], "$stack runs the request path of $twin.");
+    expect(array_column(VersionSpec::rounds(VersionSpec::parse('evo@3.6.x,latte@0.5.0'), [$twin, $stack])[0]['stacks'], 'label'), ['evo@3.6.x+latte@0.5.0', 'evo@3.6.x+latte@0.5.0'], "$stack is built from the same versions as $twin.");
+}
+expect(in_array('evo-latte-worker', VersionSpec::affectedStacks(VersionSpec::parse('latte@0.5.0')), true), false, 'A version alone does not select the Latte worker stacks.');
+expect(in_array('evo-phalcon-worker', VersionSpec::affectedStacks(VersionSpec::parse('phalcon@0.1.0')), true), false, 'A version alone does not select the Phalcon worker stacks.');
+expect(ResultSet::buildVersion('evo-phalcon-worker-keep', [['name' => 'Evolution CMS', 'version' => '3.6.0 (branch 3.6.x@abc1234, 2026-11-05)'], ['name' => 'elcreator/alattex', 'version' => '0.5.0'], ['name' => 'elcreator/aphalcon', 'version' => '0.1.0'], ['name' => 'FrankenPHP', 'version' => '1.13.5']]), '3.6.0 3.6.x@abc1234 · aLatteX 0.5.0 · aPhalcon 0.1.0 · FrankenPHP 1.13.5', 'An extension worker stack names its extensions and its runtime.');
 expect(str_contains(repositoryFile('benchmark/fixtures/admin-reset.php'), "'evo-frankenphp', 'evo-worker', 'evo-worker-keep'"), true, 'The admin fixture of every FrankenPHP stack is reset like any Evolution stack.');
 $lib = repositoryFile('benchmark/scripts/lib.sh');
-expect([str_contains($lib, '8090) stack=evo-worker;'), str_contains($lib, '8091) stack=evo-worker-keep;'), str_contains($lib, '8092) stack=evo-frankenphp;'), str_contains($lib, 'evo-frankenphp|evo-worker|evo-worker-keep) echo "--profile worker"')], [true, true, true, true], 'The scripts map all FrankenPHP ports and start them with their profile.');
+expect([str_contains($lib, '8090) stack=evo-worker;'), str_contains($lib, '8091) stack=evo-worker-keep;'), str_contains($lib, '8092) stack=evo-frankenphp;'), str_contains($lib, '8097) stack=evo-phalcon-worker;'), str_contains($lib, 'evo-frankenphp|evo-worker|evo-worker-keep|evo-*-worker|evo-*-worker-keep) echo "--profile worker"')], [true, true, true, true, true], 'The scripts map all FrankenPHP ports and start them with their profile.');
+foreach (array_filter(array_keys($adapters), static fn (string $stack): bool => str_contains($stack, 'worker')) as $stack) {
+    $line = shell_exec('sh -c ' . escapeshellarg('. benchmark/scripts/lib.sh; port_for_stack ' . $stack . '; profile_for_stack ' . $stack));
+    expect(preg_split('/\s+/', trim((string) $line), 2), [(string) $adapters[$stack]['port'], '--profile worker'], "lib.sh maps $stack to its port and the worker profile.");
+}
+expect(array_filter(explode("\n", (string) shell_exec('sh -c ' . escapeshellarg('. benchmark/scripts/lib.sh; profile_for_stack evo-latte; profile_for_stack evo-phalcon')))), [], 'The FPM stacks stay outside the worker profile.');
 $matrix = repositoryFile('benchmark/scripts/matrix');
 expect(strpos($matrix, 'if ! $compose $profile up -d --no-deps') < strpos($matrix, 'if curl -s --max-time'), true, 'The matrix starts each selected service before checking that its port is reachable.');
-expect(str_contains($setup, "\$site !== 'evo-parser' && \$site !== 'evo-frankenphp' && !in_array(\$site, WORKER_SITES, true)"), true, 'The classic and worker FrankenPHP sites render the evo-parser snippet.');
+expect(str_contains($setup, "\$site !== 'evo-parser' && \$site !== 'evo-frankenphp' && !in_array(\$site, PARSER_WORKER_SITES, true)"), true, 'The classic FrankenPHP site and the evo-parser worker sites render the evo-parser snippet; the Latte and Phalcon ones bring their views.');
+expect(str_contains($setup, "copyTree('/opt/phramark/benchmark/implementations/' . implementationOf(\$site)"), true, 'A Latte or Phalcon worker site carries the implementation of its FPM stack.');
 
 // The memory probe in a worker logs each request it hands on, not the worker's
 // life: Evolution calls frankenphp_handle_request() unqualified from
@@ -753,5 +789,67 @@ unlink($memoryLog);
 expect([$kept, $served], [true, ['/articles/category-042']], 'The wrapper hands the request to the CMS and returns FrankenPHP\'s answer.');
 expect([$logged['method'], $logged['uri'], $logged['step'], $logged['hash_ms']], ['GET', '/articles/category-042', 'guest', 0], 'One line per worker request, with the fields the request arrived with.');
 expect($logged['peak'] >= 4_000_000 && is_float($logged['ms']), true, 'The line carries the request\'s peak memory and wall time.');
+
+// Evolution's manager routes (evo-ui's /manager/evo-ui?action=update) reach
+// manager/index.php on every Evolution stack, as manager/.htaccess and ng.inx do.
+foreach (['parser', 'latte', 'latte-parser', 'phalcon', 'sarticles'] as $stack) {
+    $nginx = repositoryFile("benchmark/config/nginx-$stack.conf");
+    expect([str_contains($nginx, 'location /manager/ { try_files $uri $uri/ /manager/index.php?$args; }'), str_contains($nginx, 'location ~ ^/manager/.+\.(js|mjs|css|map|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot)$ {')], [true, true], "nginx-$stack hands manager routes to the manager front controller and keeps missing assets a 404.");
+}
+foreach (['nginx-frankenphp.conf', 'nginx-worker.conf.template'] as $stack) {
+    $nginx = str_replace("\r\n", "\n", repositoryFile("benchmark/config/$stack"));
+    expect([str_contains($nginx, 'location /manager/ { try_files $uri $uri/ @manager; }'), str_contains($nginx, "location @manager {\n        proxy_pass http://\$php;\n        proxy_set_header Host \$http_host;")], [true, true], "$stack proxies manager routes to FrankenPHP with the client's host.");
+}
+foreach (['Caddyfile-classic', 'Caddyfile-worker'] as $caddyfile) {
+    $caddy = repositoryFile("benchmark/config/$caddyfile");
+    $manager = strpos($caddy, 'rewrite @manager /manager/index.php?{query}');
+    expect($manager !== false && $manager < strpos($caddy, 'rewrite @notfile /index.php'), true, "$caddyfile rewrites manager routes to manager/index.php before the site's front controller.");
+}
+expect(str_contains(repositoryFile('benchmark/fixtures/setup.php'), "'composer', 'install', '--no-dev', '--classmap-authoritative'"), true, 'A Composer-built Evolution vendor is classmap-authoritative, like the committed 3.5 one and make:site.');
+
+// xhprof-report.php: a function outside the profile or without callees is reported, not a TypeError.
+$profile = tempnam(sys_get_temp_dir(), 'phramark-xhprof-');
+file_put_contents($profile, serialize(['main()' => ['ct' => 1, 'wt' => 3000], 'main()==>A::run' => ['ct' => 1, 'wt' => 2000], 'A::run==>B::leaf' => ['ct' => 2, 'wt' => 500]]));
+$report = static function (string $option) use ($profile): array {
+    exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(dirname(__DIR__) . '/benchmark/profiling/xhprof-report.php') . ' ' . escapeshellarg($profile) . ' ' . escapeshellarg($option) . ' 2>&1', $output, $status);
+
+    return [$status, implode("\n", $output)];
+};
+[$status, $output] = $report('--callees=Missing::run');
+expect([$status, str_contains($output, 'Missing::run is not in this profile. Similar:'), str_contains($output, 'A::run')], [1, true, true], 'An unknown function name fails with a message and suggests names that match.');
+[$status, $output] = $report('--callees=B::leaf');
+expect([$status, str_contains($output, '(no callees)')], [0, true], 'A leaf function reports no callees.');
+[$status, $output] = $report('--callees=A::run');
+expect([$status, str_contains($output, 'B::leaf')], [0, true], 'A function lists its callees.');
+unlink($profile);
+
+// Every PHP image runs one official Phalcon release, none compiles it, and PHP 8.5 (--versions=php@8.5), whose OPcache is built in, builds too.
+$phalcon = [];
+foreach (['benchmark/images/php/Dockerfile', 'benchmark/images/cms-php/Dockerfile', 'benchmark/images/frankenphp/Dockerfile'] as $dockerfile) {
+    $image = repositoryFile($dockerfile);
+    preg_match('/^ARG PHALCON_VERSION=(\S+)$/m', $image, $m);
+    $phalcon[] = $m[1] ?? null;
+    expect(str_contains($image, 'pecl install'), false, "$dockerfile does not compile Phalcon.");
+    expect(str_contains($image, 'docker-php-ext-enable phalcon'), true, "$dockerfile loads Phalcon.");
+}
+expect(count(array_unique($phalcon)), 1, 'All PHP images name the same Phalcon release.');
+foreach (['benchmark/images/php/Dockerfile', 'benchmark/images/cms-php/Dockerfile'] as $dockerfile) {
+    $image = repositoryFile($dockerfile);
+    expect(str_contains($image, 'FROM phalconphp/cphalcon:v${PHALCON_VERSION}-php${PHP_VERSION} AS phalcon'), true, "$dockerfile takes Phalcon from the official image of its PHP version.");
+    expect(str_contains($image, 'COPY --from=phalcon /usr/local/lib/php/extensions/*/phalcon.so'), true, "$dockerfile takes only the extension from it.");
+    expect(preg_match('/^FROM php:\$\{PHP_VERSION\}-fpm-bookworm$/m', $image), 1, "$dockerfile is not based on that image: it loads extensions no stack may measure.");
+    preg_match_all('/PHP_VERSION_ID >= (\d+) \? "([^"]*)" : "([^"]*)"/', $image, $choices, PREG_SET_ORDER);
+    expect(array_map(static fn (array $choice): array => array_slice($choice, 1), $choices), [['80500', '', 'opcache']], "$dockerfile leaves out the built-in OPcache.");
+}
+expect(str_contains(repositoryFile('benchmark/images/frankenphp/Dockerfile'), 'phalcon-php${PHP_VERSION}-ts-ubuntu-gcc-x64.zip'), true, "FrankenPHP's thread-safe PHP takes the thread-safe build of that release.");
+
+// Manticore follows the compiler's latest release: the default tag, a tag pulled
+// earlier, and the revision the image bakes in would each hold it back on their own.
+expect(str_contains($compose, 'phramark-manticore:${MANTICORE_IMAGE_TAG:-latest}'), true, 'The Manticore job runs the latest published image by default.');
+expect(str_contains(repositoryFile('benchmark/scripts/manticore'), "image='--pull always'"), true, 'A copy of the image pulled earlier does not hold the Manticore job back.');
+$manticore = repositoryFile('benchmark/images/manticore/Dockerfile');
+expect([str_contains($manticore, 'ARG MANTICORE_REF=latest'), str_contains($manticore, 'ADD https://api.github.com/repos/manticorephp/compiler/releases/latest ')], [true, true], 'The Manticore image bakes in the latest release, and a new one invalidates its build cache.');
+$workflow = repositoryFile('.github/workflows/manticore-image.yml');
+expect([str_contains($workflow, "inputs.manticore_ref || 'latest'"), str_contains($workflow, "inputs.manticore_ref || 'main'")], [true, false], 'The published Manticore image is built from the latest release, not from the branch.');
 
 fwrite(STDOUT, "Phramark tests passed.\n");

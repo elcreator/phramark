@@ -9,6 +9,15 @@
 :80 {
 	root * /var/www/html
 
+	# What Evolution's manager/.htaccess does on Apache: a path under /manager/
+	# that is not a file goes to the manager's front controller (evo-ui serves
+	# its script and Livewire updates from such routes), never to the site's.
+	@manager {
+		path /manager/*
+		not file
+	}
+	rewrite @manager /manager/index.php?{query}
+
 	@notfile {
 		not file {
 			try_files {path} {path}/index.php {path}/index.html

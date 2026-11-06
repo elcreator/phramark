@@ -148,7 +148,9 @@ final class ResultSet
 
     /**
      * Pick one newest released build per stack and, for Evolution stacks,
-     * retain the latest recorded 3.5.x branch build as a comparison.
+     * retain the latest recorded 3.5.x branch build and the latest build of a
+     * newer branch as comparisons. A branch is never the release: 3.6.x would
+     * otherwise hide the newest tag by its version number.
      *
      * @param list<array<string, mixed>> $rows
      * @return array{versions: array<string, array<string, true>>, preferred: array<string, array<string, mixed>>}
@@ -174,17 +176,19 @@ final class ResultSet
 
             if (str_starts_with($stack, 'evo-')) {
                 $branch = array_filter($representatives, static fn (array $row): bool => self::isEvolution35Branch($row));
-                $release = array_filter($representatives, static fn (array $row): bool => !self::isEvolution35Branch($row) && !self::isEvolutionWorkingCopy($row));
+                $nextBranch = array_filter($representatives, static fn (array $row): bool => self::isEvolutionBranch($row) && !self::isEvolution35Branch($row));
+                $release = array_filter($representatives, static fn (array $row): bool => !self::isEvolutionBranch($row) && !self::isEvolutionWorkingCopy($row));
                 $latestRelease = self::newestCmsBuild(array_values($release), $stack);
                 $latestBranch = self::latestRecordedBuild(array_values($branch));
-                foreach ([$latestRelease, $latestBranch] as $selected) {
+                $latestNextBranch = self::latestRecordedBuild(array_values($nextBranch));
+                foreach ([$latestRelease, $latestBranch, $latestNextBranch] as $selected) {
                     if ($selected === null) {
                         continue;
                     }
                     $versions[$stack][$selected['version']] = true;
                 }
                 // The version list names the branch build when both are shown.
-                $preferred[$stack] = $latestBranch ?? $latestRelease;
+                $preferred[$stack] = $latestBranch ?? $latestRelease ?? $latestNextBranch;
                 continue;
             }
 
@@ -206,6 +210,21 @@ final class ResultSet
         }
         foreach ($row['components'] ?? [] as $component) {
             if (($component['name'] ?? '') === 'Evolution CMS' && str_contains((string) ($component['version'] ?? ''), '(branch 3.5.x@')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** @param array<string, mixed> $row */
+    private static function isEvolutionBranch(array $row): bool
+    {
+        if (preg_match('/(?:^|\+)evo@\d+\.\d+\.x(?:\+|$)/', (string) ($row['ref'] ?? '')) === 1) {
+            return true;
+        }
+        foreach ($row['components'] ?? [] as $component) {
+            if (($component['name'] ?? '') === 'Evolution CMS' && str_contains((string) ($component['version'] ?? ''), '(branch ')) {
                 return true;
             }
         }
@@ -389,6 +408,12 @@ final class ResultSet
         'evo-frankenphp' => ['Evolution CMS' => '', 'FrankenPHP' => 'FrankenPHP'],
         'evo-worker' => ['Evolution CMS' => '', 'FrankenPHP' => 'FrankenPHP'],
         'evo-worker-keep' => ['Evolution CMS' => '', 'FrankenPHP' => 'FrankenPHP'],
+        'evo-latte-worker' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX', 'FrankenPHP' => 'FrankenPHP'],
+        'evo-latte-worker-keep' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX', 'FrankenPHP' => 'FrankenPHP'],
+        'evo-latte-parser-worker' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX', 'FrankenPHP' => 'FrankenPHP'],
+        'evo-latte-parser-worker-keep' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX', 'FrankenPHP' => 'FrankenPHP'],
+        'evo-phalcon-worker' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX', 'elcreator/aphalcon' => 'aPhalcon', 'FrankenPHP' => 'FrankenPHP'],
+        'evo-phalcon-worker-keep' => ['Evolution CMS' => '', 'elcreator/alattex' => 'aLatteX', 'elcreator/aphalcon' => 'aPhalcon', 'FrankenPHP' => 'FrankenPHP'],
         'drupal' => ['drupal/core' => ''],
         'typo3' => ['typo3/cms-core' => ''],
         'winter' => ['winter/wn-cms-module' => ''],

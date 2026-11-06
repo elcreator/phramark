@@ -13,7 +13,10 @@ require '/opt/phramark/benchmark/fixtures/sarticles.php';
 const PREFIX = 'site_';
 const ROOT = '/sites';
 // The evo-parser site served by FrankenPHP in worker mode (compose profile "worker").
-const WORKER_SITES = ['evo-worker', 'evo-worker-keep'];
+const PARSER_WORKER_SITES = ['evo-worker', 'evo-worker-keep'];
+// The Latte and Phalcon sites in those modes: see implementationOf().
+const EXTENSION_WORKER_SITES = ['evo-latte-worker', 'evo-latte-worker-keep', 'evo-latte-parser-worker', 'evo-latte-parser-worker-keep', 'evo-phalcon-worker', 'evo-phalcon-worker-keep'];
+const WORKER_SITES = [...PARSER_WORKER_SITES, ...EXTENSION_WORKER_SITES];
 
 /** @param list<string> $command */
 function run(array $command, ?string $cwd = null): void
@@ -59,7 +62,23 @@ function siteProducts(): array
         'evo-frankenphp' => ['evo'],
         'evo-worker' => ['evo'],
         'evo-worker-keep' => ['evo'],
+        'evo-latte-worker' => ['evo', 'latte'],
+        'evo-latte-worker-keep' => ['evo', 'latte'],
+        'evo-latte-parser-worker' => ['evo', 'latte'],
+        'evo-latte-parser-worker-keep' => ['evo', 'latte'],
+        'evo-phalcon-worker' => ['evo', 'latte', 'phalcon'],
+        'evo-phalcon-worker-keep' => ['evo', 'latte', 'phalcon'],
     ];
+}
+
+/**
+ * The directory under benchmark/implementations of a site: a Latte or Phalcon
+ * worker site carries the views and config of its FPM stack, so that the
+ * runtime is the only difference.
+ */
+function implementationOf(string $site): string
+{
+    return in_array($site, EXTENSION_WORKER_SITES, true) ? preg_replace('/-worker(-keep)?$/', '', $site) : $site;
 }
 
 /**
@@ -117,8 +136,11 @@ function install(string $name): void
         run(['git', 'clone', '--depth=1', '--branch', $ref, 'https://github.com/evolution-cms/evolution.git', $path]);
     }
     // 3.5 ships core/vendor in git; 3.6 does not, so its tree arrives without it.
+    // Classmap-authoritative, like the committed 3.5 vendor and Evolution's own
+    // make:site: without it a 3.6 site pays a filesystem probe for every class
+    // the classmap does not list, and is measured on a slower autoloader.
     if (!is_file($path . '/core/vendor/autoload.php')) {
-        run(['composer', 'install', '--no-dev', '--no-interaction', '--no-progress'], $path . '/core');
+        run(['composer', 'install', '--no-dev', '--classmap-authoritative', '--no-interaction', '--no-progress'], $path . '/core');
     }
     run([
         'php', 'cli-install.php', '--typeInstall=1', '--databaseType=mysql', '--databaseServer=' . getenv('DB_HOST'),
@@ -170,7 +192,7 @@ function installPackage(string $site, string $product, string $wanted): void
 function createDatabases(): void
 {
     $pdo = rootPdo();
-    foreach (['canonical', 'evo_parser', 'evo_latte', 'evo_latte_parser', 'evo_phalcon', 'evo_sarticles', 'evo_frankenphp', 'evo_worker', 'evo_worker_keep'] as $name) {
+    foreach (['canonical', 'evo_parser', 'evo_latte', 'evo_latte_parser', 'evo_phalcon', 'evo_sarticles', 'evo_frankenphp', 'evo_worker', 'evo_worker_keep', 'evo_latte_worker', 'evo_latte_worker_keep', 'evo_latte_parser_worker', 'evo_latte_parser_worker_keep', 'evo_phalcon_worker', 'evo_phalcon_worker_keep'] as $name) {
         $pdo->exec(sprintf('CREATE DATABASE IF NOT EXISTS `benchmark_%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci', $name));
         $pdo->exec(sprintf("GRANT ALL PRIVILEGES ON `benchmark_%s`.* TO 'benchmark'@'%%'", $name));
     }
@@ -382,7 +404,7 @@ function snippetFor(string $site): ?string
     if ($site === 'evo-sarticles') {
         return sArticlesSnippet();
     }
-    if ($site !== 'evo-parser' && $site !== 'evo-frankenphp' && !in_array($site, WORKER_SITES, true)) {
+    if ($site !== 'evo-parser' && $site !== 'evo-frankenphp' && !in_array($site, PARSER_WORKER_SITES, true)) {
         return null;
     }
 
@@ -447,8 +469,8 @@ try {
         cloneCanonical(str_replace('-', '_', $site));
         // A stack with its own views or config carries them as a tree;
         // evo-parser and evo-sArticles are the plain core plus a snippet.
-        if (is_dir('/opt/phramark/benchmark/implementations/' . $site)) {
-            copyTree('/opt/phramark/benchmark/implementations/' . $site, ROOT . '/' . $site);
+        if (is_dir('/opt/phramark/benchmark/implementations/' . implementationOf($site))) {
+            copyTree('/opt/phramark/benchmark/implementations/' . implementationOf($site), ROOT . '/' . $site);
         }
         writeSettings('benchmark_' . str_replace('-', '_', $site), snippetFor($site));
         if ($site === 'evo-sarticles') {
