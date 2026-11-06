@@ -732,6 +732,13 @@ $plan = explode("\n", trim((string) shell_exec('php benchmark/scripts/version-ro
 expect([$plan[0], $plan[1], $plan[9], preg_match('/^round .*EVO_VERSION=3\.6\.x /', $plan[10]), $plan[11], count($plan)], ['round', 'stack evo-parser', 'stack wordpress-gantry', 1, 'stack evo-worker evo@3.6.x', 19], 'version-rounds.php prints the default plan the way matrix reads it.');
 $matrix = repositoryFile('benchmark/scripts/matrix');
 expect([str_contains($matrix, 'version-rounds.php --default'), str_contains($matrix, 'if [ -n "$round_env" ] && ! provision')], [true, true], 'matrix runs the default plan and provisions every round that names versions.');
+// A published port can stall while the stack answers on the compose network, where the load runs.
+$bench = repositoryFile('benchmark/scripts/bench');
+expect([str_contains($bench, 'on_network "PHRAMARK_HOST=$target PHRAMARK_REQUIRE_WARM=1 sh benchmark/scripts/warmup 80"'), str_contains($bench, 'benchmark/scripts/warmup "$port"'), str_contains($bench, 'on_network "PHRAMARK_PORTS=$port php benchmark/scripts/verify.php $target --port=80"')], [true, false, true], 'A cell warms and verifies a stack by its service name, on every category the gate checks.');
+expect([str_contains($matrix, 'on_network "curl -s --max-time 5 http://$target/ >/dev/null"'), str_contains($matrix, 'curl -s --max-time 5 "http://')], [true, false], 'matrix does not give up on a stack because its published port stalls.');
+$unreachable = static fn (string $setting): string => trim((string) shell_exec('sh -c ' . escapeshellarg("curl() { return 7; }; sleep() { :; }; $setting set -- 1; . benchmark/scripts/warmup; echo went-on") . ' 2>&1'));
+expect($unreachable(''), "port 1: not reachable, skipped\nwent-on", 'A warm-up of several stacks passes over one that does not answer.');
+expect($unreachable('PHRAMARK_REQUIRE_WARM=1;'), 'port 1: not reachable, skipped', 'A cell stops when its stack cannot be warmed: it is never measured cold.');
 expect(array_column(VersionSpec::rounds(VersionSpec::parse('evo@../evolution'), ['evo-parser', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep'])[0]['stacks'], 'stack'), ['evo-parser', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep'], 'Named FrankenPHP stacks are built from the same Evolution ref as evo-parser.');
 $compose = str_replace("\r\n", "\n", repositoryFile('benchmark/compose.yaml'));
 if (preg_match('/^  php-frankenphp:\n((?:    .*\n|\s*\n)*)/m', $compose, $m) !== 1) {
@@ -777,7 +784,7 @@ foreach (array_filter(array_keys($adapters), static fn (string $stack): bool => 
 }
 expect(array_filter(explode("\n", (string) shell_exec('sh -c ' . escapeshellarg('. benchmark/scripts/lib.sh; profile_for_stack evo-latte; profile_for_stack evo-phalcon')))), [], 'The FPM stacks stay outside the worker profile.');
 $matrix = repositoryFile('benchmark/scripts/matrix');
-expect(strpos($matrix, 'if ! $compose $profile up -d --no-deps') < strpos($matrix, 'if curl -s --max-time'), true, 'The matrix starts each selected service before checking that its port is reachable.');
+expect(strpos($matrix, 'if ! $compose $profile up -d --no-deps') < strpos($matrix, 'if on_network "curl -s --max-time'), true, 'The matrix starts each selected service before checking that its port is reachable.');
 expect(str_contains($setup, "\$site !== 'evo-parser' && \$site !== 'evo-frankenphp' && !in_array(\$site, PARSER_WORKER_SITES, true)"), true, 'The classic FrankenPHP site and the evo-parser worker sites render the evo-parser snippet; the Latte and Phalcon ones bring their views.');
 expect(str_contains($setup, "copyTree('/opt/phramark/benchmark/implementations/' . implementationOf(\$site)"), true, 'A Latte or Phalcon worker site carries the implementation of its FPM stack.');
 

@@ -146,7 +146,7 @@ run_cells() {
   # A stack whose containers were just (re)created may need a moment.
   reachable=0
   for attempt in 1 2 3 4 5; do
-    if curl -s --max-time 5 "http://${PHRAMARK_HOST:-127.0.0.1}:$port/" >/dev/null; then reachable=1; break; fi
+    if on_network "curl -s --max-time 5 http://$target/ >/dev/null"; then reachable=1; break; fi
     sleep 3
   done
   if [ "$reachable" = 0 ]; then

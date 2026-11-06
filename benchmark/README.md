@@ -99,7 +99,7 @@ Re-running `up` re-seeds the fixture and re-syncs adapter code into existing vol
 
 ## The matrix
 
-`benchmark/scripts/bench WORKLOAD JIT PORT [OFFERED_RPS]` runs one cell: it recreates the stack's FPM with `PHP_JIT` set, warms all 100 category pages, runs the fairness gate from the host and from inside the compose network, then runs the workload. The JIT mode is read back from the container into the result name, so a result can never claim a mode that did not run.
+`benchmark/scripts/bench WORKLOAD JIT PORT [OFFERED_RPS]` runs one cell: it recreates the stack's FPM with `PHP_JIT` set, warms all 100 category pages over the compose network, where the load comes from, runs the fairness gate from the host and from that network, then runs the workload. A stack that cannot be warmed fails the cell: it is never measured cold. The network decides because a published port can stall: on Docker Desktop one stayed silent for minutes after a recreate while the stack answered at once on the network, and the host gate skips a port that does not answer. The JIT mode is read back from the container into the result name, so a result can never claim a mode that did not run.
 
 ```sh
 benchmark/scripts/bench guest off     8080 100
