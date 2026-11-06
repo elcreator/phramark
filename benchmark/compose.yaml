@@ -218,7 +218,7 @@ services:
       - evo-sarticles:/var/www/html:ro
       - ./config/nginx-sarticles.conf:/etc/nginx/conf.d/default.conf:ro
 
-  # Evolution's opt-in FrankenPHP comparisons (benchmark/README.md, "Worker mode"):
+  # Evolution's FrankenPHP comparisons (benchmark/README.md, "FrankenPHP modes"):
   # evo-frankenphp runs classic PHP request lifecycles; the two worker stacks
   # use Evolution 3.6+'s worker loop with new or retained application state.
   php-frankenphp:
@@ -251,9 +251,9 @@ services:
   # Evolution in FrankenPHP worker mode (benchmark/README.md, "Worker mode"):
   # the evo-parser site and fixture, served by Evolution's own worker loop
   # with a new application per request (evo-worker) or one kept per worker
-  # (evo-worker-keep, EVO_WORKER_KEEP_APP=1). Opt-in (profile "worker",
-  # --solutions=evo-worker,evo-worker-keep): they need Evolution's worker
-  # runtime, available on the 3.6.x branch.
+  # (evo-worker-keep, EVO_WORKER_KEEP_APP=1). Profile "worker", which matrix
+  # starts itself: they need Evolution's worker runtime, available on the
+  # 3.6.x branch.
   php-worker:
     profiles: ["worker"]
     build:
@@ -323,8 +323,7 @@ services:
       - ./config/nginx-worker.conf.template:/etc/nginx/templates/default.conf.template:ro
 
   # The Latte and Phalcon stacks in the same two worker modes: each is the site
-  # and fixture of its FPM stack, so only the runtime differs. Opt-in like the
-  # others (--solutions=evo-latte-worker,...): they need Evolution's worker runtime.
+  # and fixture of its FPM stack, so only the runtime differs.
   php-latte-worker:
     <<: *worker-php
     environment:

@@ -234,7 +234,7 @@ foreach (['evo', 'evo@', 'illuminate@1.0', 'evo@3.5 x', 'evo@3.5.x;rm'] as $bad)
     }
 }
 expect(VersionSpec::affectedStacks(VersionSpec::parse('latte@0.4.0')), ['evo-latte', 'evo-latte-parser', 'evo-phalcon'], 'Without --solutions a version selects the stacks its product is part of.');
-expect(VersionSpec::affectedStacks(VersionSpec::parse('php@8.3')), array_values(array_filter(array_keys(RuntimeProfile::adapters()), static fn (string $stack): bool => $stack !== 'evo-frankenphp' && !str_contains($stack, 'worker'))), 'PHP is part of every stack; FrankenPHP stacks run only when named.');
+expect(VersionSpec::affectedStacks(VersionSpec::parse('php@8.3')), array_values(array_filter(array_keys(RuntimeProfile::adapters()), static fn (string $stack): bool => $stack !== 'evo-frankenphp' && !str_contains($stack, 'worker'))), 'PHP is part of every stack; a version of it alone does not select the FrankenPHP stacks.');
 expect(VersionSpec::label(['latte' => '0.4.0', 'evo' => '3.5.8']), 'evo@3.5.8+latte@0.4.0', 'Labels list the products in a fixed order.');
 // A ref starting with .. is a directory on the host, relative to the repository root.
 expect(VersionSpec::parse('latte@0.2.0,latte@../evo/aLatteX'), [['product' => 'latte', 'ref' => '0.2.0'], ['product' => 'latte', 'ref' => '../evo/aLatteX']], 'A path ref is a version to compare like any other.');
@@ -713,6 +713,25 @@ expect([$adapters['evo-worker']['port'], $adapters['evo-worker-keep']['port']], 
 expect([$adapters['evo-worker']['components'], $adapters['evo-worker-keep']['components']], [$adapters['evo-parser']['components'], $adapters['evo-parser']['components']], 'A worker stack runs the evo-parser request path: only the runtime differs.');
 expect(in_array('evo-worker', VersionSpec::affectedStacks(VersionSpec::parse('evo@3.5.8')), true), false, 'A version alone does not select the worker stacks: most Evolution refs have no worker mode.');
 expect(in_array('evo-frankenphp', VersionSpec::affectedStacks(VersionSpec::parse('evo@3.5.8')), true), false, 'The explicit classic FrankenPHP comparison is opt-in.');
+// The worker modes exist since Evolution 3.6: they are part of the defaults from there on.
+$workerStacks = ['evo-worker', 'evo-worker-keep', 'evo-latte-worker', 'evo-latte-worker-keep', 'evo-latte-parser-worker', 'evo-latte-parser-worker-keep', 'evo-phalcon-worker', 'evo-phalcon-worker-keep'];
+expect(array_values(array_intersect($workerStacks, VersionSpec::affectedStacks(VersionSpec::parse('evo@3.6.x')))), $workerStacks, 'An Evolution ref with the worker runtime selects both worker modes of every stack.');
+expect(in_array('evo-frankenphp', VersionSpec::affectedStacks(VersionSpec::parse('evo@3.6.x')), true), false, 'Classic FrankenPHP is no worker mode and stays opt-in on 3.6.');
+expect(in_array('evo-worker', VersionSpec::affectedStacks(VersionSpec::parse('evo@../evolution')), true), false, 'A directory may not have the worker runtime, so its worker stacks are named.');
+expect(in_array('evo-worker', VersionSpec::affectedStacks(VersionSpec::parse('evo@latest')), true), false, 'The newest tag is not known to have the worker runtime here.');
+expect(array_map(static fn (string $ref): ?bool => VersionSpec::workerRuntime($ref), ['3.5.x', '3.5.9', 'v3.5.9', '3.6.x', '3.6.0', '3.10.0', '4.x', 'latest', 'main', '../evolution']), [false, false, false, true, true, true, true, null, null, null], 'A numbered ref tells whether it has the worker runtime; any other ref does not.');
+$rounds = VersionSpec::rounds(VersionSpec::parse('evo@3.5.x,evo@3.6.x'), ['evo-parser', 'evo-worker']);
+expect(array_map(static fn (array $round): array => [$round['env']['EVO_VERSION'], array_column($round['stacks'], 'stack')], $rounds), [['3.5.x', ['evo-parser']], ['3.6.x', ['evo-parser', 'evo-worker']]], 'A worker stack takes only the refs that can serve it.');
+expect(VersionSpec::rounds(VersionSpec::parse('evo@3.5.8'), ['evo-worker'])[0]['stacks'][0], ['stack' => 'evo-worker', 'label' => 'evo@3.5.8'], 'A worker stack named with nothing but an older ref still reaches the setup, which reports it.');
+expect(array_column(VersionSpec::rounds(VersionSpec::parse('evo@../evolution,evo@3.6.x'), ['evo-worker'])[0]['stacks'], 'label'), ['evo@../evolution'], 'A directory is not left out for a worker stack.');
+$defaults = VersionSpec::defaultRounds();
+expect(array_map(static fn (array $round): array => $round['env'], $defaults), [[], ['EVO_VERSION' => '3.6.x']], 'The default matrix provisions nothing for the FPM stacks and installs Evolution 3.6.x for the worker stacks.');
+expect(array_column($defaults[0]['stacks'], 'stack'), ['evo-parser', 'evo-latte', 'evo-phalcon', 'drupal', 'typo3', 'evo-latte-parser', 'winter', 'modx', 'wordpress-gantry'], 'The default FPM stacks run first, unlabelled, in port order.');
+expect($defaults[1]['stacks'], array_map(static fn (string $stack): array => ['stack' => $stack, 'label' => 'evo@3.6.x'], $workerStacks), 'The worker stacks follow under the 3.6.x label.');
+$plan = explode("\n", trim((string) shell_exec('php benchmark/scripts/version-rounds.php --default')));
+expect([$plan[0], $plan[1], $plan[9], preg_match('/^round .*EVO_VERSION=3\.6\.x /', $plan[10]), $plan[11], count($plan)], ['round', 'stack evo-parser', 'stack wordpress-gantry', 1, 'stack evo-worker evo@3.6.x', 19], 'version-rounds.php prints the default plan the way matrix reads it.');
+$matrix = repositoryFile('benchmark/scripts/matrix');
+expect([str_contains($matrix, 'version-rounds.php --default'), str_contains($matrix, 'if [ -n "$round_env" ] && ! provision')], [true, true], 'matrix runs the default plan and provisions every round that names versions.');
 expect(array_column(VersionSpec::rounds(VersionSpec::parse('evo@../evolution'), ['evo-parser', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep'])[0]['stacks'], 'stack'), ['evo-parser', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep'], 'Named FrankenPHP stacks are built from the same Evolution ref as evo-parser.');
 $compose = str_replace("\r\n", "\n", repositoryFile('benchmark/compose.yaml'));
 if (preg_match('/^  php-frankenphp:\n((?:    .*\n|\s*\n)*)/m', $compose, $m) !== 1) {
@@ -739,7 +758,7 @@ foreach (['evo-worker' => ['worker', '0', 8090], 'evo-worker-keep' => ['worker-k
     expect(RuntimeProfile::adapters()[$origin]['port'], $port, "$origin is published on the port of its adapter.");
     expect(str_contains($compose, "- $origin:/sites/$origin\n") && str_contains($compose, "\n  $origin:\n"), true, "setup installs $origin into a volume of its own.");
 }
-expect([str_contains($compose, "x-worker-php: &worker-php\n  profiles: [\"worker\"]"), str_contains($compose, "x-worker-nginx: &worker-nginx\n  profiles: [\"worker\"]"), str_contains($compose, "x-worker-environment: &worker-environment\n"), str_contains($compose, '  EVO_WORKER_MODE: "1"')], [true, true, true, true], 'The Latte and Phalcon worker stacks are opt-in and run worker mode.');
+expect([str_contains($compose, "x-worker-php: &worker-php\n  profiles: [\"worker\"]"), str_contains($compose, "x-worker-nginx: &worker-nginx\n  profiles: [\"worker\"]"), str_contains($compose, "x-worker-environment: &worker-environment\n"), str_contains($compose, '  EVO_WORKER_MODE: "1"')], [true, true, true, true], 'The Latte and Phalcon worker stacks stay out of a plain compose up and run worker mode.');
 
 // A Latte or Phalcon worker stack is its FPM stack on another runtime.
 foreach (['evo-latte-worker' => 'evo-latte', 'evo-latte-worker-keep' => 'evo-latte', 'evo-latte-parser-worker' => 'evo-latte-parser', 'evo-latte-parser-worker-keep' => 'evo-latte-parser', 'evo-phalcon-worker' => 'evo-phalcon', 'evo-phalcon-worker-keep' => 'evo-phalcon'] as $stack => $twin) {

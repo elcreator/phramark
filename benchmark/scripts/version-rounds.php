@@ -13,12 +13,35 @@ require dirname(__DIR__, 2) . '/src/VersionSpec.php';
 //   php version-rounds.php SPEC [STACK...]
 //     SPEC    evo@3.5.x,evo@3.5.8,latte@0.4.0
 //     STACK   the stacks to run (default: every stack a listed product is part of)
+//   php version-rounds.php --default
+//     the plan of a matrix without options (VersionSpec::defaultRounds)
 //
 // Output, one word-separated line each, in order:
 //   round EVO_VERSION=3.5.x ALATTEX_VERSION=0.4.0 DRUPAL_VERSION= …   (every product variable; empty = its default)
 //   stack evo-parser evo@3.5.x
 //   stack evo-latte-parser evo@3.5.x+latte@0.4.0
 //   round …
+// A round with nothing to provision is a bare `round`, a stack without a label a bare `stack ID`.
+
+function printRounds(array $rounds): void
+{
+    $variables = array_column(VersionSpec::products(), 'env');
+    foreach ($rounds as $round) {
+        $assignments = [];
+        foreach ($round['env'] === [] ? [] : $variables as $variable) {
+            $assignments[] = $variable . '=' . ($round['env'][$variable] ?? '');
+        }
+        echo rtrim('round ' . implode(' ', $assignments)), "\n";
+        foreach ($round['stacks'] as $member) {
+            echo rtrim('stack ' . $member['stack'] . ' ' . $member['label']), "\n";
+        }
+    }
+}
+
+if (($argv[1] ?? '') === '--default') {
+    printRounds(VersionSpec::defaultRounds());
+    exit(0);
+}
 
 try {
     $specs = VersionSpec::parse($argv[1] ?? '');
@@ -37,17 +60,7 @@ try {
         }
     }
     $stacks = array_slice($argv, 2) ?: VersionSpec::affectedStacks($specs);
-    $variables = array_column(VersionSpec::products(), 'env');
-    foreach (VersionSpec::rounds($specs, $stacks) as $round) {
-        $assignments = [];
-        foreach ($variables as $variable) {
-            $assignments[] = $variable . '=' . ($round['env'][$variable] ?? '');
-        }
-        echo 'round ', implode(' ', $assignments), "\n";
-        foreach ($round['stacks'] as $member) {
-            echo 'stack ', $member['stack'], ' ', $member['label'], "\n";
-        }
-    }
+    printRounds(VersionSpec::rounds($specs, $stacks));
 } catch (InvalidArgumentException $exception) {
     fwrite(STDERR, $exception->getMessage() . "\n");
     exit(2);

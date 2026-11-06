@@ -26,11 +26,11 @@ The framework column is not the marketing name: it is what a warm category reque
 | `wordpress-gantry` | 8088 | [WordPress](https://wordpress.org) core (481 `wp-includes` files; procedural plus global classes such as `WP_Query`, `wpdb`, `WP_Rewrite`) with the [Gantry 5](https://github.com/gantry/gantry5) **theme framework** plugin (66 `Gantry` classes, 84 plugin files, 12 RocketTheme toolbox classes) rendering its Hydrogen theme through **Timber** (35 classes) and **Twig 2** (49 classes, 54 files); Symfony yaml/event-dispatcher only for the outline (2 classes) | Full CMS front controller: WordPress resolves `/articles/category-NNN` through its page hierarchy (one child page of "Articles" per category), a must-use plugin's `template_include` hands the page to a template that reads `phramark_article` through `$wpdb` and renders a Twig view (`custom/views` override of the theme) inside the Gantry outline: header, navigation, main, footer and off-canvas sections with their particles. One stack, not two: WordPress is measured only through Gantry, because the framework does nothing without a Gantry theme |
 | `evo-sarticles` | 8089 | Same Evolution core, with the [sArticles](https://github.com/Seiger/sArticles) module: the articles are Eloquent models in the module's own tables (`s_articles`, `s_article_translates`, `s_articles_categories`) instead of documents in the tree | **Opt-in** (`--solutions=evo-sarticles`), and the one stack whose point is a comparison with itself: sArticles 1.x against the 2.x branch, which rebuilds the manager on [evo-ui](https://github.com/evolution-cms/evo-ui) and Livewire. The category page still resolves through the document tree and renders the shared contract from the module's models, so guest numbers sit next to the other stacks; the admin round edits articles, not documents |
 | `evo-frankenphp` | 8092 | The `evo-parser` request path on classic FrankenPHP: PHP's normal request lifecycle loads a fresh Evolution application on every request | **Opt-in** (`--solutions=evo-frankenphp`), see [FrankenPHP modes](#frankenphp-modes). Works with Evolution refs that do not provide the worker runtime |
-| `evo-worker` | 8090 | The `evo-parser` request path, run by Evolution's own [FrankenPHP](https://frankenphp.dev) worker loop instead of PHP-FPM: a new application per request | **Opt-in** (`--solutions=evo-worker`), see [FrankenPHP modes](#frankenphp-modes). The same site, snippet and fixture as `evo-parser`: the runtime is the only difference |
-| `evo-worker-keep` | 8091 | The same, with one booted application kept per worker and reset after each request (`EVO_WORKER_KEEP_APP=1`) | **Opt-in**, as `evo-worker`. `evo-worker-keep` − `evo-worker` is what booting the providers costs per request |
-| `evo-latte-worker`, `evo-latte-worker-keep` | 8093, 8094 | The `evo-latte` request path in the two worker modes | **Opt-in**, as `evo-worker`. The same packages, view and fixture as `evo-latte`: the runtime is the only difference |
-| `evo-latte-parser-worker`, `evo-latte-parser-worker-keep` | 8095, 8096 | The `evo-latte-parser` request path in the two worker modes | **Opt-in**, as `evo-latte-worker` |
-| `evo-phalcon-worker`, `evo-phalcon-worker-keep` | 8097, 8098 | The `evo-phalcon` request path in the two worker modes | **Opt-in**, as `evo-latte-worker`. Runs the thread-safe build of the Phalcon extension, where the FPM stacks run the non-thread-safe one |
+| `evo-worker` | 8090 | The `evo-parser` request path, run by Evolution's own [FrankenPHP](https://frankenphp.dev) worker loop instead of PHP-FPM: a new application per request | In the default matrix, on Evolution 3.6.x, see [FrankenPHP modes](#frankenphp-modes). The same site, snippet and fixture as `evo-parser`: the runtime is the only difference |
+| `evo-worker-keep` | 8091 | The same, with one booted application kept per worker and reset after each request (`EVO_WORKER_KEEP_APP=1`) | As `evo-worker`. `evo-worker-keep` − `evo-worker` is what booting the providers costs per request |
+| `evo-latte-worker`, `evo-latte-worker-keep` | 8093, 8094 | The `evo-latte` request path in the two worker modes | As `evo-worker`. The same packages, view and fixture as `evo-latte`: the runtime is the only difference |
+| `evo-latte-parser-worker`, `evo-latte-parser-worker-keep` | 8095, 8096 | The `evo-latte-parser` request path in the two worker modes | As `evo-latte-worker` |
+| `evo-phalcon-worker`, `evo-phalcon-worker-keep` | 8097, 8098 | The `evo-phalcon` request path in the two worker modes | As `evo-latte-worker`. Runs the thread-safe build of the Phalcon extension, where the FPM stacks run the non-thread-safe one |
 
 `evo-sarticles` answers a different question from the rest of the table. Every other stack asks what a framework costs inside a CMS request; this one asks whether a rewritten manager is going in the right direction, by running the same editorial round against two versions of one module (`--versions=sarticles@1.2.1,sarticles@2.x`). The six admin actions are the same user intents in both — open the list, open an article, change its title and summary, save, open the form for a new one, save — and each is waited to the state where the editor can act again. How each version gets there is its own doing: 1.x is a manager tab with a plain form, 2.x an evo-ui modal saved over Livewire.
 
@@ -108,7 +108,7 @@ benchmark/scripts/bench admin off     8080
 benchmark/scripts/bench admin tracing 8080
 ```
 
-`benchmark/scripts/matrix` runs many cells in one go and ends by recording the container versions and refreshing `docs/results.json`. Without options it runs every reachable stack × guest/admin × JIT off/tracing at 30 rps; options select a part of the matrix:
+`benchmark/scripts/matrix` runs many cells in one go and ends by recording the container versions and refreshing `docs/results.json`. Without options it runs every reachable stack × guest/admin × JIT off/tracing at 30 rps, then reinstalls the worker stacks from Evolution 3.6.x and runs them the same way; options select a part of the matrix:
 
 ```sh
 benchmark/scripts/matrix                                            # everything, 30 rps
@@ -176,21 +176,21 @@ The comparison has three FrankenPHP modes and the PHP-FPM reference (`evo-parser
 | `evo-worker` | Worker, `EVO_WORKER_KEEP_APP=0` | The PHP process and loaded classes; Evolution builds a new application and boots its providers for each request |
 | `evo-worker-keep` | Worker, `EVO_WORKER_KEEP_APP=1` | The booted application per worker; request state is reset after each request |
 
-Evolution 3.5.x has no worker runtime, so it is measured on PHP-FPM. Evolution 3.6.x provides the worker runtime. The FrankenPHP stacks are opt-in; run all three alongside the FPM reference from the official 3.6.x branch with:
+Evolution 3.5.x has no worker runtime, so it is measured on PHP-FPM. Evolution 3.6.x provides the worker runtime, so both worker modes are part of the defaults from there on: `matrix` without options runs the worker stacks from the 3.6.x branch after the FPM stacks, which stay on their default versions, and `--versions=evo@3.6.x` selects them next to the FPM stacks of that ref. A ref older than 3.6 next to it is left out for them. Classic FrankenPHP stays opt-in; run all three alongside the FPM reference from the official 3.6.x branch with:
 
 ```sh
 benchmark/scripts/matrix --solutions=evo-parser,evo-frankenphp,evo-worker,evo-worker-keep --versions=evo@3.6.x
 ```
 
-The Latte and Phalcon stacks run in the same two worker modes, next to their FPM stacks:
+The Latte and Phalcon stacks run in the same two worker modes. Every worker stack alongside the Evolution FPM stacks on one ref:
 
 ```sh
-benchmark/scripts/matrix --solutions=evo-latte,evo-latte-worker,evo-latte-worker-keep,evo-latte-parser,evo-latte-parser-worker,evo-latte-parser-worker-keep,evo-phalcon,evo-phalcon-worker,evo-phalcon-worker-keep --versions=evo@3.6.x
+benchmark/scripts/matrix --versions=evo@3.6.x
 ```
 
 These stacks need aLatteX 0.5.1 or newer: in `EVO_WORKER_KEEP_APP=0` mode Evolution includes a plugin on every request, and 0.5.0 stops the worker on the second one with `Cannot redeclare function alattexEvoTagsEnabled()`, so the `-worker` stacks answer about half their requests with 500. The `-keep` stacks are not affected.
 
-All these containers belong to the compose profile `worker`, which a plain `up` leaves out. `matrix` starts the selected container after setup. The worker services require `core/includes/worker.runtime.php`; classic FrankenPHP does not.
+All these containers belong to the compose profile `worker`, which a plain `up` leaves out. `matrix` installs the worker sites and starts each container itself. The worker services require `core/includes/worker.runtime.php`; classic FrankenPHP does not.
 
 What is held equal and what is not:
 
@@ -304,7 +304,7 @@ benchmark/scripts/matrix --solutions=winter,evo-manticore     # after the Winter
 benchmark/scripts/manticore                                   # the same job by hand (MANTICORE_BUILD=1 builds the image locally)
 ```
 
-`evo-manticore` is opt-in: `matrix` without `--solutions` runs the nine served stacks and nothing else, and the job only runs when that list names it. It writes into `benchmark/results/manticore` and never touches `docs/results.json`.
+`evo-manticore` is opt-in: `matrix` without `--solutions` runs the served stacks and nothing else, and the job only runs when that list names it. It writes into `benchmark/results/manticore` and never touches `docs/results.json`.
 
 Two things the compiler does not tell you: invoked as a bare `manticore` from `PATH` it finds neither its prelude nor its stdlib (both are located relative to `argv[0]`), and the stdlib is then silently not linked, so every `str_replace()` becomes "undefined function". The image sets `MANTICORE_PRELUDE`, `MANTICORE_STDLIB_O` and `MANTICORE_STDLIB_SIG`.
 

@@ -5,18 +5,21 @@
 #
 #   benchmark/scripts/matrix [OPTIONS] [OFFERED_RPS] [PORT...]
 #
-#   --solutions=evo-phalcon,winter   stacks by id (default: all; PORT... also works)
+#   --solutions=evo-phalcon,winter   stacks by id (default: the nine FPM stacks
+#                    as installed, then the worker stacks; PORT... also works)
 #                    evo-manticore is never in the default set: name it here to
 #                    run the Manticore compile job (no port, no guest/admin cells)
 #                    evo-sarticles is not in the default set either: it compares
 #                    the sArticles module with itself, e.g.
 #                    --solutions=evo-sarticles --versions=sarticles@1.2.1,sarticles@2.x
-#                    evo-frankenphp, evo-worker and evo-worker-keep are named
-#                    only too: --solutions=evo-parser,evo-frankenphp,evo-worker,evo-worker-keep
+#                    evo-frankenphp is named only too:
+#                    --solutions=evo-parser,evo-frankenphp,evo-worker,evo-worker-keep
 #                    --versions=evo@3.6.x compares classic FrankenPHP and both
-#                    worker modes with the FPM reference. evo-latte-worker,
-#                    evo-latte-parser-worker and evo-phalcon-worker, each also
-#                    with -keep, are the Latte and Phalcon stacks in those modes.
+#                    worker modes with the FPM reference.
+#                    The worker stacks (evo-worker, evo-latte-worker,
+#                    evo-latte-parser-worker, evo-phalcon-worker, each also
+#                    with -keep) need Evolution 3.6: the default set reinstalls
+#                    them from the 3.6.x branch and leaves the FPM stacks alone.
 #   --versions=evo@3.5.x,evo@3.5.8,latte@0.4.0
 #                    compare versions of the parts a stack is built from: a
 #                    published tag of that name, else the branch of that name
@@ -27,7 +30,8 @@
 #                    the stacks are reinstalled from those refs before their
 #                    cells and results carry the label (guest-evo-latte~evo@3.5.8+latte@0.4.0-…).
 #                    Without --solutions only the stacks the products are part
-#                    of run. Products: php, evo, latte, phalcon, sarticles,
+#                    of run, the worker stacks among them for an Evolution ref
+#                    from 3.6 on. Products: php, evo, latte, phalcon, sarticles,
 #                    tinymce, drupal, typo3, winter, modx, wordpress, gantry,
 #                    classic-editor
 #                    (Phramark\VersionSpec; php rebuilds the images).
@@ -78,15 +82,18 @@ for argument in "$@"; do
   esac
 done
 rate=${rate:-30}
-if [ -z "$ports" ] && [ "$manticore" = 0 ] && [ -z "$versions" ]; then ports="8080 8081 8082 8083 8084 8085 8086 8087 8088"; fi
+default_set=0
+if [ -z "$ports" ] && [ "$manticore" = 0 ] && [ -z "$versions" ]; then default_set=1; fi
 for jit in $jits; do case "$jit" in off|tracing) ;; *) echo "--jit must be off, tracing or off,tracing" >&2; exit 2 ;; esac; done
 for workload in $workloads; do case "$workload" in guest|admin) ;; *) echo "--workload must be guest, admin or guest,admin" >&2; exit 2 ;; esac; done
 failed=
 
 # The plan: rounds of "round K=V …" (the setup environment to provision)
-# followed by "stack ID LABEL" lines. Without --versions it is one round of
-# the selected ports with no provisioning and no label.
-if [ -n "$versions" ]; then
+# followed by "stack ID LABEL" lines. A round with no K=V provisions nothing:
+# the selected ports without --versions, the FPM stacks of the default set.
+if [ "$default_set" = 1 ]; then
+  plan=$(php benchmark/scripts/version-rounds.php --default) || exit 2
+elif [ -n "$versions" ]; then
   stacks=
   for port in $ports; do stack_for_port "$port"; stacks="$stacks $stack"; done
   plan=$(php benchmark/scripts/version-rounds.php "$versions" $stacks) || exit 2
@@ -175,7 +182,7 @@ while [ "$i" -le "$rounds" ]; do
   round_stacks=$(awk -v n="$i" '/^round/ { r++; next } r == n && /^stack/ { sub(/^stack /, ""); print }' "$plan_file")
   i=$((i + 1))
   [ -n "$round_stacks" ] || continue
-  if [ -n "$versions" ] && ! provision "$round_env" "$(echo "$round_stacks" | cut -d' ' -f1 | tr '\n' ' ')"; then
+  if [ -n "$round_env" ] && ! provision "$round_env" "$(echo "$round_stacks" | cut -d' ' -f1 | tr '\n' ' ')"; then
     echo "provisioning failed for: $round_env" >&2
     failed="$failed provision:$(echo "$round_env" | tr ' ' ',')"
     continue
