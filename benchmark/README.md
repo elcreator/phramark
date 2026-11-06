@@ -352,11 +352,11 @@ So the answer to "evo-manticore" is: not a stack, not a faster one either, at th
 
 ## Local smoke numbers
 
-Full matrix (`benchmark/scripts/matrix 30`, `DURATION=60s`, `ROUNDS=1`) on one Windows 11 laptop with Docker Desktop, 8 FPM workers, load generator on the same host, 2026-11-06. A smoke run that shows every cell working; single rounds on a shared machine, so treat differences below ~20 % as noise. The worker stacks ran on Evolution 3.6.x with `--versions=evo@3.6.x --repeats=5` the same day: five repetitions per cell, their spread shown as whiskers on the site. Sortable at https://phramark.artur.work; regenerate with `php benchmark/scripts/summary.php`. The versions table names exactly what ran, per stack, linked to the source repositories.
+Full matrix (`benchmark/scripts/matrix 30`, `DURATION=60s`, `ROUNDS=1`) on one Windows 11 laptop with Docker Desktop, 8 FPM workers, load generator on the same host, 2026-11-06. A smoke run that shows every cell working; single rounds on a shared machine, so treat differences below ~20 % as noise. The worker stacks and the Evolution FPM stacks ran on Evolution 3.6.x@a8a0c26 with `--versions=evo@3.6.x --repeats=5` the same day: five repetitions per cell, their spread shown as whiskers on the site. Sortable at https://phramark.artur.work; regenerate with `php benchmark/scripts/summary.php`. The versions table names exactly what ran, per stack, linked to the source repositories.
 
 ### Versions tested
 
-Recorded from the running containers on 2026-11-06T18:27:24Z: PHP 8.4.27, MySQL 8.4.7, nginx/1.27.5, OPcache validate_timestamps=0, memory_consumption=512, max_accelerated_files=100000.
+Recorded from the running containers on 2026-11-06T20:16:51Z: PHP 8.4.27, MySQL 8.4.7, nginx/1.27.5, OPcache validate_timestamps=0, memory_consumption=512, max_accelerated_files=100000.
 
 | Stack | Components (exact versions) |
 | --- | --- |
@@ -387,20 +387,26 @@ Recorded from the running containers on 2026-11-06T18:27:24Z: PHP 8.4.27, MySQL 
 | evo-parser (3.5.9) | tracing | 30 | 30.37 | 35.81ms | 65.92ms | 0 | 0.8 MiB | 2.0 MiB | 28.9 MiB | - |
 | evo-parser (3.5.9 3.5.x@6413fdc) | off | 30 | 30.38 | 36.22ms | 243.33ms | 0 | 0.7 MiB | 2.0 MiB | 22.0 MiB | - |
 | evo-parser (3.5.9 3.5.x@6413fdc) | tracing | 30 | 30.38 | 34.37ms | 244.48ms | 0 | 0.8 MiB | 2.0 MiB | 24.2 MiB | - |
-| evo-parser (3.6.0 3.6.x@830003b) | off | 30 | 30.38 | 57.31ms | 242.30ms | 0 | 1.1 MiB | 2.0 MiB | 25.4 MiB | - |
-| evo-parser (3.6.0 3.6.x@830003b) | tracing | 30 | 30.38 | 62.24ms | 271.36ms | 0 | 1.1 MiB | 2.0 MiB | 27.5 MiB | - |
+| evo-parser (3.6.0 3.6.x@a8a0c26) | off | 30 | 30.38 | 43.55ms | 251.39ms | 0 | 0.8 MiB | 2.0 MiB | 27.3 MiB | - |
+| evo-parser (3.6.0 3.6.x@a8a0c26) | tracing | 30 | 30.38 | 41.76ms | 238.46ms | 0 | 0.8 MiB | 2.0 MiB | 29.4 MiB | - |
 | evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | 30 | 30.38 | 42.21ms | 235.90ms | 0 | 0.9 MiB | 2.0 MiB | 23.9 MiB | - |
 | evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | 30 | 30.38 | 38.33ms | 205.31ms | 0 | 0.9 MiB | 2.0 MiB | 26.2 MiB | - |
 | evo-latte (3.5.9 · aLatteX 0.5.1) | off | 30 | 30.38 | 38.53ms | 74.05ms | 0 | 0.9 MiB | 2.0 MiB | 29.0 MiB | - |
 | evo-latte (3.5.9 · aLatteX 0.5.1) | tracing | 30 | 30.38 | 38.56ms | 212.22ms | 0 | 0.9 MiB | 2.0 MiB | 30.9 MiB | - |
+| evo-latte (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | off | 30 | 30.38 | 44.10ms | 120.13ms | 0 | 0.9 MiB | 2.0 MiB | 29.0 MiB | - |
+| evo-latte (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | tracing | 30 | 30.38 | 40.58ms | 84.35ms | 0 | 0.9 MiB | 2.0 MiB | 30.6 MiB | - |
 | evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | 30 | 30.37 | 39.78ms | 83.07ms | 0 | 0.9 MiB | 2.0 MiB | 23.9 MiB | - |
 | evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | 30 | 30.38 | 39.07ms | 233.60ms | 0 | 0.9 MiB | 2.0 MiB | 25.9 MiB | - |
 | evo-latte-parser (3.5.9 · aLatteX 0.5.1) | off | 30 | 30.38 | 38.91ms | 78.08ms | 0 | 0.9 MiB | 2.0 MiB | 29.1 MiB | - |
 | evo-latte-parser (3.5.9 · aLatteX 0.5.1) | tracing | 30 | 30.38 | 40.10ms | 243.33ms | 0 | 0.9 MiB | 2.0 MiB | 30.9 MiB | - |
+| evo-latte-parser (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | off | 30 | 30.37 | 49.47ms | 139.52ms | 0 | 0.9 MiB | 2.0 MiB | 29.1 MiB | - |
+| evo-latte-parser (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | tracing | 30 | 30.38 | 54.97ms | 145.02ms | 0 | 0.9 MiB | 2.0 MiB | 30.6 MiB | - |
 | evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | off | 30 | 30.37 | 38.43ms | 243.46ms | 0 | 0.9 MiB | 2.0 MiB | 24.9 MiB | - |
 | evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | tracing | 30 | 30.38 | 39.58ms | 232.32ms | 0 | 0.9 MiB | 2.0 MiB | 26.4 MiB | - |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | 30 | 30.37 | 41.15ms | 235.26ms | 0 | 0.9 MiB | 2.0 MiB | 30.1 MiB | - |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 30 | 30.37 | 40.61ms | 246.65ms | 0 | 0.9 MiB | 2.0 MiB | 32.5 MiB | - |
+| evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | 30 | 30.37 | 44.64ms | 217.98ms | 0 | 0.9 MiB | 2.0 MiB | 30.2 MiB | - |
+| evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 30 | 30.38 | 50.11ms | 293.38ms | 0 | 0.9 MiB | 2.0 MiB | 31.5 MiB | - |
 | evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 30 | 30.37 | 47.55ms | 103.74ms | 0 | 1.2 MiB | 8.0 MiB | 84.6 MiB | - |
 | evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 46.81ms | 118.33ms | 0 | 1.3 MiB | 12.0 MiB | 89.6 MiB | - |
 | evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 30 | 30.37 | 50.81ms | 109.76ms | 0 | 1.7 MiB | 8.0 MiB | 85.5 MiB | - |
@@ -438,20 +444,26 @@ Recorded from the running containers on 2026-11-06T18:27:24Z: PHP 8.4.27, MySQL 
 | evo-parser (3.5.9) | tracing | 3135.48 / 930.9 ms | 99.2 / 22.08 ms | 204.42 / 51.8 ms | 70.16 / 14.31 ms | 537.91 / 268.43 ms | 161.28 / 100.02 ms | 8104 ms |
 | evo-parser (3.5.9 3.5.x@6413fdc) | off | 3565.39 / 1376.32 ms | 82.08 / 20.34 ms | 152.93 / 51.13 ms | 70.26 / 16.62 ms | 493.79 / 129.15 ms | 198.63 / 141.95 ms | 7954 ms |
 | evo-parser (3.5.9 3.5.x@6413fdc) | tracing | 3145.19 / 996.8 ms | 69.23 / 20.13 ms | 119.44 / 50.6 ms | 71.13 / 14.93 ms | 474.76 / 133.01 ms | 169.15 / 120.39 ms | 7336 ms |
-| evo-parser (3.6.0 3.6.x@830003b) | off | 3664.13 / 1302.22 ms | 83.72 / 32.86 ms | 165.05 / 54.22 ms | 71.76 / 19.72 ms | 474.33 / 135.61 ms | 269.5 / 159.4 ms | 8479 ms |
-| evo-parser (3.6.0 3.6.x@830003b) | tracing | 4065.59 / 1769.63 ms | 103.08 / 22.91 ms | 205.62 / 134.79 ms | 131.13 / 35.46 ms | 500.86 / 141.84 ms | 163.26 / 109.05 ms | 9314 ms |
+| evo-parser (3.6.0 3.6.x@a8a0c26) | off | 3948.73 / 1775.47 ms | 105.04 / 37.75 ms | 173.69 / 53.93 ms | 80.02 / 21.28 ms | 484.18 / 135.31 ms | 155.32 / 91.59 ms | 8901 ms |
+| evo-parser (3.6.0 3.6.x@a8a0c26) | tracing | 3415.8 / 1124.68 ms | 87.26 / 29.31 ms | 227.1 / 51.97 ms | 100.12 / 24.46 ms | 443.85 / 130.62 ms | 152.56 / 87.75 ms | 8075 ms |
 | evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | 4109.77 / 1725.28 ms | 81.98 / 34.17 ms | 204.17 / 53.48 ms | 78.55 / 34.49 ms | 506.15 / 144.05 ms | 305.21 / 108.8 ms | 9531 ms |
 | evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | 3430.6 / 1234.92 ms | 116.58 / 40.28 ms | 209.86 / 54.18 ms | 99.81 / 17.6 ms | 541.39 / 150.69 ms | 196.6 / 127.96 ms | 8986 ms |
 | evo-latte (3.5.9 · aLatteX 0.5.1) | off | 3550.61 / 1400.42 ms | 90.95 / 23.79 ms | 211.79 / 48.71 ms | 78.61 / 21.46 ms | 479.27 / 127.01 ms | 124.44 / 69.03 ms | 8382 ms |
 | evo-latte (3.5.9 · aLatteX 0.5.1) | tracing | 3116.51 / 925.58 ms | 118.67 / 72.52 ms | 306.61 / 84.96 ms | 69.9 / 19.5 ms | 476.6 / 125.98 ms | 193.23 / 117.68 ms | 8475 ms |
+| evo-latte (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | off | 5363.51 / 2417.12 ms | 227.46 / 38.7 ms | 261.87 / 113.83 ms | 112.44 / 34.61 ms | 614.12 / 255.58 ms | 359.47 / 289.69 ms | 12277 ms |
+| evo-latte (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | tracing | 3508.9 / 1216.82 ms | 81.77 / 29.72 ms | 342.32 / 54.12 ms | 106.56 / 24.04 ms | 451.67 / 148.59 ms | 184.37 / 109.1 ms | 8977 ms |
 | evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | 3834.02 / 1541 ms | 80.27 / 25.96 ms | 169.68 / 54.18 ms | 71.02 / 17.34 ms | 488.99 / 128.22 ms | 201.26 / 132.01 ms | 8707 ms |
 | evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | tracing | 3095.26 / 986.58 ms | 68.3 / 21.63 ms | 156.4 / 46.12 ms | 56.2 / 15.47 ms | 466.75 / 127.3 ms | 177.02 / 127.63 ms | 7581 ms |
 | evo-latte-parser (3.5.9 · aLatteX 0.5.1) | off | 3693.5 / 1254.44 ms | 71.51 / 27.61 ms | 232.74 / 56.26 ms | 71.21 / 22.43 ms | 469.76 / 131.23 ms | 181.7 / 120.67 ms | 8777 ms |
 | evo-latte-parser (3.5.9 · aLatteX 0.5.1) | tracing | 3103.97 / 942.57 ms | 73.6 / 23.79 ms | 122.07 / 49.86 ms | 68.83 / 15.99 ms | 493.11 / 153.21 ms | 190.83 / 129.73 ms | 7586 ms |
+| evo-latte-parser (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | off | 3612.92 / 1365.55 ms | 88.92 / 27.05 ms | 238.55 / 64.89 ms | 76.51 / 20.99 ms | 474.97 / 132.15 ms | 162.74 / 97.89 ms | 8666 ms |
+| evo-latte-parser (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | tracing | 3650.45 / 1255.61 ms | 83.68 / 27.23 ms | 234.07 / 62.35 ms | 76.4 / 20.92 ms | 484.41 / 135.01 ms | 168.17 / 90.23 ms | 8510 ms |
 | evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | off | 3477.25 / 1259.49 ms | 94.55 / 33.02 ms | 212.98 / 63.32 ms | 73.22 / 18.56 ms | 459.41 / 138.06 ms | 135.5 / 79.68 ms | 7867 ms |
 | evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | tracing | 3262.05 / 975.97 ms | 73.01 / 24.25 ms | 145.94 / 48.71 ms | 67.36 / 17.04 ms | 481.67 / 152.5 ms | 216.51 / 161.36 ms | 8105 ms |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | 3339.26 / 1248.79 ms | 78.46 / 23.29 ms | 145.89 / 52.43 ms | 83.85 / 18.99 ms | 480.89 / 138.14 ms | 164.68 / 108.85 ms | 8000 ms |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 3079.27 / 953.04 ms | 99.12 / 25.37 ms | 205.64 / 53.63 ms | 70.9 / 17.87 ms | 453.19 / 122.58 ms | 145.43 / 79.73 ms | 7552 ms |
+| evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | 3992.94 / 1614.97 ms | 105.23 / 34.53 ms | 174.5 / 63.33 ms | 114.32 / 22.98 ms | 506.92 / 149.77 ms | 200.44 / 132.13 ms | 8956 ms |
+| evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 3628.11 / 1143.75 ms | 124.51 / 28.4 ms | 118.96 / 57.63 ms | 105.53 / 25.59 ms | 501.88 / 137.57 ms | 198.34 / 122.62 ms | 8231 ms |
 | evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 3752.71 / 1496.74 ms | 89.91 / 40.01 ms | 231.24 / 61.07 ms | 86.34 / 25.79 ms | 518.31 / 166.8 ms | 194.93 / 117.58 ms | 9162 ms |
 | evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 3767.87 / 1488.02 ms | 95.62 / 32.61 ms | 291.94 / 56.99 ms | 80.95 / 23.85 ms | 491.21 / 146.33 ms | 165.34 / 94.49 ms | 8741 ms |
 | evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 3996.54 / 1770.72 ms | 104.24 / 42.1 ms | 225.68 / 65.02 ms | 96.53 / 34.3 ms | 513.75 / 150.65 ms | 182.21 / 98.93 ms | 10611 ms |
@@ -497,12 +509,12 @@ Recorded from the running containers on 2026-11-06T18:27:24Z: PHP 8.4.27, MySQL 
 | evo-parser (3.5.9 3.5.x@6413fdc) | tracing | PHP peak (script) | 31.56 MiB | 1.1 MiB | 1 MiB | 1.11 MiB | 1.04 MiB | 0.92 MiB | 47.5 MiB |
 | evo-parser (3.5.9 3.5.x@6413fdc) | tracing | Frontend JS heap | 6.68 MiB | 10.66 MiB | 10.8 MiB | 13.81 MiB | 14.5 MiB | 10.79 MiB |  |
 | evo-parser (3.5.9 3.5.x@6413fdc) | tracing | Frontend DOM nodes | 133182 | 135936 | 134557 | 11179 | 12521 | 4884 |  |
-| evo-parser (3.6.0 3.6.x@830003b) | off | PHP peak (script) | 32.2 MiB | 1.48 MiB | 1.38 MiB | 1.48 MiB | 1.42 MiB | 1.29 MiB | 45.8 MiB |
-| evo-parser (3.6.0 3.6.x@830003b) | off | Frontend JS heap | 12.8 MiB | 13.49 MiB | 12.86 MiB | 12.82 MiB | 13.75 MiB | 15.96 MiB |  |
-| evo-parser (3.6.0 3.6.x@830003b) | off | Frontend DOM nodes | 270745 | 243959 | 241054 | 9000 | 10378 | 13166 |  |
-| evo-parser (3.6.0 3.6.x@830003b) | tracing | PHP peak (script) | 32.2 MiB | 1.49 MiB | 1.38 MiB | 1.48 MiB | 1.47 MiB | 1.36 MiB | 42.9 MiB |
-| evo-parser (3.6.0 3.6.x@830003b) | tracing | Frontend JS heap | 6.74 MiB | 9.03 MiB | 9.72 MiB | 12.01 MiB | 12.98 MiB | 10.49 MiB |  |
-| evo-parser (3.6.0 3.6.x@830003b) | tracing | Frontend DOM nodes | 133703 | 135034 | 135109 | 7949 | 9327 | 5105 |  |
+| evo-parser (3.6.0 3.6.x@a8a0c26) | off | PHP peak (script) | 32.2 MiB | 1.48 MiB | 1.38 MiB | 1.48 MiB | 1.42 MiB | 1.28 MiB | 42.3 MiB |
+| evo-parser (3.6.0 3.6.x@a8a0c26) | off | Frontend JS heap | 6.74 MiB | 9.36 MiB | 9.84 MiB | 13.8 MiB | 13.7 MiB | 16.67 MiB |  |
+| evo-parser (3.6.0 3.6.x@a8a0c26) | off | Frontend DOM nodes | 133705 | 135061 | 135073 | 10490 | 11868 | 14826 |  |
+| evo-parser (3.6.0 3.6.x@a8a0c26) | tracing | PHP peak (script) | 32.2 MiB | 1.49 MiB | 1.38 MiB | 1.49 MiB | 1.47 MiB | 1.36 MiB | 48.4 MiB |
+| evo-parser (3.6.0 3.6.x@a8a0c26) | tracing | Frontend JS heap | 12.79 MiB | 14.01 MiB | 13.88 MiB | 11.68 MiB | 11.24 MiB | 8.9 MiB |  |
+| evo-parser (3.6.0 3.6.x@a8a0c26) | tracing | Frontend DOM nodes | 270751 | 243961 | 242546 | 10054 | 6354 | 2725 |  |
 | evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | PHP peak (script) | 31.49 MiB | 1.11 MiB | 1 MiB | 1.11 MiB | 1.04 MiB | 0.92 MiB | 41.8 MiB |
 | evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | Frontend JS heap | 8.19 MiB | 9.81 MiB | 10.27 MiB | 10.91 MiB | 11.14 MiB | 8.86 MiB |  |
 | evo-latte (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | Frontend DOM nodes | 267214 | 249069 | 247692 | 6006 | 6513 | 2560 |  |
@@ -515,6 +527,12 @@ Recorded from the running containers on 2026-11-06T18:27:24Z: PHP 8.4.27, MySQL 
 | evo-latte (3.5.9 · aLatteX 0.5.1) | tracing | PHP peak (script) | 31.57 MiB | 1.11 MiB | 1.01 MiB | 1.12 MiB | 1.05 MiB | 1 MiB | 42.2 MiB |
 | evo-latte (3.5.9 · aLatteX 0.5.1) | tracing | Frontend JS heap | 12.72 MiB | 11.11 MiB | 10.65 MiB | 10.28 MiB | 10.81 MiB | 12.15 MiB |  |
 | evo-latte (3.5.9 · aLatteX 0.5.1) | tracing | Frontend DOM nodes | 268640 | 6877 | 5500 | 4737 | 6077 | 7337 |  |
+| evo-latte (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | off | PHP peak (script) | 32.21 MiB | 1.49 MiB | 1.39 MiB | 1.49 MiB | 1.43 MiB | 1.31 MiB | 47.7 MiB |
+| evo-latte (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | off | Frontend JS heap | 6.76 MiB | 9.35 MiB | 9.82 MiB | 12.01 MiB | 12.59 MiB | 9.82 MiB |  |
+| evo-latte (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | off | Frontend DOM nodes | 133692 | 135046 | 135119 | 7951 | 9329 | 2725 |  |
+| evo-latte (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | tracing | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.39 MiB | 1.49 MiB | 1.48 MiB | 1.38 MiB | 46 MiB |
+| evo-latte (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | tracing | Frontend JS heap | 12.76 MiB | 14.22 MiB | 14.05 MiB | 11.66 MiB | 10.8 MiB | 9.77 MiB |  |
+| evo-latte (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | tracing | Frontend DOM nodes | 270755 | 143222 | 141807 | 10054 | 6354 | 2774 |  |
 | evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | PHP peak (script) | 31.49 MiB | 1.11 MiB | 1 MiB | 1.11 MiB | 1.04 MiB | 0.92 MiB | 36.8 MiB |
 | evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | Frontend JS heap | 8.18 MiB | 10.06 MiB | 10.44 MiB | 10.83 MiB | 10.81 MiB | 14.53 MiB |  |
 | evo-latte-parser (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0) | off | Frontend DOM nodes | 267442 | 249069 | 247692 | 6006 | 6514 | 10010 |  |
@@ -527,6 +545,12 @@ Recorded from the running containers on 2026-11-06T18:27:24Z: PHP 8.4.27, MySQL 
 | evo-latte-parser (3.5.9 · aLatteX 0.5.1) | tracing | PHP peak (script) | 31.57 MiB | 1.11 MiB | 1.01 MiB | 1.12 MiB | 1.05 MiB | 1 MiB | 48.1 MiB |
 | evo-latte-parser (3.5.9 · aLatteX 0.5.1) | tracing | Frontend JS heap | 6.67 MiB | 10.71 MiB | 11.5 MiB | 11.07 MiB | 9.94 MiB | 10.63 MiB |  |
 | evo-latte-parser (3.5.9 · aLatteX 0.5.1) | tracing | Frontend DOM nodes | 132649 | 136851 | 136924 | 6006 | 4883 | 5023 |  |
+| evo-latte-parser (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | off | PHP peak (script) | 32.21 MiB | 1.49 MiB | 1.39 MiB | 1.49 MiB | 1.43 MiB | 1.31 MiB | 47.1 MiB |
+| evo-latte-parser (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | off | Frontend JS heap | 6.76 MiB | 9.04 MiB | 9.79 MiB | 12.04 MiB | 13 MiB | 10.83 MiB |  |
+| evo-latte-parser (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | off | Frontend DOM nodes | 133715 | 135069 | 135119 | 7951 | 9329 | 5156 |  |
+| evo-latte-parser (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | tracing | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.39 MiB | 1.49 MiB | 1.48 MiB | 1.38 MiB | 49.7 MiB |
+| evo-latte-parser (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | tracing | Frontend JS heap | 6.75 MiB | 10.51 MiB | 11.26 MiB | 10.62 MiB | 11.48 MiB | 11.53 MiB |  |
+| evo-latte-parser (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1) | tracing | Frontend DOM nodes | 133714 | 137874 | 137947 | 22963 | 7504 | 6120 |  |
 | evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | off | PHP peak (script) | 31.51 MiB | 1.13 MiB | 1.02 MiB | 1.14 MiB | 1.08 MiB | 0.93 MiB | 46.8 MiB |
 | evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | off | Frontend JS heap | 6.68 MiB | 10.08 MiB | 10.53 MiB | 13.88 MiB | 14.53 MiB | 10.77 MiB |  |
 | evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | off | Frontend DOM nodes | 132650 | 133989 | 134024 | 11161 | 12501 | 4921 |  |
@@ -539,6 +563,12 @@ Recorded from the running containers on 2026-11-06T18:27:24Z: PHP 8.4.27, MySQL 
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | PHP peak (script) | 31.59 MiB | 1.15 MiB | 1.03 MiB | 1.16 MiB | 1.07 MiB | 1.12 MiB | 48 MiB |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | Frontend JS heap | 6.68 MiB | 9.32 MiB | 9.75 MiB | 11.65 MiB | 12.58 MiB | 10.81 MiB |  |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | Frontend DOM nodes | 132649 | 133989 | 134024 | 7636 | 8976 | 4874 |  |
+| evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | PHP peak (script) | 32.23 MiB | 1.51 MiB | 1.41 MiB | 1.52 MiB | 1.45 MiB | 1.33 MiB | 43.7 MiB |
+| evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | Frontend JS heap | 6.74 MiB | 9.85 MiB | 10.48 MiB | 14.05 MiB | 14.85 MiB | 12.31 MiB |  |
+| evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | Frontend DOM nodes | 133715 | 135046 | 135119 | 11566 | 12944 | 8161 |  |
+| evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | PHP peak (script) | 32.23 MiB | 1.52 MiB | 1.41 MiB | 1.52 MiB | 1.5 MiB | 1.41 MiB | 44.2 MiB |
+| evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | Frontend JS heap | 6.75 MiB | 9.01 MiB | 9.69 MiB | 11.71 MiB | 13 MiB | 10.47 MiB |  |
+| evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | Frontend DOM nodes | 133714 | 135010 | 135085 | 7951 | 9329 | 5107 |  |
 | evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.2 MiB | 1.49 MiB | 1.39 MiB | 1.49 MiB | 1.43 MiB | 1.29 MiB | 94.2 MiB |
 | evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.75 MiB | 9.85 MiB | 10.66 MiB | 12.86 MiB | 11.72 MiB | 9.33 MiB |  |
 | evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133704 | 136484 | 136559 | 9002 | 7841 | 2725 |  |
