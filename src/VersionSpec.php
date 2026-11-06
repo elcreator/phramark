@@ -31,11 +31,17 @@ final class VersionSpec
 
     private const LATTE_WORKER_STACKS = ['evo-latte-worker', 'evo-latte-worker-keep', 'evo-latte-parser-worker', 'evo-latte-parser-worker-keep'];
     private const PHALCON_WORKER_STACKS = ['evo-phalcon-worker', 'evo-phalcon-worker-keep'];
-    private const EVO_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'evo-frankenphp', 'evo-worker', 'evo-worker-keep', ...self::LATTE_WORKER_STACKS, ...self::PHALCON_WORKER_STACKS];
+    private const WORKER_STACKS = ['evo-worker', 'evo-worker-keep', ...self::LATTE_WORKER_STACKS, ...self::PHALCON_WORKER_STACKS];
+    private const EVO_STACKS = ['evo-parser', 'evo-latte', 'evo-latte-parser', 'evo-phalcon', 'evo-sarticles', 'evo-frankenphp', ...self::WORKER_STACKS];
     private const ALL_STACKS = [...self::EVO_STACKS, 'drupal', 'typo3', 'winter', 'modx', 'wordpress-gantry'];
-    // Built from a product but run only when named (--solutions): FrankenPHP
-    // comparisons are opt-in so ordinary CMS matrices keep their existing size.
-    private const NAMED_ONLY = ['evo-frankenphp', 'evo-worker', 'evo-worker-keep', ...self::LATTE_WORKER_STACKS, ...self::PHALCON_WORKER_STACKS];
+    // What a plain `matrix` runs at the default versions.
+    private const DEFAULT_STACKS = ['evo-parser', 'evo-latte', 'evo-phalcon', 'drupal', 'typo3', 'evo-latte-parser', 'winter', 'modx', 'wordpress-gantry'];
+    // The default versions have no worker runtime yet: a plain `matrix` runs
+    // the worker stacks from this ref, the first line that has it.
+    private const WORKER_EVO_REF = '3.6.x';
+    // Not selected by a version alone: the worker stacks only by an Evolution
+    // ref that has the runtime, classic FrankenPHP never.
+    private const NAMED_ONLY = ['evo-frankenphp', ...self::WORKER_STACKS];
 
     /**
      * kind: how the setup scripts install a ref.
@@ -122,7 +128,40 @@ final class VersionSpec
             $stacks = array_merge($stacks, $products[$spec['product']]['stacks']);
         }
 
-        return array_values(array_diff(array_intersect(self::ALL_STACKS, array_unique($stacks)), self::NAMED_ONLY));
+        $namedOnly = self::NAMED_ONLY;
+        foreach ($specs as $spec) {
+            if ($spec['product'] === 'evo' && self::workerRuntime($spec['ref']) === true) {
+                $namedOnly = array_diff($namedOnly, self::WORKER_STACKS);
+            }
+        }
+
+        return array_values(array_diff(array_intersect(self::ALL_STACKS, array_unique($stacks)), $namedOnly));
+    }
+
+    /**
+     * Whether an Evolution ref has the worker runtime, by its number: since
+     * 3.6. Null for a ref without one (`latest`, a branch name, a directory).
+     */
+    public static function workerRuntime(string $ref): ?bool
+    {
+        if (self::isPath($ref) || preg_match('/^v?(\d+(?:\.\d+)?)/', $ref, $m) !== 1) {
+            return null;
+        }
+
+        return version_compare($m[1], '3.6', '>=');
+    }
+
+    /**
+     * The plan of a plain `matrix`: the default stacks as they are installed,
+     * with nothing to provision and no label, then the worker stacks.
+     *
+     * @return list<array{env: array<string, string>, stacks: list<array{stack: string, label: string}>}>
+     */
+    public static function defaultRounds(): array
+    {
+        $stacks = array_map(static fn (string $stack): array => ['stack' => $stack, 'label' => ''], self::DEFAULT_STACKS);
+
+        return [['env' => [], 'stacks' => $stacks], ...self::rounds(self::parse('evo@' . self::WORKER_EVO_REF), self::WORKER_STACKS)];
     }
 
     /**
@@ -144,7 +183,12 @@ final class VersionSpec
         $rounds = [];
         foreach ($stacks as $stack) {
             $relevant = array_values(array_filter(array_keys($refs), static fn (string $product): bool => in_array($stack, $products[$product]['stacks'], true)));
-            foreach (self::combinations($relevant, $refs) as $combination) {
+            $stackRefs = $refs;
+            if (isset($refs['evo']) && in_array($stack, self::WORKER_STACKS, true)) {
+                // Only older refs left: keep them, the setup says why it cannot build them.
+                $stackRefs['evo'] = array_values(array_filter($refs['evo'], static fn (string $ref): bool => self::workerRuntime($ref) !== false)) ?: $refs['evo'];
+            }
+            foreach (self::combinations($relevant, $stackRefs) as $combination) {
                 $env = [];
                 foreach ($combination as $product => $ref) {
                     $env[$products[$product]['env']] = $ref;

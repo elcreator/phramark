@@ -26,11 +26,11 @@ The framework column is not the marketing name: it is what a warm category reque
 | `wordpress-gantry` | 8088 | [WordPress](https://wordpress.org) core (481 `wp-includes` files; procedural plus global classes such as `WP_Query`, `wpdb`, `WP_Rewrite`) with the [Gantry 5](https://github.com/gantry/gantry5) **theme framework** plugin (66 `Gantry` classes, 84 plugin files, 12 RocketTheme toolbox classes) rendering its Hydrogen theme through **Timber** (35 classes) and **Twig 2** (49 classes, 54 files); Symfony yaml/event-dispatcher only for the outline (2 classes) | Full CMS front controller: WordPress resolves `/articles/category-NNN` through its page hierarchy (one child page of "Articles" per category), a must-use plugin's `template_include` hands the page to a template that reads `phramark_article` through `$wpdb` and renders a Twig view (`custom/views` override of the theme) inside the Gantry outline: header, navigation, main, footer and off-canvas sections with their particles. One stack, not two: WordPress is measured only through Gantry, because the framework does nothing without a Gantry theme |
 | `evo-sarticles` | 8089 | Same Evolution core, with the [sArticles](https://github.com/Seiger/sArticles) module: the articles are Eloquent models in the module's own tables (`s_articles`, `s_article_translates`, `s_articles_categories`) instead of documents in the tree | **Opt-in** (`--solutions=evo-sarticles`), and the one stack whose point is a comparison with itself: sArticles 1.x against the 2.x branch, which rebuilds the manager on [evo-ui](https://github.com/evolution-cms/evo-ui) and Livewire. The category page still resolves through the document tree and renders the shared contract from the module's models, so guest numbers sit next to the other stacks; the admin round edits articles, not documents |
 | `evo-frankenphp` | 8092 | The `evo-parser` request path on classic FrankenPHP: PHP's normal request lifecycle loads a fresh Evolution application on every request | **Opt-in** (`--solutions=evo-frankenphp`), see [FrankenPHP modes](#frankenphp-modes). Works with Evolution refs that do not provide the worker runtime |
-| `evo-worker` | 8090 | The `evo-parser` request path, run by Evolution's own [FrankenPHP](https://frankenphp.dev) worker loop instead of PHP-FPM: a new application per request | **Opt-in** (`--solutions=evo-worker`), see [FrankenPHP modes](#frankenphp-modes). The same site, snippet and fixture as `evo-parser`: the runtime is the only difference |
-| `evo-worker-keep` | 8091 | The same, with one booted application kept per worker and reset after each request (`EVO_WORKER_KEEP_APP=1`) | **Opt-in**, as `evo-worker`. `evo-worker-keep` − `evo-worker` is what booting the providers costs per request |
-| `evo-latte-worker`, `evo-latte-worker-keep` | 8093, 8094 | The `evo-latte` request path in the two worker modes | **Opt-in**, as `evo-worker`. The same packages, view and fixture as `evo-latte`: the runtime is the only difference |
-| `evo-latte-parser-worker`, `evo-latte-parser-worker-keep` | 8095, 8096 | The `evo-latte-parser` request path in the two worker modes | **Opt-in**, as `evo-latte-worker` |
-| `evo-phalcon-worker`, `evo-phalcon-worker-keep` | 8097, 8098 | The `evo-phalcon` request path in the two worker modes | **Opt-in**, as `evo-latte-worker`. Runs the thread-safe build of the Phalcon extension, where the FPM stacks run the non-thread-safe one |
+| `evo-worker` | 8090 | The `evo-parser` request path, run by Evolution's own [FrankenPHP](https://frankenphp.dev) worker loop instead of PHP-FPM: a new application per request | In the default matrix, on Evolution 3.6.x, see [FrankenPHP modes](#frankenphp-modes). The same site, snippet and fixture as `evo-parser`: the runtime is the only difference |
+| `evo-worker-keep` | 8091 | The same, with one booted application kept per worker and reset after each request (`EVO_WORKER_KEEP_APP=1`) | As `evo-worker`. `evo-worker-keep` − `evo-worker` is what booting the providers costs per request |
+| `evo-latte-worker`, `evo-latte-worker-keep` | 8093, 8094 | The `evo-latte` request path in the two worker modes | As `evo-worker`. The same packages, view and fixture as `evo-latte`: the runtime is the only difference |
+| `evo-latte-parser-worker`, `evo-latte-parser-worker-keep` | 8095, 8096 | The `evo-latte-parser` request path in the two worker modes | As `evo-latte-worker` |
+| `evo-phalcon-worker`, `evo-phalcon-worker-keep` | 8097, 8098 | The `evo-phalcon` request path in the two worker modes | As `evo-latte-worker`. Runs the thread-safe build of the Phalcon extension, where the FPM stacks run the non-thread-safe one |
 
 `evo-sarticles` answers a different question from the rest of the table. Every other stack asks what a framework costs inside a CMS request; this one asks whether a rewritten manager is going in the right direction, by running the same editorial round against two versions of one module (`--versions=sarticles@1.2.1,sarticles@2.x`). The six admin actions are the same user intents in both — open the list, open an article, change its title and summary, save, open the form for a new one, save — and each is waited to the state where the editor can act again. How each version gets there is its own doing: 1.x is a manager tab with a plain form, 2.x an evo-ui modal saved over Livewire.
 
@@ -99,7 +99,7 @@ Re-running `up` re-seeds the fixture and re-syncs adapter code into existing vol
 
 ## The matrix
 
-`benchmark/scripts/bench WORKLOAD JIT PORT [OFFERED_RPS]` runs one cell: it recreates the stack's FPM with `PHP_JIT` set, warms all 100 category pages, runs the fairness gate from the host and from inside the compose network, then runs the workload. The JIT mode is read back from the container into the result name, so a result can never claim a mode that did not run.
+`benchmark/scripts/bench WORKLOAD JIT PORT [OFFERED_RPS]` runs one cell: it recreates the stack's FPM with `PHP_JIT` set, warms all 100 category pages over the compose network, where the load comes from, runs the fairness gate from the host and from that network, then runs the workload. A stack that cannot be warmed fails the cell: it is never measured cold. The network decides because a published port can stall: on Docker Desktop one stayed silent for minutes after a recreate while the stack answered at once on the network, and the host gate skips a port that does not answer. The JIT mode is read back from the container into the result name, so a result can never claim a mode that did not run.
 
 ```sh
 benchmark/scripts/bench guest off     8080 100
@@ -108,7 +108,7 @@ benchmark/scripts/bench admin off     8080
 benchmark/scripts/bench admin tracing 8080
 ```
 
-`benchmark/scripts/matrix` runs many cells in one go and ends by recording the container versions and refreshing `docs/results.json`. Without options it runs every reachable stack × guest/admin × JIT off/tracing at 30 rps; options select a part of the matrix:
+`benchmark/scripts/matrix` runs many cells in one go and ends by recording the container versions and refreshing `docs/results.json`. Without options it runs every reachable stack × guest/admin × JIT off/tracing at 30 rps, then reinstalls the worker stacks from Evolution 3.6.x and runs them the same way; options select a part of the matrix:
 
 ```sh
 benchmark/scripts/matrix                                            # everything, 30 rps
@@ -176,21 +176,21 @@ The comparison has three FrankenPHP modes and the PHP-FPM reference (`evo-parser
 | `evo-worker` | Worker, `EVO_WORKER_KEEP_APP=0` | The PHP process and loaded classes; Evolution builds a new application and boots its providers for each request |
 | `evo-worker-keep` | Worker, `EVO_WORKER_KEEP_APP=1` | The booted application per worker; request state is reset after each request |
 
-Evolution 3.5.x has no worker runtime, so it is measured on PHP-FPM. Evolution 3.6.x provides the worker runtime. The FrankenPHP stacks are opt-in; run all three alongside the FPM reference from the official 3.6.x branch with:
+Evolution 3.5.x has no worker runtime, so it is measured on PHP-FPM. Evolution 3.6.x provides the worker runtime, so both worker modes are part of the defaults from there on: `matrix` without options runs the worker stacks from the 3.6.x branch after the FPM stacks, which stay on their default versions, and `--versions=evo@3.6.x` selects them next to the FPM stacks of that ref. A ref older than 3.6 next to it is left out for them. Classic FrankenPHP stays opt-in; run all three alongside the FPM reference from the official 3.6.x branch with:
 
 ```sh
 benchmark/scripts/matrix --solutions=evo-parser,evo-frankenphp,evo-worker,evo-worker-keep --versions=evo@3.6.x
 ```
 
-The Latte and Phalcon stacks run in the same two worker modes, next to their FPM stacks:
+The Latte and Phalcon stacks run in the same two worker modes. Every worker stack alongside the Evolution FPM stacks on one ref:
 
 ```sh
-benchmark/scripts/matrix --solutions=evo-latte,evo-latte-worker,evo-latte-worker-keep,evo-latte-parser,evo-latte-parser-worker,evo-latte-parser-worker-keep,evo-phalcon,evo-phalcon-worker,evo-phalcon-worker-keep --versions=evo@3.6.x
+benchmark/scripts/matrix --versions=evo@3.6.x
 ```
 
 These stacks need aLatteX 0.5.1 or newer: in `EVO_WORKER_KEEP_APP=0` mode Evolution includes a plugin on every request, and 0.5.0 stops the worker on the second one with `Cannot redeclare function alattexEvoTagsEnabled()`, so the `-worker` stacks answer about half their requests with 500. The `-keep` stacks are not affected.
 
-All these containers belong to the compose profile `worker`, which a plain `up` leaves out. `matrix` starts the selected container after setup. The worker services require `core/includes/worker.runtime.php`; classic FrankenPHP does not.
+All these containers belong to the compose profile `worker`, which a plain `up` leaves out. `matrix` installs the worker sites and starts each container itself. The worker services require `core/includes/worker.runtime.php`; classic FrankenPHP does not.
 
 What is held equal and what is not:
 
@@ -304,7 +304,7 @@ benchmark/scripts/matrix --solutions=winter,evo-manticore     # after the Winter
 benchmark/scripts/manticore                                   # the same job by hand (MANTICORE_BUILD=1 builds the image locally)
 ```
 
-`evo-manticore` is opt-in: `matrix` without `--solutions` runs the nine served stacks and nothing else, and the job only runs when that list names it. It writes into `benchmark/results/manticore` and never touches `docs/results.json`.
+`evo-manticore` is opt-in: `matrix` without `--solutions` runs the served stacks and nothing else, and the job only runs when that list names it. It writes into `benchmark/results/manticore` and never touches `docs/results.json`.
 
 Two things the compiler does not tell you: invoked as a bare `manticore` from `PATH` it finds neither its prelude nor its stdlib (both are located relative to `argv[0]`), and the stdlib is then silently not linked, so every `str_replace()` becomes "undefined function". The image sets `MANTICORE_PRELUDE`, `MANTICORE_STDLIB_O` and `MANTICORE_STDLIB_SIG`.
 
@@ -352,11 +352,11 @@ So the answer to "evo-manticore" is: not a stack, not a faster one either, at th
 
 ## Local smoke numbers
 
-Full matrix (`benchmark/scripts/matrix 30`, `DURATION=60s`, `ROUNDS=1`) on one Windows 11 laptop with Docker Desktop, 8 FPM workers, load generator on the same host, 2026-11-06. A smoke run that shows every cell working; single rounds on a shared machine, so treat differences below ~20 % as noise. Sortable at https://phramark.artur.work; regenerate with `php benchmark/scripts/summary.php`. The versions table names exactly what ran, per stack, linked to the source repositories.
+Full matrix (`benchmark/scripts/matrix 30`, `DURATION=60s`, `ROUNDS=1`) on one Windows 11 laptop with Docker Desktop, 8 FPM workers, load generator on the same host, 2026-11-06. A smoke run that shows every cell working; single rounds on a shared machine, so treat differences below ~20 % as noise. The worker stacks ran on Evolution 3.6.x with `--versions=evo@3.6.x --repeats=5` the same day: five repetitions per cell, their spread shown as whiskers on the site. Sortable at https://phramark.artur.work; regenerate with `php benchmark/scripts/summary.php`. The versions table names exactly what ran, per stack, linked to the source repositories.
 
 ### Versions tested
 
-Recorded from the running containers on 2026-11-06T04:37:37Z: PHP 8.4.27, MySQL 8.4.7, nginx/1.27.5, OPcache validate_timestamps=0, memory_consumption=512, max_accelerated_files=100000.
+Recorded from the running containers on 2026-11-06T18:27:24Z: PHP 8.4.27, MySQL 8.4.7, nginx/1.27.5, OPcache validate_timestamps=0, memory_consumption=512, max_accelerated_files=100000.
 
 | Stack | Components (exact versions) |
 | --- | --- |
@@ -364,8 +364,14 @@ Recorded from the running containers on 2026-11-06T04:37:37Z: PHP 8.4.27, MySQL 
 | evo-latte | [PHP](https://github.com/php/php-src) 8.4.26, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (branch 3.5.x@c16d07e, 2026-10-15), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [illuminate/database](https://github.com/illuminate/database) v12.70.0, [latte/latte](https://github.com/nette/latte) v3.1.6 |
 | evo-latte-parser | [PHP](https://github.com/php/php-src) 8.4.26, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (branch 3.5.x@c16d07e, 2026-10-15), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [illuminate/database](https://github.com/illuminate/database) v12.70.0, [latte/latte](https://github.com/nette/latte) v3.1.6 |
 | evo-phalcon | [PHP](https://github.com/php/php-src) 8.4.26, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.5.9 (branch 3.5.x@c16d07e, 2026-10-15), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.0, [elcreator/aphalcon](https://github.com/elcreator/aPhalcon) dev-local (evo/aPhalcon@1c92644748139ad3), [illuminate/database](https://github.com/illuminate/database) v12.70.0, [latte/latte](https://github.com/nette/latte) v3.1.6, [phalcon (extension)](https://github.com/phalcon/cphalcon) 5.9.3 |
-| evo-worker | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@830003b, 2026-10-31), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.4, worker application new per request, worker requests 500 per worker, then a restart, workers 8 |
-| evo-worker-keep | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@830003b, 2026-10-31), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.4, worker application kept per worker (EVO_WORKER_KEEP_APP=1), worker requests 500 per worker, then a restart, workers 8 |
+| evo-worker | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, worker application new per request, worker requests 500 per worker, then a restart, workers 8 |
+| evo-worker-keep | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, worker application kept per worker (EVO_WORKER_KEEP_APP=1), worker requests 500 per worker, then a restart, workers 8 |
+| evo-latte-worker | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.1, [illuminate/database](https://github.com/illuminate/database) v13.38.0, [latte/latte](https://github.com/nette/latte) v3.1.7, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, worker application new per request, worker requests 500 per worker, then a restart, workers 8 |
+| evo-latte-worker-keep | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.1, [illuminate/database](https://github.com/illuminate/database) v13.38.0, [latte/latte](https://github.com/nette/latte) v3.1.7, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, worker application kept per worker (EVO_WORKER_KEEP_APP=1), worker requests 500 per worker, then a restart, workers 8 |
+| evo-latte-parser-worker | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.1, [illuminate/database](https://github.com/illuminate/database) v13.38.0, [latte/latte](https://github.com/nette/latte) v3.1.7, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, worker application new per request, worker requests 500 per worker, then a restart, workers 8 |
+| evo-latte-parser-worker-keep | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.1, [illuminate/database](https://github.com/illuminate/database) v13.38.0, [latte/latte](https://github.com/nette/latte) v3.1.7, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, worker application kept per worker (EVO_WORKER_KEEP_APP=1), worker requests 500 per worker, then a restart, workers 8 |
+| evo-phalcon-worker | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.1, [elcreator/aphalcon](https://github.com/elcreator/aPhalcon) dev-local (evo/aPhalcon@53a53d7414ce1dd1), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [latte/latte](https://github.com/nette/latte) v3.1.7, [phalcon (extension)](https://github.com/phalcon/cphalcon) 5.23.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, worker application new per request, worker requests 500 per worker, then a restart, workers 8 |
+| evo-phalcon-worker-keep | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.1, [elcreator/aphalcon](https://github.com/elcreator/aPhalcon) dev-local (evo/aPhalcon@53a53d7414ce1dd1), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [latte/latte](https://github.com/nette/latte) v3.1.7, [phalcon (extension)](https://github.com/phalcon/cphalcon) 5.23.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, worker application kept per worker (EVO_WORKER_KEEP_APP=1), worker requests 500 per worker, then a restart, workers 8 |
 | evo-frankenphp | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@830003b, 2026-10-31), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.4, PHP lifecycle classic FrankenPHP; new application per request, PHP threads 8 |
 | drupal | [PHP](https://github.com/php/php-src) 8.4.27, [drupal/core](https://github.com/drupal/core) 11.4.11, [drush/drush](https://github.com/drush-ops/drush) 13.8.0, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.21, [symfony/http-kernel](https://github.com/symfony/http-kernel) v7.4.21, [twig/twig](https://github.com/twigphp/Twig) v3.30.0 |
 | typo3 | [PHP](https://github.com/php/php-src) 8.4.27, [doctrine/dbal](https://github.com/doctrine/dbal) 4.4.4, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.19, [typo3/cms-core](https://github.com/TYPO3/typo3) v14.3.7, [typo3fluid/fluid](https://github.com/TYPO3/Fluid) 5.3.2 |
@@ -395,10 +401,22 @@ Recorded from the running containers on 2026-11-06T04:37:37Z: PHP 8.4.27, MySQL 
 | evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | tracing | 30 | 30.38 | 39.58ms | 232.32ms | 0 | 0.9 MiB | 2.0 MiB | 26.4 MiB | - |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | 30 | 30.37 | 41.15ms | 235.26ms | 0 | 0.9 MiB | 2.0 MiB | 30.1 MiB | - |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 30 | 30.37 | 40.61ms | 246.65ms | 0 | 0.9 MiB | 2.0 MiB | 32.5 MiB | - |
-| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 30 | 30.38 | 64.29ms | 126.85ms | 0 | 1.6 MiB | 8.0 MiB | 72.8 MiB | - |
-| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 30 | 30.37 | 61.31ms | 247.81ms | 0 | 1.6 MiB | 12.0 MiB | 78.6 MiB | - |
-| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 30 | 30.38 | 40.35ms | 221.70ms | 0 | 1.6 MiB | 8.0 MiB | 66.7 MiB | - |
-| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 30 | 30.38 | 38.08ms | 106.94ms | 0 | 1.9 MiB | 12.0 MiB | 77.9 MiB | - |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 30 | 30.37 | 47.55ms | 103.74ms | 0 | 1.2 MiB | 8.0 MiB | 84.6 MiB | - |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 46.81ms | 118.33ms | 0 | 1.3 MiB | 12.0 MiB | 89.6 MiB | - |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 30 | 30.37 | 50.81ms | 109.76ms | 0 | 1.7 MiB | 8.0 MiB | 85.5 MiB | - |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 43.81ms | 93.18ms | 0 | 1.7 MiB | 12.0 MiB | 88.0 MiB | - |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 48.64ms | 133.12ms | 0 | 1.1 MiB | 8.0 MiB | 83.8 MiB | - |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 46.08ms | 243.46ms | 0 | 1.4 MiB | 12.0 MiB | 93.0 MiB | - |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 42.46ms | 97.79ms | 0 | 1.7 MiB | 8.0 MiB | 86.4 MiB | - |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 41.41ms | 229.76ms | 0 | 2.0 MiB | 14.0 MiB | 87.8 MiB | - |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 49.44ms | 255.49ms | 0 | 1.2 MiB | 8.0 MiB | 84.5 MiB | - |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 46.37ms | 101.57ms | 0 | 1.3 MiB | 12.0 MiB | 89.1 MiB | - |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 39.90ms | 78.59ms | 0 | 1.7 MiB | 8.0 MiB | 87.5 MiB | - |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 42.97ms | 100.86ms | 0 | 1.9 MiB | 14.0 MiB | 93.1 MiB | - |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 48.51ms | 178.69ms | 0 | 1.3 MiB | 8.0 MiB | 98.0 MiB | - |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 45.95ms | 281.86ms | 0 | 1.5 MiB | 14.0 MiB | 114.1 MiB | - |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 35.90ms | 201.60ms | 0 | 1.8 MiB | 10.0 MiB | 99.4 MiB | - |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 34.81ms | 282.88ms | 0 | 2.1 MiB | 14.0 MiB | 110.4 MiB | - |
 | evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 30 | 30.38 | 62.85ms | 118.78ms | 0 | 1.1 MiB | 2.0 MiB | 38.4 MiB | - |
 | evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 30 | 30.38 | 63.46ms | 255.87ms | 0 | 1.1 MiB | 2.0 MiB | 40.7 MiB | - |
 | drupal (11.4.11) | off | 30 | 30.38 | 83.01ms | 158.72ms | 0 | 2.2 MiB | 4.0 MiB | 40.3 MiB | - |
@@ -434,10 +452,22 @@ Recorded from the running containers on 2026-11-06T04:37:37Z: PHP 8.4.27, MySQL 
 | evo-phalcon (3.5.9 3.5.x@c16d07e · aLatteX 0.5.0 · aPhalcon ../evo/aPhalcon@1c926447) | tracing | 3262.05 / 975.97 ms | 73.01 / 24.25 ms | 145.94 / 48.71 ms | 67.36 / 17.04 ms | 481.67 / 152.5 ms | 216.51 / 161.36 ms | 8105 ms |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | 3339.26 / 1248.79 ms | 78.46 / 23.29 ms | 145.89 / 52.43 ms | 83.85 / 18.99 ms | 480.89 / 138.14 ms | 164.68 / 108.85 ms | 8000 ms |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 3079.27 / 953.04 ms | 99.12 / 25.37 ms | 205.64 / 53.63 ms | 70.9 / 17.87 ms | 453.19 / 122.58 ms | 145.43 / 79.73 ms | 7552 ms |
-| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 3775.71 / 1611.8 ms | 122.62 / 28.08 ms | 216.54 / 55.47 ms | 72.36 / 25.23 ms | 472.55 / 139.83 ms | 142.44 / 83.43 ms | 8504 ms |
-| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 3778.81 / 1483.63 ms | 87.25 / 30.55 ms | 217.89 / 68.23 ms | 80.65 / 26.77 ms | 472.31 / 135.69 ms | 187.57 / 120.66 ms | 8575 ms |
-| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 3713.61 / 1511.65 ms | 104.03 / 29.12 ms | 137.25 / 54.78 ms | 70.73 / 23.03 ms | 498.75 / 138.07 ms | 195.2 / 143.89 ms | 8450 ms |
-| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 3474.17 / 1260.44 ms | 84.78 / 30.76 ms | 225.74 / 52.71 ms | 76.49 / 23.53 ms | 482.62 / 138.27 ms | 216.58 / 166.18 ms | 8247 ms |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 3752.71 / 1496.74 ms | 89.91 / 40.01 ms | 231.24 / 61.07 ms | 86.34 / 25.79 ms | 518.31 / 166.8 ms | 194.93 / 117.58 ms | 9162 ms |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 3767.87 / 1488.02 ms | 95.62 / 32.61 ms | 291.94 / 56.99 ms | 80.95 / 23.85 ms | 491.21 / 146.33 ms | 165.34 / 94.49 ms | 8741 ms |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 3996.54 / 1770.72 ms | 104.24 / 42.1 ms | 225.68 / 65.02 ms | 96.53 / 34.3 ms | 513.75 / 150.65 ms | 182.21 / 98.93 ms | 10611 ms |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 3442.34 / 1300.42 ms | 96.42 / 31.61 ms | 233.31 / 55.78 ms | 90.57 / 23.13 ms | 485.45 / 139.38 ms | 160.21 / 97.23 ms | 8767 ms |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 3759.34 / 1602.93 ms | 107.2 / 33.51 ms | 314.03 / 68.48 ms | 122.34 / 32.46 ms | 574.78 / 168.7 ms | 212.75 / 135.51 ms | 9717 ms |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3505.81 / 1225.89 ms | 81.97 / 28.59 ms | 222.94 / 60.81 ms | 85.39 / 22.8 ms | 482.51 / 144.19 ms | 163.15 / 102.92 ms | 8297 ms |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 3649.28 / 1481.06 ms | 80.89 / 28.8 ms | 131.44 / 57.21 ms | 94.53 / 26.77 ms | 502.97 / 145.37 ms | 208.73 / 134.28 ms | 8291 ms |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3472.61 / 1230.09 ms | 97.25 / 30.25 ms | 164.19 / 63.99 ms | 79.73 / 22.44 ms | 500.2 / 141.11 ms | 166.93 / 82.18 ms | 8840 ms |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 3943.32 / 1544.31 ms | 86.5 / 30.64 ms | 200.59 / 63.05 ms | 93 / 27 ms | 478.26 / 139.53 ms | 152.36 / 88.62 ms | 8608 ms |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3507.62 / 1322.86 ms | 80.81 / 29.81 ms | 164.72 / 62.42 ms | 76.85 / 24.16 ms | 473.22 / 140.16 ms | 223.43 / 140.21 ms | 8301 ms |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 4375.92 / 1973.88 ms | 98.78 / 34.7 ms | 158.36 / 63.44 ms | 89.97 / 22.45 ms | 487.99 / 142.01 ms | 213.69 / 150.42 ms | 8821 ms |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3533.37 / 1276.12 ms | 87.41 / 30.91 ms | 257.6 / 58.01 ms | 93.86 / 26.22 ms | 479.96 / 137.78 ms | 205.03 / 140.9 ms | 8444 ms |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 3754.75 / 1518.09 ms | 81.4 / 29.17 ms | 227.24 / 58.18 ms | 103.45 / 25.49 ms | 487.28 / 144.07 ms | 169.19 / 96.55 ms | 8738 ms |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 3434.48 / 1287.56 ms | 90.47 / 31.02 ms | 222.35 / 58.22 ms | 115.94 / 31.94 ms | 482.12 / 174.19 ms | 183.22 / 103.95 ms | 8660 ms |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 3772.3 / 1572.44 ms | 92.07 / 30.56 ms | 209.72 / 62.88 ms | 96.36 / 23.21 ms | 471.1 / 142.51 ms | 194.45 / 135.49 ms | 8380 ms |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 3412.17 / 1260.54 ms | 82.02 / 30.28 ms | 234.23 / 54.96 ms | 85.4 / 22.65 ms | 467.87 / 138.6 ms | 204.77 / 127.73 ms | 8021 ms |
 | evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 3959.98 / 1642.18 ms | 86.06 / 33.68 ms | 245.37 / 66.97 ms | 122.52 / 27.72 ms | 480.27 / 144.85 ms | 173.26 / 113.79 ms | 9065 ms |
 | evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 3765.77 / 1524.96 ms | 98.68 / 31.46 ms | 351.88 / 64.67 ms | 91.91 / 21.2 ms | 482.52 / 138.17 ms | 215.34 / 151.81 ms | 8715 ms |
 | drupal (11.4.11) | off | 229.64 / 115.44 ms | 164.53 / 115.36 ms | 387.38 / 321.41 ms | 92.24 / 45.08 ms | 362.74 / 296.77 ms | 236.81 / 120.6 ms | 5491 ms |
@@ -509,18 +539,54 @@ Recorded from the running containers on 2026-11-06T04:37:37Z: PHP 8.4.27, MySQL 
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | PHP peak (script) | 31.59 MiB | 1.15 MiB | 1.03 MiB | 1.16 MiB | 1.07 MiB | 1.12 MiB | 48 MiB |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | Frontend JS heap | 6.68 MiB | 9.32 MiB | 9.75 MiB | 11.65 MiB | 12.58 MiB | 10.81 MiB |  |
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | Frontend DOM nodes | 132649 | 133989 | 134024 | 7636 | 8976 | 4874 |  |
-| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | PHP peak (script) | 32.2 MiB | 1.47 MiB | 1.39 MiB | 1.48 MiB | 1.42 MiB | 1.29 MiB | 80.9 MiB |
-| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend JS heap | 6.74 MiB | 10.15 MiB | 10.58 MiB | 12.55 MiB | 11.87 MiB | 9.33 MiB |  |
-| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend DOM nodes | 133702 | 136482 | 136557 | 9000 | 7839 | 2723 |  |
-| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | PHP peak (script) | 32.2 MiB | 1.52 MiB | 1.39 MiB | 1.48 MiB | 1.48 MiB | 1.29 MiB | 81.5 MiB |
-| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend JS heap | 12.8 MiB | 10.81 MiB | 10.81 MiB | 12.6 MiB | 11.88 MiB | 8.95 MiB |  |
-| evo-worker (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend DOM nodes | 270731 | 7152 | 5737 | 9935 | 7498 | 2723 |  |
-| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | PHP peak (script) | 32.2 MiB | 1.47 MiB | 1.39 MiB | 1.48 MiB | 1.42 MiB | 1.3 MiB | 83.7 MiB |
-| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend JS heap | 6.73 MiB | 9.79 MiB | 10.58 MiB | 14.14 MiB | 15.01 MiB | 17.02 MiB |  |
-| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend DOM nodes | 133703 | 135034 | 135107 | 11693 | 13071 | 15917 |  |
-| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | PHP peak (script) | 32.2 MiB | 1.48 MiB | 1.39 MiB | 1.48 MiB | 1.48 MiB | 1.3 MiB | 83.8 MiB |
-| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend JS heap | 6.73 MiB | 10.19 MiB | 10.95 MiB | 14.01 MiB | 14.87 MiB | 10.42 MiB |  |
-| evo-worker-keep (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend DOM nodes | 133702 | 135034 | 135107 | 11564 | 12942 | 5166 |  |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.2 MiB | 1.49 MiB | 1.39 MiB | 1.49 MiB | 1.43 MiB | 1.29 MiB | 94.2 MiB |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.75 MiB | 9.85 MiB | 10.66 MiB | 12.86 MiB | 11.72 MiB | 9.33 MiB |  |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133704 | 136484 | 136559 | 9002 | 7841 | 2725 |  |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.2 MiB | 1.5 MiB | 1.39 MiB | 1.49 MiB | 1.48 MiB | 1.32 MiB | 83.8 MiB |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 12.81 MiB | 14.66 MiB | 14.74 MiB | 11.69 MiB | 10.84 MiB | 9.81 MiB |  |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270733 | 265078 | 263663 | 10054 | 8665 | 2741 |  |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.2 MiB | 1.49 MiB | 1.39 MiB | 1.49 MiB | 1.43 MiB | 1.29 MiB | 95 MiB |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.74 MiB | 9.83 MiB | 10.59 MiB | 11.94 MiB | 11.73 MiB | 15.24 MiB |  |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133705 | 136490 | 136563 | 6463 | 7321 | 7512 |  |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.2 MiB | 1.5 MiB | 1.39 MiB | 1.49 MiB | 1.48 MiB | 1.38 MiB | 97.4 MiB |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.74 MiB | 10.19 MiB | 10.02 MiB | 12.08 MiB | 12.6 MiB | 12.1 MiB |  |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133704 | 136483 | 135068 | 8012 | 9329 | 7133 |  |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.31 MiB | 93.8 MiB |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.75 MiB | 9.86 MiB | 10.61 MiB | 14.69 MiB | 14.99 MiB | 18.36 MiB |  |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 7154 | 5739 | 12884 | 14201 | 18268 |  |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.31 MiB | 90.2 MiB |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 12.81 MiB | 13.12 MiB | 12.71 MiB | 11.7 MiB | 12.6 MiB | 17.18 MiB |  |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270753 | 253048 | 251633 | 10054 | 8893 | 14113 |  |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.31 MiB | 96.3 MiB |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.76 MiB | 9.87 MiB | 10.64 MiB | 15.09 MiB | 13.93 MiB | 8.92 MiB |  |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 7154 | 5739 | 13540 | 12379 | 2725 |  |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.51 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.31 MiB | 92.9 MiB |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 12.79 MiB | 13.26 MiB | 12.74 MiB | 12.82 MiB | 12.02 MiB | 9.29 MiB |  |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270789 | 132664 | 129761 | 9002 | 7841 | 2725 |  |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.31 MiB | 94.3 MiB |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 12.79 MiB | 13.08 MiB | 12.86 MiB | 11.11 MiB | 9.96 MiB | 12.41 MiB |  |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 270753 | 243979 | 241076 | 6283 | 5302 | 7803 |  |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.51 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.34 MiB | 98 MiB |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.75 MiB | 10.51 MiB | 10.3 MiB | 12.51 MiB | 12 MiB | 9.31 MiB |  |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133714 | 137870 | 136455 | 9057 | 7841 | 2780 |  |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.31 MiB | 93.8 MiB |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.74 MiB | 9.85 MiB | 10.5 MiB | 13.59 MiB | 14.84 MiB | 11.06 MiB |  |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133715 | 135069 | 135119 | 11566 | 12944 | 6120 |  |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.33 MiB | 97.4 MiB |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 13.22 MiB | 14.71 MiB | 13.79 MiB | 11.66 MiB | 12.86 MiB | 17.17 MiB |  |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270937 | 243973 | 242558 | 10054 | 8893 | 14113 |  |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.23 MiB | 1.52 MiB | 1.42 MiB | 1.52 MiB | 1.46 MiB | 1.33 MiB | 90.7 MiB |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.75 MiB | 10.46 MiB | 10.95 MiB | 11.41 MiB | 12.33 MiB | 13.42 MiB |  |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 128779 | 127364 | 27390 | 9047 | 9189 |  |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.23 MiB | 1.53 MiB | 1.42 MiB | 1.52 MiB | 1.51 MiB | 1.34 MiB | 87.8 MiB |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.75 MiB | 9.97 MiB | 10 MiB | 12.07 MiB | 12.92 MiB | 11.44 MiB |  |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133715 | 136492 | 135077 | 7951 | 9329 | 6123 |  |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.23 MiB | 1.52 MiB | 1.42 MiB | 1.52 MiB | 1.46 MiB | 1.33 MiB | 94.2 MiB |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.76 MiB | 10 MiB | 10.77 MiB | 13.13 MiB | 11.53 MiB | 11.11 MiB |  |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 128776 | 127361 | 131559 | 7504 | 6120 |  |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.23 MiB | 1.53 MiB | 1.42 MiB | 1.52 MiB | 1.51 MiB | 1.34 MiB | 87.8 MiB |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.75 MiB | 10.21 MiB | 10.03 MiB | 11.97 MiB | 12.59 MiB | 10.85 MiB |  |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133714 | 136495 | 135080 | 7951 | 9329 | 5156 |  |
 | evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | PHP peak (script) | 32.19 MiB | 1.47 MiB | 1.37 MiB | 1.48 MiB | 1.41 MiB | 1.31 MiB | 29.1 MiB |
 | evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend JS heap | 6.75 MiB | 11.69 MiB | 12.45 MiB | 15 MiB | 16.08 MiB | 18.03 MiB |  |
 | evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend DOM nodes | 133703 | 138012 | 138085 | 10113 | 8891 | 14127 |  |

@@ -2,7 +2,9 @@
 # Warms OPcache, CMS caches and the InnoDB buffer pool of every reachable
 # stack by requesting all 100 category pages in the canonical URL form. Any
 # non-200 answer (including a redirect) aborts: it means the fairness gate
-# (benchmark/scripts/verify) would fail too.
+# (benchmark/scripts/verify) would fail too. A stack that does not answer is
+# skipped, or stops the script with PHRAMARK_REQUIRE_WARM=1: a cell must not be
+# measured cold.
 #
 #   benchmark/scripts/warmup [PORT...]
 set -eu
@@ -19,6 +21,7 @@ for port in $ports; do
   done
   if [ "$reachable" = 0 ]; then
     echo "port $port: not reachable, skipped"
+    [ "${PHRAMARK_REQUIRE_WARM:-0}" = 0 ] || exit 1
     continue
   fi
   for category in $(seq -w 1 100); do

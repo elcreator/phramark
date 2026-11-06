@@ -65,6 +65,14 @@ profile_for_stack() {
   esac
 }
 
+# Runs a command on the compose network, where the load generators run and
+# stacks go by their service names. A published port proves nothing here:
+# Docker Desktop's can stall for minutes after a recreate while the stack
+# answers at once on the network.
+on_network() {
+  docker.exe run --rm --network phramark_default -v "$(repo_root):/opt/phramark:ro" -w /opt/phramark phramark-setup sh -c "$1"
+}
+
 # The version label of the current run (PHRAMARK_VERSION, e.g.
 # "evo@3.5.x+latte@0.4.0", set per stack by matrix --versions) as a result
 # file name segment after the stack id: guest-evo-latte~evo@3.5.x-jit-off-….

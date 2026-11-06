@@ -38,12 +38,12 @@ if [ "$actual" != "$jit" ]; then
   exit 1
 fi
 
-benchmark/scripts/warmup "$port"
+# Warm and verify the way the load generator sees the stack: by service name
+# on the compose network, where host-based checks (trusted hosts, base URLs)
+# can differ from 127.0.0.1. The host check skips a port that does not answer.
+on_network "PHRAMARK_HOST=$target PHRAMARK_REQUIRE_WARM=1 sh benchmark/scripts/warmup 80"
 PHRAMARK_PORTS=$port benchmark/scripts/verify
-# Verify once more the way the load generator sees the stack: by service
-# name on the compose network, where host-based checks (trusted hosts,
-# base URLs) can differ from 127.0.0.1.
-docker.exe run --rm --network phramark_default -v "$(repo_root):/opt/phramark:ro" -w /opt/phramark phramark-setup   sh -c "PHRAMARK_PORTS=$port php benchmark/scripts/verify.php $target 42 --port=80"
+on_network "PHRAMARK_PORTS=$port php benchmark/scripts/verify.php $target --port=80"
 case "$workload" in
   guest) benchmark/scripts/run "$rate" "$port" ;;
   admin) benchmark/scripts/admin "$port" ;;

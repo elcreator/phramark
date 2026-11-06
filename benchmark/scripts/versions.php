@@ -258,12 +258,15 @@ foreach (array_keys(RuntimeProfile::adapters()) as $stack) {
 }
 
 $anyContainer = container(array_key_first($stacks) ?? 'evo-parser');
+// All stacks share one nginx image; a run of some stacks leaves the others stopped.
+$anyNginx = strtok(capture(['docker.exe', 'ps', '--filter', 'name=phramark-nginx-', '--format', '{{.Names}}']), "
+");
 $record = [
     'recordedAt' => gmdate('Y-m-d\TH:i:s\Z'),
     'runtime' => [
         'php' => inContainer($anyContainer, 'php -r "echo PHP_VERSION;"'),
         'mysql' => preg_replace('/^.*Ver (\S+).*$/s', '$1', capture(['docker.exe', 'exec', 'phramark-mysql-1', 'mysql', '--version'])),
-        'nginx' => preg_replace('/^nginx version: /', '', capture(['docker.exe', 'exec', 'phramark-nginx-parser-1', 'sh', '-c', 'nginx -v 2>&1'])),
+        'nginx' => preg_replace('/^nginx version: /', '', capture(['docker.exe', 'exec', (string) $anyNginx, 'sh', '-c', 'nginx -v 2>&1'])),
         'opcache' => 'validate_timestamps=0, memory_consumption=512, max_accelerated_files=100000',
     ],
     'stacks' => $stacks,
