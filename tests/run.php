@@ -586,6 +586,7 @@ rmdir($selectionDir);
 array_map('unlink', glob($resultsDir . '/*') ?: []);
 rmdir($resultsDir);
 expect(str_contains(repositoryFile('benchmark/scripts/matrix'), 'summary.php --since="$started" --json > docs/results.json') && str_contains(repositoryFile('benchmark/scripts/matrix'), 'versions.php'), true, 'A matrix run must record the versions and refresh the results site data.');
+expect([str_contains(repositoryFile('benchmark/scripts/versions.php'), "'name=phramark-nginx-'"), str_contains(repositoryFile('benchmark/scripts/versions.php'), "'exec', 'phramark-nginx-parser-1'")], [true, false], 'The nginx version comes from a running stack: a run of some stacks leaves evo-parser stopped.');
 expect(trim(repositoryFile('docs/CNAME')), 'phramark.artur.work', 'The results site is published at phramark.artur.work.');
 expect(str_contains(repositoryFile('benchmark/scripts/matrix'), 'REPEATS') && str_contains(repositoryFile('benchmark/scripts/run'), '-${stamp}.txt') && str_contains(repositoryFile('benchmark/scripts/run'), '.rss.log'), true, 'Cells can be repeated for an error estimate; every guest run keeps its own file and its RSS samples.');
 expect(str_contains(repositoryFile('docs/site.js'), "from './charts.js?v=") && str_contains(repositoryFile('docs/charts.js'), 'export function renderSmallMultiples'), true, 'The results site draws the memory series as small multiples.');
