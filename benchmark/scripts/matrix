@@ -138,7 +138,7 @@ run_cells() {
   service=${php#phramark-}; service=${service%-1}
   nginx_service=${nginx#phramark-}; nginx_service=${nginx_service%-1}
   # Start the selected stack before probing it; bench recreates it per JIT cell.
-  if ! $compose $profile up -d --no-deps "$service" "$nginx_service"; then
+  if ! $compose $profile up -d --no-deps "$service" $nginx_service; then
     echo "port $port: unable to start $stack" >&2
     failed="$failed $port${2:+~$2}:start-failed"
     return

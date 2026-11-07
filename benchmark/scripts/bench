@@ -28,9 +28,9 @@ nginx_service=${nginx#phramark-}; nginx_service=${nginx_service%-1}
 
 profile=$(profile_for_stack "$stack")
 
-# Recreate only this stack's FPM (the JIT mode is applied at container start)
-# and its nginx, which caches the FPM address.
-PHP_JIT="$jit" docker.exe compose -f benchmark/compose.yaml $profile up -d --no-deps --force-recreate "$service" "$nginx_service" >/dev/null
+# Recreate only this stack's PHP (the JIT mode is applied at container start)
+# and its nginx, if it has one, which caches the FPM address.
+PHP_JIT="$jit" docker.exe compose -f benchmark/compose.yaml $profile up -d --no-deps --force-recreate "$service" $nginx_service >/dev/null
 sleep 3
 actual=$(jit_for_container "$php")
 if [ "$actual" != "$jit" ]; then

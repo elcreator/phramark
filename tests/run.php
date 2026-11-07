@@ -749,24 +749,29 @@ expect([str_contains($m[1], 'profiles: ["worker"]'), str_contains($m[1], 'EVO_WO
 $classicCaddy = repositoryFile('benchmark/config/Caddyfile-classic');
 expect([str_contains($classicCaddy, 'num_threads {$PHRAMARK_THREADS}'), str_contains($classicCaddy, 'php_server'), str_contains($classicCaddy, 'worker {')], [true, true, false], 'Classic FrankenPHP serves PHP requests without a worker block.');
 expect(str_contains(repositoryFile('benchmark/images/frankenphp/entrypoint.sh'), 'if [ "${EVO_WORKER_MODE:-0}" = 1 ]'), true, 'Only the worker stacks require Evolution worker support.');
-// One nginx config for every worker stack, with the names from compose.yaml.
-$nginx = repositoryFile('benchmark/config/nginx-worker.conf.template');
-expect(substr_count($nginx, 'proxy_set_header Host ${PHRAMARK_WORKER_ORIGIN};'), 2, 'nginx sends the front end of a worker stack to the worker under its one origin.');
-expect(str_contains($nginx, 'set $php ${PHRAMARK_WORKER_PHP}:80;'), true, 'nginx hands PHP to the worker stack it belongs to.');
-expect(str_contains($nginx, 'proxy_set_header Host $http_host;'), true, "The manager of a worker stack keeps the client's host.");
+expect([str_contains($m[1], 'ports: ["8092:80"]'), str_contains($compose, '  nginx-frankenphp:')], [true, false], 'Classic FrankenPHP is published itself, with no nginx in front.');
+// FrankenPHP is the web server of these stacks: no nginx in front of it.
+$workerCaddy = repositoryFile('benchmark/config/Caddyfile-worker');
+expect([str_contains($workerCaddy, "@front path / /index.php\n"), str_contains($workerCaddy, 'request_header @front Host {$PHRAMARK_WORKER_HOST}')], [true, true], 'The front end of a worker stack reaches the worker under its one origin; the manager keeps the client\'s host.');
+expect(str_contains(repositoryFile('benchmark/images/frankenphp/entrypoint.sh'), 'PHRAMARK_WORKER_HOST=${EVO_WORKER_ORIGIN#*://}'), true, 'The host of the worker comes from EVO_WORKER_ORIGIN.');
+foreach (['nginx-frankenphp.conf', 'nginx-worker.conf.template'] as $config) {
+    expect(file_exists(__DIR__ . "/../benchmark/config/$config"), false, "$config is gone with the nginx in front of FrankenPHP.");
+}
+$targets = static fn (int $port): string => trim((string) shell_exec('sh -c ' . escapeshellarg(". benchmark/scripts/lib.sh; stack_for_port $port; echo \$target:\$nginx")));
+expect([$targets(8090), $targets(8092), $targets(8098), $targets(8081)], ['php-worker:', 'php-frankenphp:', 'php-phalcon-worker-keep:', 'nginx-latte:phramark-nginx-latte-1'], 'The load reaches a FrankenPHP stack directly and an FPM stack through its nginx.');
+foreach (['benchmark/scripts/bench', 'benchmark/scripts/matrix'] as $script) {
+    expect(str_contains(repositoryFile($script), '"$service" $nginx_service'), true, "$script starts a stack that has no nginx: an empty name is no service.");
+}
 foreach (['evo-worker' => ['worker', '0', 8090], 'evo-worker-keep' => ['worker-keep', '1', 8091], 'evo-latte-worker' => ['latte-worker', '0', 8093], 'evo-latte-worker-keep' => ['latte-worker-keep', '1', 8094], 'evo-latte-parser-worker' => ['latte-parser-worker', '0', 8095], 'evo-latte-parser-worker-keep' => ['latte-parser-worker-keep', '1', 8096], 'evo-phalcon-worker' => ['phalcon-worker', '0', 8097], 'evo-phalcon-worker-keep' => ['phalcon-worker-keep', '1', 8098]] as $origin => [$service, $keep, $port]) {
     if (preg_match('/^  php-' . preg_quote($service, '/') . ':\n((?:    .*\n|\s*\n)*)/m', $compose, $m) !== 1) {
         throw new RuntimeException("compose.yaml must define php-$service.");
     }
     expect([str_contains($m[1], "EVO_WORKER_ORIGIN: http://$origin"), str_contains($m[1], "EVO_WORKER_KEEP_APP: \"$keep\""), str_contains($m[1], "- $origin:/var/www/html")], [true, true, true], "php-$service serves $origin with EVO_WORKER_KEEP_APP=$keep.");
-    if (preg_match('/^  nginx-' . preg_quote($service, '/') . ':\n((?:    .*\n|\s*\n)*)/m', $compose, $m) !== 1) {
-        throw new RuntimeException("compose.yaml must define nginx-$service.");
-    }
-    expect([str_contains($m[1], "\"$port:80\""), str_contains($m[1], "PHRAMARK_WORKER_PHP: php-$service\n"), str_contains($m[1], "PHRAMARK_WORKER_ORIGIN: $origin\n"), str_contains($m[1], 'nginx-worker.conf.template:/etc/nginx/templates/default.conf.template:ro')], [true, true, true, true], "nginx-$service fills the worker config with the names of $origin.");
+    expect([str_contains($m[1], "ports: [\"$port:80\"]"), str_contains($compose, "  nginx-$service:")], [true, false], "php-$service is published itself, with no nginx in front.");
     expect(RuntimeProfile::adapters()[$origin]['port'], $port, "$origin is published on the port of its adapter.");
     expect(str_contains($compose, "- $origin:/sites/$origin\n") && str_contains($compose, "\n  $origin:\n"), true, "setup installs $origin into a volume of its own.");
 }
-expect([str_contains($compose, "x-worker-php: &worker-php\n  profiles: [\"worker\"]"), str_contains($compose, "x-worker-nginx: &worker-nginx\n  profiles: [\"worker\"]"), str_contains($compose, "x-worker-environment: &worker-environment\n"), str_contains($compose, '  EVO_WORKER_MODE: "1"')], [true, true, true, true], 'The Latte and Phalcon worker stacks stay out of a plain compose up and run worker mode.');
+expect([str_contains($compose, "x-worker-php: &worker-php\n  profiles: [\"worker\"]"), !str_contains($compose, "x-worker-nginx"), str_contains($compose, "x-worker-environment: &worker-environment\n"), str_contains($compose, '  EVO_WORKER_MODE: "1"')], [true, true, true, true], 'The Latte and Phalcon worker stacks stay out of a plain compose up and run worker mode.');
 
 // A Latte or Phalcon worker stack is its FPM stack on another runtime.
 foreach (['evo-latte-worker' => 'evo-latte', 'evo-latte-worker-keep' => 'evo-latte', 'evo-latte-parser-worker' => 'evo-latte-parser', 'evo-latte-parser-worker-keep' => 'evo-latte-parser', 'evo-phalcon-worker' => 'evo-phalcon', 'evo-phalcon-worker-keep' => 'evo-phalcon'] as $stack => $twin) {
@@ -823,14 +828,11 @@ foreach (['parser', 'latte', 'latte-parser', 'phalcon', 'sarticles'] as $stack) 
     $nginx = repositoryFile("benchmark/config/nginx-$stack.conf");
     expect([str_contains($nginx, 'location /manager/ { try_files $uri $uri/ /manager/index.php?$args; }'), str_contains($nginx, 'location ~ ^/manager/.+\.(js|mjs|css|map|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot)$ {')], [true, true], "nginx-$stack hands manager routes to the manager front controller and keeps missing assets a 404.");
 }
-foreach (['nginx-frankenphp.conf', 'nginx-worker.conf.template'] as $stack) {
-    $nginx = str_replace("\r\n", "\n", repositoryFile("benchmark/config/$stack"));
-    expect([str_contains($nginx, 'location /manager/ { try_files $uri $uri/ @manager; }'), str_contains($nginx, "location @manager {\n        proxy_pass http://\$php;\n        proxy_set_header Host \$http_host;")], [true, true], "$stack proxies manager routes to FrankenPHP with the client's host.");
-}
 foreach (['Caddyfile-classic', 'Caddyfile-worker'] as $caddyfile) {
     $caddy = repositoryFile("benchmark/config/$caddyfile");
     $manager = strpos($caddy, 'rewrite @manager /manager/index.php?{query}');
     expect($manager !== false && $manager < strpos($caddy, 'rewrite @notfile /index.php'), true, "$caddyfile rewrites manager routes to manager/index.php before the site's front controller.");
+    expect([substr_count($caddy, 'not path_regexp ^/manager/.+\.(js|mjs|css|map|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot)$'), str_contains($caddy, 'respond @missingAsset 404')], [2, true], "$caddyfile answers a missing manager asset with 404, as the FPM stacks do.");
 }
 expect(str_contains(repositoryFile('benchmark/fixtures/setup.php'), "'composer', 'install', '--no-dev', '--classmap-authoritative'"), true, 'A Composer-built Evolution vendor is classmap-authoritative, like the committed 3.5 one and make:site.');
 

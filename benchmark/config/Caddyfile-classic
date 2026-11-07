@@ -9,12 +9,20 @@
 :80 {
 	root * /var/www/html
 
+	# A missing manager asset stays a 404, as on the FPM stacks.
+	@missingAsset {
+		path_regexp ^/manager/.+\.(js|mjs|css|map|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot)$
+		not file
+	}
+	respond @missingAsset 404
+
 	# What Evolution's manager/.htaccess does on Apache: a path under /manager/
 	# that is not a file goes to the manager's front controller (evo-ui serves
 	# its script and Livewire updates from such routes), never to the site's.
 	@manager {
 		path /manager/*
 		not file
+		not path_regexp ^/manager/.+\.(js|mjs|css|map|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot)$
 	}
 	rewrite @manager /manager/index.php?{query}
 
@@ -22,6 +30,7 @@
 		not file {
 			try_files {path} {path}/index.php {path}/index.html
 		}
+		not path_regexp ^/manager/.+\.(js|mjs|css|map|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot)$
 	}
 	rewrite @notfile /index.php?q={path}&{query}
 

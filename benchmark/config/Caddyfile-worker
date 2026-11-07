@@ -1,7 +1,7 @@
 # FrankenPHP for the worker-mode stacks, after Evolution's own
 # .github/docker/worker.Caddyfile: the root index.php is the worker, every
-# other PHP entry point (the manager) runs as classic PHP. nginx in front
-# serves the static files and blocks nothing here, as on the FPM stacks.
+# other PHP entry point (the manager) runs as classic PHP. It is the stack's web
+# server, static files included, and blocks nothing here, as on the FPM stacks.
 {
 	auto_https off
 	admin off
@@ -17,12 +17,20 @@
 :80 {
 	root * /var/www/html
 
+	# A missing manager asset stays a 404, as on the FPM stacks.
+	@missingAsset {
+		path_regexp ^/manager/.+\.(js|mjs|css|map|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot)$
+		not file
+	}
+	respond @missingAsset 404
+
 	# What Evolution's manager/.htaccess does on Apache: a path under /manager/
 	# that is not a file goes to the manager's front controller (evo-ui serves
 	# its script and Livewire updates from such routes), never to the site's.
 	@manager {
 		path /manager/*
 		not file
+		not path_regexp ^/manager/.+\.(js|mjs|css|map|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot)$
 	}
 	rewrite @manager /manager/index.php?{query}
 
@@ -30,8 +38,16 @@
 		not file {
 			try_files {path} {path}/index.php {path}/index.html
 		}
+		not path_regexp ^/manager/.+\.(js|mjs|css|map|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot)$
 	}
 	rewrite @notfile /index.php?q={path}&{query}
+
+	# A worker serves one origin (EVO_WORKER_ORIGIN) and answers any other with
+	# 421, while the harness reaches the stack as 127.0.0.1:PORT and by its
+	# service: front-end requests carry that origin's host. The pages link
+	# relatively, so the host appears nowhere in what is measured.
+	@front path / /index.php
+	request_header @front Host {$PHRAMARK_WORKER_HOST}
 
 	php_server
 }

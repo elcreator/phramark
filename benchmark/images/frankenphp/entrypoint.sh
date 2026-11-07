@@ -38,7 +38,8 @@ if [ "${EVO_WORKER_MODE:-0}" = 1 ]; then
   # Workers serve the front end; classic PHP threads serve the manager too.
   # FrankenPHP starts worker threads on top of num_threads (1.13: 8 + 8).
   PHRAMARK_WORKERS=$workers
-  export PHRAMARK_WORKERS
+  PHRAMARK_WORKER_HOST=${EVO_WORKER_ORIGIN#*://}
+  export PHRAMARK_WORKERS PHRAMARK_WORKER_HOST
 fi
 
 exec frankenphp run --config /etc/phramark/Caddyfile --adapter caddyfile

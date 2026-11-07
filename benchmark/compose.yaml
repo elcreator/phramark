@@ -19,10 +19,6 @@ x-worker-environment: &worker-environment
   # Empty: Evolution's default (500 requests per worker, then a restart).
   EVO_WORKER_MAX_REQUESTS: ${EVO_WORKER_MAX_REQUESTS:-}
 
-x-worker-nginx: &worker-nginx
-  profiles: ["worker"]
-  image: nginx:1.27-alpine
-
 services:
   mysql:
     build:
@@ -219,6 +215,8 @@ services:
       - ./config/nginx-sarticles.conf:/etc/nginx/conf.d/default.conf:ro
 
   # Evolution's FrankenPHP comparisons (benchmark/README.md, "FrankenPHP modes"):
+  # FrankenPHP is the web server of these stacks, static files included: the
+  # load reaches it directly, with no nginx in front.
   # evo-frankenphp runs classic PHP request lifecycles; the two worker stacks
   # use Evolution 3.6+'s worker loop with new or retained application state.
   php-frankenphp:
@@ -235,18 +233,10 @@ services:
       PHP_FPM_PM_MAX_CHILDREN: ${PHP_FPM_PM_MAX_CHILDREN:-8}
       PHP_JIT: ${PHP_JIT:-off}
     command: ["/usr/local/bin/phramark-frankenphp"]
+    ports: ["8092:80"]
     volumes:
       - evo-frankenphp:/var/www/html
       - ./config/Caddyfile-classic:/etc/phramark/Caddyfile:ro
-
-  nginx-frankenphp:
-    profiles: ["worker"]
-    image: nginx:1.27-alpine
-    depends_on: [php-frankenphp]
-    ports: ["8092:80"]
-    volumes:
-      - evo-frankenphp:/var/www/html:ro
-      - ./config/nginx-frankenphp.conf:/etc/nginx/conf.d/default.conf:ro
 
   # Evolution in FrankenPHP worker mode (benchmark/README.md, "Worker mode"):
   # the evo-parser site and fixture, served by Evolution's own worker loop
@@ -273,6 +263,7 @@ services:
       # Empty: Evolution's default (500 requests per worker, then a restart).
       EVO_WORKER_MAX_REQUESTS: ${EVO_WORKER_MAX_REQUESTS:-}
     command: ["/usr/local/bin/phramark-frankenphp"]
+    ports: ["8090:80"]
     volumes:
       - evo-worker:/var/www/html
 
@@ -295,32 +286,9 @@ services:
       # Empty: Evolution's default (500 requests per worker, then a restart).
       EVO_WORKER_MAX_REQUESTS: ${EVO_WORKER_MAX_REQUESTS:-}
     command: ["/usr/local/bin/phramark-frankenphp"]
+    ports: ["8091:80"]
     volumes:
       - evo-worker-keep:/var/www/html
-
-  nginx-worker:
-    profiles: ["worker"]
-    image: nginx:1.27-alpine
-    depends_on: [php-worker]
-    ports: ["8090:80"]
-    environment:
-      PHRAMARK_WORKER_PHP: php-worker
-      PHRAMARK_WORKER_ORIGIN: evo-worker
-    volumes:
-      - evo-worker:/var/www/html:ro
-      - ./config/nginx-worker.conf.template:/etc/nginx/templates/default.conf.template:ro
-
-  nginx-worker-keep:
-    profiles: ["worker"]
-    image: nginx:1.27-alpine
-    depends_on: [php-worker-keep]
-    ports: ["8091:80"]
-    environment:
-      PHRAMARK_WORKER_PHP: php-worker-keep
-      PHRAMARK_WORKER_ORIGIN: evo-worker-keep
-    volumes:
-      - evo-worker-keep:/var/www/html:ro
-      - ./config/nginx-worker.conf.template:/etc/nginx/templates/default.conf.template:ro
 
   # The Latte and Phalcon stacks in the same two worker modes: each is the site
   # and fixture of its FPM stack, so only the runtime differs.
@@ -330,19 +298,9 @@ services:
       <<: *worker-environment
       EVO_WORKER_ORIGIN: http://evo-latte-worker
       EVO_WORKER_KEEP_APP: "0"
+    ports: ["8093:80"]
     volumes:
       - evo-latte-worker:/var/www/html
-
-  nginx-latte-worker:
-    <<: *worker-nginx
-    depends_on: [php-latte-worker]
-    ports: ["8093:80"]
-    environment:
-      PHRAMARK_WORKER_PHP: php-latte-worker
-      PHRAMARK_WORKER_ORIGIN: evo-latte-worker
-    volumes:
-      - evo-latte-worker:/var/www/html:ro
-      - ./config/nginx-worker.conf.template:/etc/nginx/templates/default.conf.template:ro
 
   php-latte-worker-keep:
     <<: *worker-php
@@ -350,19 +308,9 @@ services:
       <<: *worker-environment
       EVO_WORKER_ORIGIN: http://evo-latte-worker-keep
       EVO_WORKER_KEEP_APP: "1"
+    ports: ["8094:80"]
     volumes:
       - evo-latte-worker-keep:/var/www/html
-
-  nginx-latte-worker-keep:
-    <<: *worker-nginx
-    depends_on: [php-latte-worker-keep]
-    ports: ["8094:80"]
-    environment:
-      PHRAMARK_WORKER_PHP: php-latte-worker-keep
-      PHRAMARK_WORKER_ORIGIN: evo-latte-worker-keep
-    volumes:
-      - evo-latte-worker-keep:/var/www/html:ro
-      - ./config/nginx-worker.conf.template:/etc/nginx/templates/default.conf.template:ro
 
   php-latte-parser-worker:
     <<: *worker-php
@@ -370,19 +318,9 @@ services:
       <<: *worker-environment
       EVO_WORKER_ORIGIN: http://evo-latte-parser-worker
       EVO_WORKER_KEEP_APP: "0"
+    ports: ["8095:80"]
     volumes:
       - evo-latte-parser-worker:/var/www/html
-
-  nginx-latte-parser-worker:
-    <<: *worker-nginx
-    depends_on: [php-latte-parser-worker]
-    ports: ["8095:80"]
-    environment:
-      PHRAMARK_WORKER_PHP: php-latte-parser-worker
-      PHRAMARK_WORKER_ORIGIN: evo-latte-parser-worker
-    volumes:
-      - evo-latte-parser-worker:/var/www/html:ro
-      - ./config/nginx-worker.conf.template:/etc/nginx/templates/default.conf.template:ro
 
   php-latte-parser-worker-keep:
     <<: *worker-php
@@ -390,19 +328,9 @@ services:
       <<: *worker-environment
       EVO_WORKER_ORIGIN: http://evo-latte-parser-worker-keep
       EVO_WORKER_KEEP_APP: "1"
+    ports: ["8096:80"]
     volumes:
       - evo-latte-parser-worker-keep:/var/www/html
-
-  nginx-latte-parser-worker-keep:
-    <<: *worker-nginx
-    depends_on: [php-latte-parser-worker-keep]
-    ports: ["8096:80"]
-    environment:
-      PHRAMARK_WORKER_PHP: php-latte-parser-worker-keep
-      PHRAMARK_WORKER_ORIGIN: evo-latte-parser-worker-keep
-    volumes:
-      - evo-latte-parser-worker-keep:/var/www/html:ro
-      - ./config/nginx-worker.conf.template:/etc/nginx/templates/default.conf.template:ro
 
   php-phalcon-worker:
     <<: *worker-php
@@ -410,19 +338,9 @@ services:
       <<: *worker-environment
       EVO_WORKER_ORIGIN: http://evo-phalcon-worker
       EVO_WORKER_KEEP_APP: "0"
+    ports: ["8097:80"]
     volumes:
       - evo-phalcon-worker:/var/www/html
-
-  nginx-phalcon-worker:
-    <<: *worker-nginx
-    depends_on: [php-phalcon-worker]
-    ports: ["8097:80"]
-    environment:
-      PHRAMARK_WORKER_PHP: php-phalcon-worker
-      PHRAMARK_WORKER_ORIGIN: evo-phalcon-worker
-    volumes:
-      - evo-phalcon-worker:/var/www/html:ro
-      - ./config/nginx-worker.conf.template:/etc/nginx/templates/default.conf.template:ro
 
   php-phalcon-worker-keep:
     <<: *worker-php
@@ -430,19 +348,9 @@ services:
       <<: *worker-environment
       EVO_WORKER_ORIGIN: http://evo-phalcon-worker-keep
       EVO_WORKER_KEEP_APP: "1"
+    ports: ["8098:80"]
     volumes:
       - evo-phalcon-worker-keep:/var/www/html
-
-  nginx-phalcon-worker-keep:
-    <<: *worker-nginx
-    depends_on: [php-phalcon-worker-keep]
-    ports: ["8098:80"]
-    environment:
-      PHRAMARK_WORKER_PHP: php-phalcon-worker-keep
-      PHRAMARK_WORKER_ORIGIN: evo-phalcon-worker-keep
-    volumes:
-      - evo-phalcon-worker-keep:/var/www/html:ro
-      - ./config/nginx-worker.conf.template:/etc/nginx/templates/default.conf.template:ro
 
   setup-cross-cms:
     profiles: ["cross-cms"]

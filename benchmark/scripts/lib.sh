@@ -4,7 +4,8 @@
 # handing them to docker; container paths must reach docker untouched.
 export MSYS_NO_PATHCONV=1
 
-# Maps a published port to the stack id, its PHP-FPM and nginx containers.
+# Maps a published port to the stack id, its PHP container and its nginx, if
+# it has one (FrankenPHP is its own web server), and the service the load hits.
 stack_for_port() {
   case "$1" in
     8080) stack=evo-parser; php=phramark-php-parser-1; nginx=phramark-nginx-parser-1; target=nginx-parser ;;
@@ -17,15 +18,15 @@ stack_for_port() {
     8087) stack=modx; php=phramark-php-modx-1; nginx=phramark-nginx-modx-1; target=nginx-modx ;;
     8088) stack=wordpress-gantry; php=phramark-php-wordpress-gantry-1; nginx=phramark-nginx-wordpress-gantry-1; target=nginx-wordpress-gantry ;;
     8089) stack=evo-sarticles; php=phramark-php-sarticles-1; nginx=phramark-nginx-sarticles-1; target=nginx-sarticles ;;
-    8090) stack=evo-worker; php=phramark-php-worker-1; nginx=phramark-nginx-worker-1; target=nginx-worker ;;
-    8091) stack=evo-worker-keep; php=phramark-php-worker-keep-1; nginx=phramark-nginx-worker-keep-1; target=nginx-worker-keep ;;
-    8092) stack=evo-frankenphp; php=phramark-php-frankenphp-1; nginx=phramark-nginx-frankenphp-1; target=nginx-frankenphp ;;
-    8093) stack=evo-latte-worker; php=phramark-php-latte-worker-1; nginx=phramark-nginx-latte-worker-1; target=nginx-latte-worker ;;
-    8094) stack=evo-latte-worker-keep; php=phramark-php-latte-worker-keep-1; nginx=phramark-nginx-latte-worker-keep-1; target=nginx-latte-worker-keep ;;
-    8095) stack=evo-latte-parser-worker; php=phramark-php-latte-parser-worker-1; nginx=phramark-nginx-latte-parser-worker-1; target=nginx-latte-parser-worker ;;
-    8096) stack=evo-latte-parser-worker-keep; php=phramark-php-latte-parser-worker-keep-1; nginx=phramark-nginx-latte-parser-worker-keep-1; target=nginx-latte-parser-worker-keep ;;
-    8097) stack=evo-phalcon-worker; php=phramark-php-phalcon-worker-1; nginx=phramark-nginx-phalcon-worker-1; target=nginx-phalcon-worker ;;
-    8098) stack=evo-phalcon-worker-keep; php=phramark-php-phalcon-worker-keep-1; nginx=phramark-nginx-phalcon-worker-keep-1; target=nginx-phalcon-worker-keep ;;
+    8090) stack=evo-worker; php=phramark-php-worker-1; nginx=; target=php-worker ;;
+    8091) stack=evo-worker-keep; php=phramark-php-worker-keep-1; nginx=; target=php-worker-keep ;;
+    8092) stack=evo-frankenphp; php=phramark-php-frankenphp-1; nginx=; target=php-frankenphp ;;
+    8093) stack=evo-latte-worker; php=phramark-php-latte-worker-1; nginx=; target=php-latte-worker ;;
+    8094) stack=evo-latte-worker-keep; php=phramark-php-latte-worker-keep-1; nginx=; target=php-latte-worker-keep ;;
+    8095) stack=evo-latte-parser-worker; php=phramark-php-latte-parser-worker-1; nginx=; target=php-latte-parser-worker ;;
+    8096) stack=evo-latte-parser-worker-keep; php=phramark-php-latte-parser-worker-keep-1; nginx=; target=php-latte-parser-worker-keep ;;
+    8097) stack=evo-phalcon-worker; php=phramark-php-phalcon-worker-1; nginx=; target=php-phalcon-worker ;;
+    8098) stack=evo-phalcon-worker-keep; php=phramark-php-phalcon-worker-keep-1; nginx=; target=php-phalcon-worker-keep ;;
     *) echo "PORT must be 8080 through 8098" >&2; exit 2 ;;
   esac
 }
