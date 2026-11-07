@@ -196,8 +196,8 @@ What is held equal and what is not:
 
 - **Concurrency.** `PHP_FPM_PM_MAX_CHILDREN` (8) sets the classic FrankenPHP thread count and the FPM child count. Worker stacks use 8 application workers plus 8 classic PHP threads for manager requests.
 - **Recycling.** A worker restarts after Evolution's default of 500 requests (`EVO_WORKER_MAX_REQUESTS` to change it), where the FPM pool never recycles (`pm.max_requests = 0`): the restarts are part of what the mode costs.
-- **Transport.** nginx serves the static files and hands PHP over HTTP instead of FastCGI, one connection per request in both cases.
-- **Host.** Worker stacks serve one origin (`EVO_WORKER_ORIGIN`, here `http://` and the stack id) and answer every other with 421, while the harness reaches a stack both as `127.0.0.1:PORT` and as `nginx-…`. nginx sends front-end requests with that origin's `Host`; classic FrankenPHP and the manager keep the client's host.
+- **Transport.** FrankenPHP is the web server of these stacks: the load reaches it directly and it serves the static files itself, where an FPM stack goes through nginx and FastCGI. Evolution's Docker images and its EasyPanel and Coolify templates run it the same way, so this compares the two deployments, not PHP alone.
+- **Host.** Worker stacks serve one origin (`EVO_WORKER_ORIGIN`, here `http://` and the stack id) and answer every other with 421, while the harness reaches a stack both as `127.0.0.1:PORT` and as `php-…`. The Caddyfile gives front-end requests that origin's `Host`; classic FrankenPHP and the manager keep the client's host.
 - **Memory.** `auto_prepend_file` runs once per worker, not per request, so the probe wraps the `frankenphp_handle_request()` call of Evolution's worker loop (in `EvolutionCMS\Runtime`) and writes one line per request with the peak reset at its start: a worker's peak includes what it keeps between requests. The container RSS includes FrankenPHP's Go runtime and Caddy, where an FPM container holds only PHP.
 - **Phalcon.** Every PHP image loads the Phalcon extension, whichever stack it serves, and the same release. It is never compiled here: the FPM images copy it out of the official [`phalconphp/cphalcon`](https://hub.docker.com/r/phalconphp/cphalcon) image, without the other extensions that image loads, and FrankenPHP, which needs a thread-safe build, takes the one published with that [release](https://github.com/phalcon/cphalcon/releases). `PHALCON_VERSION` in the three Dockerfiles names it; `tests/run.php` keeps them equal.
 
@@ -352,11 +352,11 @@ So the answer to "evo-manticore" is: not a stack, not a faster one either, at th
 
 ## Local smoke numbers
 
-Full matrix (`benchmark/scripts/matrix 30`, `DURATION=60s`, `ROUNDS=1`) on one Windows 11 laptop with Docker Desktop, 8 FPM workers, load generator on the same host, 2026-11-06. A smoke run that shows every cell working; single rounds on a shared machine, so treat differences below ~20 % as noise. The worker stacks and the Evolution FPM stacks ran on Evolution 3.6.x@a8a0c26 with `--versions=evo@3.6.x --repeats=5` the same day: five repetitions per cell, their spread shown as whiskers on the site. Sortable at https://phramark.artur.work; regenerate with `php benchmark/scripts/summary.php`. The versions table names exactly what ran, per stack, linked to the source repositories.
+Full matrix (`benchmark/scripts/matrix 30`, `DURATION=60s`, `ROUNDS=1`) on one Windows 11 laptop with Docker Desktop, 8 FPM workers, load generator on the same host, 2026-11-06. A smoke run that shows every cell working; single rounds on a shared machine, so treat differences below ~20 % as noise. The Evolution FPM stacks ran on Evolution 3.6.x@a8a0c26 with `--versions=evo@3.6.x --repeats=5` the same day and the FrankenPHP stacks, served without nginx, on 2026-11-07: five repetitions per cell, their spread shown as whiskers on the site. Sortable at https://phramark.artur.work; regenerate with `php benchmark/scripts/summary.php`. The versions table names exactly what ran, per stack, linked to the source repositories.
 
 ### Versions tested
 
-Recorded from the running containers on 2026-11-06T20:16:51Z: PHP 8.4.27, MySQL 8.4.7, nginx/1.27.5, OPcache validate_timestamps=0, memory_consumption=512, max_accelerated_files=100000.
+Recorded from the running containers on 2026-11-07T00:30:56Z: PHP 8.4.27, MySQL 8.4.7, nginx/1.27.5, OPcache validate_timestamps=0, memory_consumption=512, max_accelerated_files=100000.
 
 | Stack | Components (exact versions) |
 | --- | --- |
@@ -372,7 +372,7 @@ Recorded from the running containers on 2026-11-06T20:16:51Z: PHP 8.4.27, MySQL 
 | evo-latte-parser-worker-keep | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.1, [illuminate/database](https://github.com/illuminate/database) v13.38.0, [latte/latte](https://github.com/nette/latte) v3.1.7, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, worker application kept per worker (EVO_WORKER_KEEP_APP=1), worker requests 500 per worker, then a restart, workers 8 |
 | evo-phalcon-worker | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.1, [elcreator/aphalcon](https://github.com/elcreator/aPhalcon) dev-local (evo/aPhalcon@53a53d7414ce1dd1), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [latte/latte](https://github.com/nette/latte) v3.1.7, [phalcon (extension)](https://github.com/phalcon/cphalcon) 5.23.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, worker application new per request, worker requests 500 per worker, then a restart, workers 8 |
 | evo-phalcon-worker-keep | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [elcreator/alattex](https://github.com/elcreator/aLatteX) 0.5.1, [elcreator/aphalcon](https://github.com/elcreator/aPhalcon) dev-local (evo/aPhalcon@53a53d7414ce1dd1), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [latte/latte](https://github.com/nette/latte) v3.1.7, [phalcon (extension)](https://github.com/phalcon/cphalcon) 5.23.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, worker application kept per worker (EVO_WORKER_KEEP_APP=1), worker requests 500 per worker, then a restart, workers 8 |
-| evo-frankenphp | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@830003b, 2026-10-31), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.4, PHP lifecycle classic FrankenPHP; new application per request, PHP threads 8 |
+| evo-frankenphp | [PHP](https://github.com/php/php-src) 8.4.27, [Evolution CMS](https://github.com/evolution-cms/evolution) 3.6.0 (branch 3.6.x@a8a0c26, 2026-11-05), [illuminate/database](https://github.com/illuminate/database) v13.38.0, [FrankenPHP](https://github.com/php/frankenphp) 1.13.5, PHP lifecycle classic FrankenPHP; new application per request, PHP threads 8 |
 | drupal | [PHP](https://github.com/php/php-src) 8.4.27, [drupal/core](https://github.com/drupal/core) 11.4.11, [drush/drush](https://github.com/drush-ops/drush) 13.8.0, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.21, [symfony/http-kernel](https://github.com/symfony/http-kernel) v7.4.21, [twig/twig](https://github.com/twigphp/Twig) v3.30.0 |
 | typo3 | [PHP](https://github.com/php/php-src) 8.4.27, [doctrine/dbal](https://github.com/doctrine/dbal) 4.4.4, [symfony/http-foundation](https://github.com/symfony/http-foundation) v7.4.19, [typo3/cms-core](https://github.com/TYPO3/typo3) v14.3.7, [typo3fluid/fluid](https://github.com/TYPO3/Fluid) 5.3.2 |
 | winter | [PHP](https://github.com/php/php-src) 8.4.27, [doctrine/dbal](https://github.com/doctrine/dbal) 2.13.9, [laravel/framework](https://github.com/laravel/framework) v9.52.23, [symfony/http-foundation](https://github.com/symfony/http-foundation) v6.4.50, [twig/twig](https://github.com/twigphp/Twig) v3.30.0, [winter/storm](https://github.com/wintercms/storm) v1.2.15, [winter/wn-cms-module](https://github.com/wintercms/wn-cms-module) v1.2.15 |
@@ -407,24 +407,24 @@ Recorded from the running containers on 2026-11-06T20:16:51Z: PHP 8.4.27, MySQL 
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 30 | 30.37 | 40.61ms | 246.65ms | 0 | 0.9 MiB | 2.0 MiB | 32.5 MiB | - |
 | evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | 30 | 30.37 | 44.64ms | 217.98ms | 0 | 0.9 MiB | 2.0 MiB | 30.2 MiB | - |
 | evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 30 | 30.38 | 50.11ms | 293.38ms | 0 | 0.9 MiB | 2.0 MiB | 31.5 MiB | - |
-| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 30 | 30.37 | 47.55ms | 103.74ms | 0 | 1.2 MiB | 8.0 MiB | 84.6 MiB | - |
-| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 46.81ms | 118.33ms | 0 | 1.3 MiB | 12.0 MiB | 89.6 MiB | - |
-| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 30 | 30.37 | 50.81ms | 109.76ms | 0 | 1.7 MiB | 8.0 MiB | 85.5 MiB | - |
-| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 43.81ms | 93.18ms | 0 | 1.7 MiB | 12.0 MiB | 88.0 MiB | - |
-| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 48.64ms | 133.12ms | 0 | 1.1 MiB | 8.0 MiB | 83.8 MiB | - |
-| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 46.08ms | 243.46ms | 0 | 1.4 MiB | 12.0 MiB | 93.0 MiB | - |
-| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 42.46ms | 97.79ms | 0 | 1.7 MiB | 8.0 MiB | 86.4 MiB | - |
-| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 41.41ms | 229.76ms | 0 | 2.0 MiB | 14.0 MiB | 87.8 MiB | - |
-| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 49.44ms | 255.49ms | 0 | 1.2 MiB | 8.0 MiB | 84.5 MiB | - |
-| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 46.37ms | 101.57ms | 0 | 1.3 MiB | 12.0 MiB | 89.1 MiB | - |
-| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 39.90ms | 78.59ms | 0 | 1.7 MiB | 8.0 MiB | 87.5 MiB | - |
-| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 42.97ms | 100.86ms | 0 | 1.9 MiB | 14.0 MiB | 93.1 MiB | - |
-| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 48.51ms | 178.69ms | 0 | 1.3 MiB | 8.0 MiB | 98.0 MiB | - |
-| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 45.95ms | 281.86ms | 0 | 1.5 MiB | 14.0 MiB | 114.1 MiB | - |
-| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 35.90ms | 201.60ms | 0 | 1.8 MiB | 10.0 MiB | 99.4 MiB | - |
-| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 34.81ms | 282.88ms | 0 | 2.1 MiB | 14.0 MiB | 110.4 MiB | - |
-| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 30 | 30.38 | 62.85ms | 118.78ms | 0 | 1.1 MiB | 2.0 MiB | 38.4 MiB | - |
-| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 30 | 30.38 | 63.46ms | 255.87ms | 0 | 1.1 MiB | 2.0 MiB | 40.7 MiB | - |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 44.64ms | 103.29ms | 0 | 1.1 MiB | 8.0 MiB | 78.2 MiB | - |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 30 | 30.37 | 39.10ms | 126.85ms | 0 | 1.3 MiB | 12.0 MiB | 88.6 MiB | - |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 30 | 30.37 | 38.81ms | 83.97ms | 0 | 1.6 MiB | 8.0 MiB | 86.2 MiB | - |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 38.40ms | 92.22ms | 0 | 1.9 MiB | 12.0 MiB | 91.2 MiB | - |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 45.41ms | 95.81ms | 0 | 1.2 MiB | 8.0 MiB | 85.9 MiB | - |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.37 | 41.15ms | 95.23ms | 0 | 1.3 MiB | 12.0 MiB | 91.6 MiB | - |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.37 | 41.66ms | 209.66ms | 0 | 1.7 MiB | 8.0 MiB | 88.3 MiB | - |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 45.38ms | 109.57ms | 0 | 2.0 MiB | 14.0 MiB | 93.6 MiB | - |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 49.73ms | 137.21ms | 0 | 1.3 MiB | 8.0 MiB | 85.9 MiB | - |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.37 | 45.66ms | 126.01ms | 0 | 1.4 MiB | 12.0 MiB | 90.9 MiB | - |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 30 | 30.37 | 37.18ms | 76.93ms | 0 | 1.7 MiB | 8.0 MiB | 87.5 MiB | - |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 38.05ms | 239.36ms | 0 | 1.9 MiB | 14.0 MiB | 93.5 MiB | - |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 30 | 30.37 | 41.60ms | 230.27ms | 0 | 1.4 MiB | 8.0 MiB | 97.1 MiB | - |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 30 | 30.37 | 41.82ms | 298.49ms | 0 | 1.5 MiB | 12.0 MiB | 114.2 MiB | - |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 30 | 30.38 | 33.89ms | 225.92ms | 0 | 1.9 MiB | 10.0 MiB | 97.9 MiB | - |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 30 | 30.37 | 28.64ms | 265.73ms | 0 | 2.1 MiB | 14.0 MiB | 114.8 MiB | - |
+| evo-frankenphp (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 30 | 30.37 | 48.42ms | 109.18ms | 0 | 0.8 MiB | 2.0 MiB | 46.5 MiB | - |
+| evo-frankenphp (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 30 | 30.38 | 40.64ms | 114.05ms | 0 | 0.8 MiB | 2.0 MiB | 49.8 MiB | - |
 | drupal (11.4.11) | off | 30 | 30.38 | 83.01ms | 158.72ms | 0 | 2.2 MiB | 4.0 MiB | 40.3 MiB | - |
 | drupal (11.4.11) | tracing | 30 | 30.37 | 82.88ms | 198.53ms | 0 | 2.1 MiB | 4.0 MiB | 41.2 MiB | - |
 | typo3 (14.3.7) | off | 30 | 30.37 | 51.84ms | 250.75ms | 0 | 3.1 MiB | 4.0 MiB | 47.3 MiB | - |
@@ -464,24 +464,24 @@ Recorded from the running containers on 2026-11-06T20:16:51Z: PHP 8.4.27, MySQL 
 | evo-phalcon (3.5.9 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 3079.27 / 953.04 ms | 99.12 / 25.37 ms | 205.64 / 53.63 ms | 70.9 / 17.87 ms | 453.19 / 122.58 ms | 145.43 / 79.73 ms | 7552 ms |
 | evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | off | 3992.94 / 1614.97 ms | 105.23 / 34.53 ms | 174.5 / 63.33 ms | 114.32 / 22.98 ms | 506.92 / 149.77 ms | 200.44 / 132.13 ms | 8956 ms |
 | evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | 3628.11 / 1143.75 ms | 124.51 / 28.4 ms | 118.96 / 57.63 ms | 105.53 / 25.59 ms | 501.88 / 137.57 ms | 198.34 / 122.62 ms | 8231 ms |
-| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 3752.71 / 1496.74 ms | 89.91 / 40.01 ms | 231.24 / 61.07 ms | 86.34 / 25.79 ms | 518.31 / 166.8 ms | 194.93 / 117.58 ms | 9162 ms |
-| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 3767.87 / 1488.02 ms | 95.62 / 32.61 ms | 291.94 / 56.99 ms | 80.95 / 23.85 ms | 491.21 / 146.33 ms | 165.34 / 94.49 ms | 8741 ms |
-| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 3996.54 / 1770.72 ms | 104.24 / 42.1 ms | 225.68 / 65.02 ms | 96.53 / 34.3 ms | 513.75 / 150.65 ms | 182.21 / 98.93 ms | 10611 ms |
-| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 3442.34 / 1300.42 ms | 96.42 / 31.61 ms | 233.31 / 55.78 ms | 90.57 / 23.13 ms | 485.45 / 139.38 ms | 160.21 / 97.23 ms | 8767 ms |
-| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 3759.34 / 1602.93 ms | 107.2 / 33.51 ms | 314.03 / 68.48 ms | 122.34 / 32.46 ms | 574.78 / 168.7 ms | 212.75 / 135.51 ms | 9717 ms |
-| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3505.81 / 1225.89 ms | 81.97 / 28.59 ms | 222.94 / 60.81 ms | 85.39 / 22.8 ms | 482.51 / 144.19 ms | 163.15 / 102.92 ms | 8297 ms |
-| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 3649.28 / 1481.06 ms | 80.89 / 28.8 ms | 131.44 / 57.21 ms | 94.53 / 26.77 ms | 502.97 / 145.37 ms | 208.73 / 134.28 ms | 8291 ms |
-| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3472.61 / 1230.09 ms | 97.25 / 30.25 ms | 164.19 / 63.99 ms | 79.73 / 22.44 ms | 500.2 / 141.11 ms | 166.93 / 82.18 ms | 8840 ms |
-| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 3943.32 / 1544.31 ms | 86.5 / 30.64 ms | 200.59 / 63.05 ms | 93 / 27 ms | 478.26 / 139.53 ms | 152.36 / 88.62 ms | 8608 ms |
-| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3507.62 / 1322.86 ms | 80.81 / 29.81 ms | 164.72 / 62.42 ms | 76.85 / 24.16 ms | 473.22 / 140.16 ms | 223.43 / 140.21 ms | 8301 ms |
-| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 4375.92 / 1973.88 ms | 98.78 / 34.7 ms | 158.36 / 63.44 ms | 89.97 / 22.45 ms | 487.99 / 142.01 ms | 213.69 / 150.42 ms | 8821 ms |
-| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3533.37 / 1276.12 ms | 87.41 / 30.91 ms | 257.6 / 58.01 ms | 93.86 / 26.22 ms | 479.96 / 137.78 ms | 205.03 / 140.9 ms | 8444 ms |
-| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 3754.75 / 1518.09 ms | 81.4 / 29.17 ms | 227.24 / 58.18 ms | 103.45 / 25.49 ms | 487.28 / 144.07 ms | 169.19 / 96.55 ms | 8738 ms |
-| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 3434.48 / 1287.56 ms | 90.47 / 31.02 ms | 222.35 / 58.22 ms | 115.94 / 31.94 ms | 482.12 / 174.19 ms | 183.22 / 103.95 ms | 8660 ms |
-| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 3772.3 / 1572.44 ms | 92.07 / 30.56 ms | 209.72 / 62.88 ms | 96.36 / 23.21 ms | 471.1 / 142.51 ms | 194.45 / 135.49 ms | 8380 ms |
-| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 3412.17 / 1260.54 ms | 82.02 / 30.28 ms | 234.23 / 54.96 ms | 85.4 / 22.65 ms | 467.87 / 138.6 ms | 204.77 / 127.73 ms | 8021 ms |
-| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | 3959.98 / 1642.18 ms | 86.06 / 33.68 ms | 245.37 / 66.97 ms | 122.52 / 27.72 ms | 480.27 / 144.85 ms | 173.26 / 113.79 ms | 9065 ms |
-| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | 3765.77 / 1524.96 ms | 98.68 / 31.46 ms | 351.88 / 64.67 ms | 91.91 / 21.2 ms | 482.52 / 138.17 ms | 215.34 / 151.81 ms | 8715 ms |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 4031.54 / 1672.44 ms | 76.33 / 33.6 ms | 200.56 / 59.45 ms | 89.31 / 24.37 ms | 492.07 / 144.66 ms | 195.08 / 128.7 ms | 8538 ms |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 4257.15 / 1464.45 ms | 83.34 / 28.79 ms | 239.85 / 54.8 ms | 76.41 / 23.37 ms | 476.94 / 142.6 ms | 171.75 / 108.77 ms | 9493 ms |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 3841.84 / 1641.76 ms | 109.27 / 30.14 ms | 171.07 / 58.35 ms | 92.67 / 24.29 ms | 511 / 151.99 ms | 178.08 / 119.26 ms | 8640 ms |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 3692.19 / 1374.97 ms | 98.93 / 37.32 ms | 283.79 / 57.7 ms | 97.61 / 22.02 ms | 496.83 / 142.23 ms | 160.27 / 88.74 ms | 9557 ms |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 4042.73 / 1770.14 ms | 93.67 / 31.79 ms | 193.69 / 56.57 ms | 89.65 / 24.4 ms | 495.1 / 146.76 ms | 185.89 / 119.86 ms | 8854 ms |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3739.34 / 1456.62 ms | 105.33 / 46.55 ms | 243.63 / 66.08 ms | 81.97 / 20.86 ms | 474.01 / 142.25 ms | 192.86 / 128.39 ms | 9211 ms |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 3683.19 / 1533.62 ms | 97.82 / 29.52 ms | 215.98 / 65.02 ms | 119.31 / 24.86 ms | 495.59 / 151.71 ms | 186.49 / 124.84 ms | 8861 ms |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3711.04 / 1375.97 ms | 100.6 / 37.57 ms | 280.58 / 61.92 ms | 91.57 / 26.53 ms | 526.36 / 155.07 ms | 201.9 / 140.61 ms | 9194 ms |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 3834.03 / 1596.23 ms | 94.98 / 29.63 ms | 161.06 / 59.48 ms | 104.09 / 28.84 ms | 508.11 / 157.27 ms | 176.73 / 111.6 ms | 8298 ms |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3575.96 / 1327.96 ms | 129.54 / 27.83 ms | 161.19 / 58.73 ms | 87.94 / 23.41 ms | 453.97 / 150.9 ms | 211.69 / 140.88 ms | 8586 ms |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | 5601.82 / 3179.94 ms | 84.7 / 32.92 ms | 236.07 / 60.07 ms | 86.3 / 22.11 ms | 474.67 / 143.43 ms | 162.39 / 95.56 ms | 10202 ms |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | 3582.14 / 1322.34 ms | 80.84 / 28.55 ms | 244.33 / 58.54 ms | 88.55 / 23.23 ms | 513.17 / 145.9 ms | 176.25 / 95.76 ms | 8872 ms |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 4298.97 / 1728.52 ms | 109.21 / 32.84 ms | 227.25 / 57.93 ms | 99.98 / 26.94 ms | 493.83 / 144.68 ms | 183.74 / 126.13 ms | 9178 ms |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 3600.88 / 1235.57 ms | 103.51 / 50.66 ms | 154.35 / 63.11 ms | 104.5 / 20.68 ms | 495.19 / 140.09 ms | 179.22 / 127.3 ms | 8720 ms |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | 3896.85 / 1659.86 ms | 99.34 / 39.49 ms | 268.15 / 60.77 ms | 112.25 / 30.71 ms | 500.64 / 170.45 ms | 203.29 / 129.85 ms | 9335 ms |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | 3857.08 / 1315.92 ms | 83.74 / 30.78 ms | 233.14 / 57.23 ms | 92.48 / 24.44 ms | 499.86 / 146.61 ms | 209.31 / 139.56 ms | 9436 ms |
+| evo-frankenphp (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | 3838.2 / 1505.41 ms | 110.17 / 41.17 ms | 165.21 / 62.17 ms | 87.22 / 27.77 ms | 601.56 / 175.64 ms | 219.57 / 128.35 ms | 8991 ms |
+| evo-frankenphp (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | 3801.49 / 1271.86 ms | 102.36 / 27.18 ms | 202.38 / 65.52 ms | 115.85 / 29.04 ms | 551.06 / 202.62 ms | 195.55 / 101.95 ms | 8971 ms |
 | drupal (11.4.11) | off | 229.64 / 115.44 ms | 164.53 / 115.36 ms | 387.38 / 321.41 ms | 92.24 / 45.08 ms | 362.74 / 296.77 ms | 236.81 / 120.6 ms | 5491 ms |
 | drupal (11.4.11) | tracing | 215.95 / 114.42 ms | 151.87 / 105.71 ms | 382.43 / 319.28 ms | 88 / 45.12 ms | 382.64 / 314.61 ms | 228.93 / 111.7 ms | 5422 ms |
 | typo3 (14.3.7) | off | 946.38 / 454.82 ms | 507.54 / 351 ms | 858.8 / 389.02 ms | 387.43 / 302.88 ms | 2001.97 / 1092.23 ms | 289.12 / 126.6 ms | 19776 ms |
@@ -569,60 +569,60 @@ Recorded from the running containers on 2026-11-06T20:16:51Z: PHP 8.4.27, MySQL 
 | evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | PHP peak (script) | 32.23 MiB | 1.52 MiB | 1.41 MiB | 1.52 MiB | 1.5 MiB | 1.41 MiB | 44.2 MiB |
 | evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | Frontend JS heap | 6.75 MiB | 9.01 MiB | 9.69 MiB | 11.71 MiB | 13 MiB | 10.47 MiB |  |
 | evo-phalcon (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74) | tracing | Frontend DOM nodes | 133714 | 135010 | 135085 | 7951 | 9329 | 5107 |  |
-| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.2 MiB | 1.49 MiB | 1.39 MiB | 1.49 MiB | 1.43 MiB | 1.29 MiB | 94.2 MiB |
-| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.75 MiB | 9.85 MiB | 10.66 MiB | 12.86 MiB | 11.72 MiB | 9.33 MiB |  |
-| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133704 | 136484 | 136559 | 9002 | 7841 | 2725 |  |
-| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.2 MiB | 1.5 MiB | 1.39 MiB | 1.49 MiB | 1.48 MiB | 1.32 MiB | 83.8 MiB |
-| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 12.81 MiB | 14.66 MiB | 14.74 MiB | 11.69 MiB | 10.84 MiB | 9.81 MiB |  |
-| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270733 | 265078 | 263663 | 10054 | 8665 | 2741 |  |
-| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.2 MiB | 1.49 MiB | 1.39 MiB | 1.49 MiB | 1.43 MiB | 1.29 MiB | 95 MiB |
-| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.74 MiB | 9.83 MiB | 10.59 MiB | 11.94 MiB | 11.73 MiB | 15.24 MiB |  |
-| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133705 | 136490 | 136563 | 6463 | 7321 | 7512 |  |
-| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.2 MiB | 1.5 MiB | 1.39 MiB | 1.49 MiB | 1.48 MiB | 1.38 MiB | 97.4 MiB |
-| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.74 MiB | 10.19 MiB | 10.02 MiB | 12.08 MiB | 12.6 MiB | 12.1 MiB |  |
-| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133704 | 136483 | 135068 | 8012 | 9329 | 7133 |  |
-| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.31 MiB | 93.8 MiB |
-| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.75 MiB | 9.86 MiB | 10.61 MiB | 14.69 MiB | 14.99 MiB | 18.36 MiB |  |
-| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 7154 | 5739 | 12884 | 14201 | 18268 |  |
-| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.31 MiB | 90.2 MiB |
-| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 12.81 MiB | 13.12 MiB | 12.71 MiB | 11.7 MiB | 12.6 MiB | 17.18 MiB |  |
-| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270753 | 253048 | 251633 | 10054 | 8893 | 14113 |  |
-| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.31 MiB | 96.3 MiB |
-| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.76 MiB | 9.87 MiB | 10.64 MiB | 15.09 MiB | 13.93 MiB | 8.92 MiB |  |
-| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 7154 | 5739 | 13540 | 12379 | 2725 |  |
-| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.51 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.31 MiB | 92.9 MiB |
-| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 12.79 MiB | 13.26 MiB | 12.74 MiB | 12.82 MiB | 12.02 MiB | 9.29 MiB |  |
-| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270789 | 132664 | 129761 | 9002 | 7841 | 2725 |  |
-| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.31 MiB | 94.3 MiB |
-| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 12.79 MiB | 13.08 MiB | 12.86 MiB | 11.11 MiB | 9.96 MiB | 12.41 MiB |  |
-| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 270753 | 243979 | 241076 | 6283 | 5302 | 7803 |  |
-| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.51 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.34 MiB | 98 MiB |
-| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.75 MiB | 10.51 MiB | 10.3 MiB | 12.51 MiB | 12 MiB | 9.31 MiB |  |
-| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133714 | 137870 | 136455 | 9057 | 7841 | 2780 |  |
-| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.31 MiB | 93.8 MiB |
-| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.74 MiB | 9.85 MiB | 10.5 MiB | 13.59 MiB | 14.84 MiB | 11.06 MiB |  |
-| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133715 | 135069 | 135119 | 11566 | 12944 | 6120 |  |
-| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.33 MiB | 97.4 MiB |
-| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 13.22 MiB | 14.71 MiB | 13.79 MiB | 11.66 MiB | 12.86 MiB | 17.17 MiB |  |
-| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270937 | 243973 | 242558 | 10054 | 8893 | 14113 |  |
-| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.23 MiB | 1.52 MiB | 1.42 MiB | 1.52 MiB | 1.46 MiB | 1.33 MiB | 90.7 MiB |
-| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.75 MiB | 10.46 MiB | 10.95 MiB | 11.41 MiB | 12.33 MiB | 13.42 MiB |  |
-| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 128779 | 127364 | 27390 | 9047 | 9189 |  |
-| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.23 MiB | 1.53 MiB | 1.42 MiB | 1.52 MiB | 1.51 MiB | 1.34 MiB | 87.8 MiB |
-| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.75 MiB | 9.97 MiB | 10 MiB | 12.07 MiB | 12.92 MiB | 11.44 MiB |  |
-| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133715 | 136492 | 135077 | 7951 | 9329 | 6123 |  |
-| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.23 MiB | 1.52 MiB | 1.42 MiB | 1.52 MiB | 1.46 MiB | 1.33 MiB | 94.2 MiB |
-| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.76 MiB | 10 MiB | 10.77 MiB | 13.13 MiB | 11.53 MiB | 11.11 MiB |  |
-| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 128776 | 127361 | 131559 | 7504 | 6120 |  |
-| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.23 MiB | 1.53 MiB | 1.42 MiB | 1.52 MiB | 1.51 MiB | 1.34 MiB | 87.8 MiB |
-| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.75 MiB | 10.21 MiB | 10.03 MiB | 11.97 MiB | 12.59 MiB | 10.85 MiB |  |
-| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133714 | 136495 | 135080 | 7951 | 9329 | 5156 |  |
-| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | PHP peak (script) | 32.19 MiB | 1.47 MiB | 1.37 MiB | 1.48 MiB | 1.41 MiB | 1.31 MiB | 29.1 MiB |
-| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend JS heap | 6.75 MiB | 11.69 MiB | 12.45 MiB | 15 MiB | 16.08 MiB | 18.03 MiB |  |
-| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | off | Frontend DOM nodes | 133703 | 138012 | 138085 | 10113 | 8891 | 14127 |  |
-| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | PHP peak (script) | 32.19 MiB | 1.48 MiB | 1.37 MiB | 1.48 MiB | 1.47 MiB | 1.28 MiB | 34 MiB |
-| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend JS heap | 6.75 MiB | 9.44 MiB | 9.91 MiB | 12.09 MiB | 12.72 MiB | 11.05 MiB |  |
-| evo-frankenphp (3.6.0 3.6.x@830003b · FrankenPHP 1.13.4) | tracing | Frontend DOM nodes | 133702 | 135056 | 135107 | 8011 | 9328 | 6173 |  |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.2 MiB | 1.49 MiB | 1.39 MiB | 1.49 MiB | 1.43 MiB | 1.3 MiB | 89.4 MiB |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend JS heap | 12.78 MiB | 13.17 MiB | 12.64 MiB | 12 MiB | 10.83 MiB | 9.81 MiB |  |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 270734 | 253038 | 251623 | 10054 | 8252 | 2780 |  |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.2 MiB | 1.5 MiB | 1.39 MiB | 1.5 MiB | 1.48 MiB | 1.29 MiB | 109.4 MiB |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 12.81 MiB | 11.16 MiB | 10.65 MiB | 11.66 MiB | 10.79 MiB | 9.72 MiB |  |
+| evo-worker (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270732 | 7154 | 5739 | 7515 | 6354 | 3896 |  |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.2 MiB | 1.49 MiB | 1.39 MiB | 1.49 MiB | 1.43 MiB | 1.3 MiB | 91 MiB |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.74 MiB | 9.84 MiB | 10.53 MiB | 11.94 MiB | 11.21 MiB | 8.92 MiB |  |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133704 | 7154 | 5678 | 7515 | 6354 | 2725 |  |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.2 MiB | 1.5 MiB | 1.39 MiB | 1.5 MiB | 1.48 MiB | 1.29 MiB | 85.3 MiB |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 12.79 MiB | 14.25 MiB | 14.17 MiB | 12.09 MiB | 11.17 MiB | 8.91 MiB |  |
+| evo-worker-keep (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270750 | 254502 | 253087 | 10054 | 6354 | 2725 |  |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.32 MiB | 89 MiB |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.74 MiB | 9.85 MiB | 10.07 MiB | 11.67 MiB | 12.98 MiB | 12.69 MiB |  |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 136494 | 135079 | 7951 | 9329 | 8161 |  |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.51 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.32 MiB | 98 MiB |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 12.8 MiB | 11.09 MiB | 10.63 MiB | 11.63 MiB | 10.77 MiB | 15.76 MiB |  |
+| evo-latte-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270754 | 7154 | 5739 | 6126 | 6354 | 7646 |  |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.32 MiB | 87.3 MiB |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.75 MiB | 10.56 MiB | 11.01 MiB | 15.09 MiB | 16.32 MiB | 17.87 MiB |  |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 136492 | 136567 | 13822 | 15200 | 18268 |  |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.51 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.32 MiB | 97.3 MiB |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.75 MiB | 9.04 MiB | 9.79 MiB | 11.7 MiB | 12.63 MiB | 11.43 MiB |  |
+| evo-latte-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133715 | 135050 | 135085 | 7951 | 9329 | 6120 |  |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.32 MiB | 86 MiB |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.75 MiB | 10.21 MiB | 10.6 MiB | 13.05 MiB | 12.27 MiB | 13.33 MiB |  |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 128776 | 127361 | 131559 | 119296 | 9189 |  |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.51 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.33 MiB | 87.3 MiB |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.74 MiB | 10.5 MiB | 10.88 MiB | 13.94 MiB | 14.56 MiB | 10.24 MiB |  |
+| evo-latte-parser-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133715 | 135069 | 135119 | 11566 | 12944 | 4075 |  |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.21 MiB | 1.5 MiB | 1.4 MiB | 1.5 MiB | 1.44 MiB | 1.32 MiB | 96.2 MiB |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.78 MiB | 9.03 MiB | 9.78 MiB | 12 MiB | 12.98 MiB | 11.07 MiB |  |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133715 | 135046 | 135119 | 7951 | 9329 | 6120 |  |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.21 MiB | 1.51 MiB | 1.4 MiB | 1.5 MiB | 1.49 MiB | 1.32 MiB | 86.3 MiB |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.74 MiB | 10.14 MiB | 10.6 MiB | 11.09 MiB | 12.03 MiB | 11.46 MiB |  |
+| evo-latte-parser-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133714 | 136497 | 136572 | 6463 | 7841 | 6120 |  |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.23 MiB | 1.52 MiB | 1.42 MiB | 1.53 MiB | 1.46 MiB | 1.34 MiB | 97.4 MiB |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.76 MiB | 9.89 MiB | 10.64 MiB | 12.68 MiB | 11.52 MiB | 10.5 MiB |  |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 7154 | 5739 | 9937 | 7504 | 5162 |  |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.23 MiB | 1.53 MiB | 1.42 MiB | 1.53 MiB | 1.51 MiB | 1.35 MiB | 83 MiB |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 12.84 MiB | 13.11 MiB | 12.9 MiB | 10.29 MiB | 10.07 MiB | 8.9 MiB |  |
+| evo-phalcon-worker (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270750 | 10909 | 9433 | 4976 | 4965 | 2780 |  |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.23 MiB | 1.52 MiB | 1.42 MiB | 1.53 MiB | 1.46 MiB | 1.34 MiB | 92.5 MiB |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend JS heap | 6.74 MiB | 10.18 MiB | 10.67 MiB | 12.65 MiB | 11.49 MiB | 10.52 MiB |  |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 133714 | 7154 | 5739 | 9937 | 7500 | 5107 |  |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.23 MiB | 1.53 MiB | 1.42 MiB | 1.53 MiB | 1.51 MiB | 1.34 MiB | 94.3 MiB |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 13.25 MiB | 12.16 MiB | 12.22 MiB | 14.37 MiB | 15.96 MiB | 19.81 MiB |  |
+| evo-phalcon-worker-keep (3.6.0 3.6.x@a8a0c26 · aLatteX 0.5.1 · aPhalcon ../evo/aPhalcon@53a53d74 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 270935 | 7154 | 5739 | 13164 | 14542 | 19762 |  |
+| evo-frankenphp (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | PHP peak (script) | 32.19 MiB | 1.48 MiB | 1.37 MiB | 1.48 MiB | 1.41 MiB | 1.27 MiB | 48.2 MiB |
+| evo-frankenphp (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend JS heap | 12.78 MiB | 13.26 MiB | 12.7 MiB | 13.46 MiB | 14.06 MiB | 16.18 MiB |  |
+| evo-frankenphp (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | off | Frontend DOM nodes | 270732 | 132667 | 129764 | 10207 | 11585 | 14312 |  |
+| evo-frankenphp (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | PHP peak (script) | 32.19 MiB | 1.48 MiB | 1.37 MiB | 1.48 MiB | 1.47 MiB | 1.28 MiB | 42.6 MiB |
+| evo-frankenphp (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend JS heap | 6.75 MiB | 9.82 MiB | 10.5 MiB | 13.64 MiB | 12.78 MiB | 10.71 MiB |  |
+| evo-frankenphp (3.6.0 3.6.x@a8a0c26 · FrankenPHP 1.13.5) | tracing | Frontend DOM nodes | 133705 | 135036 | 135109 | 11566 | 10405 | 5264 |  |
 | drupal (11.4.11) | off | PHP peak (script) | 3.17 MiB | 4.9 MiB | 4.3 MiB | 4.76 MiB | 4.3 MiB | 2.88 MiB | 62.1 MiB |
 | drupal (11.4.11) | off | Frontend JS heap | 11.88 MiB | 19.8 MiB | 20.97 MiB | 35.4 MiB | 36.12 MiB | 44.04 MiB |  |
 | drupal (11.4.11) | off | Frontend DOM nodes | 2498 | 4802 | 5018 | 8853 | 9069 | 11084 |  |
